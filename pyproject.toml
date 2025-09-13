@@ -1,0 +1,264 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nedc-bench"
+version = "0.1.0"
+description = "Modern benchmarking platform for EEG event detection systems"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Clarity Digital Twin", email = "contact@clarity-dt.com"},
+]
+maintainers = [
+    {name = "Clarity Digital Twin", email = "contact@clarity-dt.com"},
+]
+keywords = ["eeg", "neuroscience", "benchmarking", "evaluation", "seizure-detection"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+
+dependencies = [
+    "numpy>=2.0.2",
+    "scipy>=1.14.1",
+    "lxml>=5.3.0",
+    "tomli>=2.0.1; python_version < '3.11'",
+    "pydantic>=2.8.0",
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-cov>=5.0.0",
+    "pytest-xdist>=3.6.0",
+    "pytest-mock>=3.14.0",
+    "pytest-benchmark>=4.0.0",
+    "hypothesis>=6.100.0",
+    "ruff>=0.6.0",
+    "mypy>=1.11.0",
+    "types-toml>=0.10.8",
+    "pre-commit>=3.8.0",
+    "ipykernel>=6.29.0",
+]
+
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.25.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/clarity-digital-twin/nedc-bench"
+Documentation = "https://clarity-digital-twin.github.io/nedc-bench"
+Repository = "https://github.com/clarity-digital-twin/nedc-bench"
+Issues = "https://github.com/clarity-digital-twin/nedc-bench/issues"
+
+[project.scripts]
+nedc-bench = "nedc_bench.cli:app"
+
+# ==================== UV Configuration ====================
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.3.0",
+    "pytest-cov>=5.0.0",
+    "pytest-xdist>=3.6.0",
+    "ruff>=0.6.0",
+    "mypy>=1.11.0",
+    "pre-commit>=3.8.0",
+]
+
+# ==================== Ruff Configuration ====================
+[tool.ruff]
+line-length = 100  # Slightly longer for scientific code
+indent-width = 4
+target-version = "py39"
+preview = true  # Enable preview features for cutting-edge rules
+
+# Exclude vendored code and test data
+extend-exclude = [
+    "nedc_eeg_eval/",  # Original NEDC code - don't touch
+    ".pytest_cache",
+    ".mypy_cache",
+    ".tox",
+    ".venv",
+    "venv",
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+    ".coverage",
+    "htmlcov",
+    "docs/",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # Pyflakes
+    "B",     # flake8-bugbear
+    "I",     # isort
+    "UP",    # pyupgrade
+    "N",     # pep8-naming
+    "C90",   # mccabe
+    "TID",   # flake8-tidy-imports
+    "RUF",   # Ruff-specific
+    "NPY",   # NumPy-specific rules
+    "PD",    # pandas-vet
+    "PERF",  # Performance linting
+    "FURB",  # refurb (modernization)
+    "LOG",   # logging
+    "SIM",   # flake8-simplify
+    "PTH",   # pathlib
+    "FA",    # flake8-future-annotations
+    "ARG",   # flake8-unused-arguments
+    "PL",    # Pylint
+]
+
+ignore = [
+    "E501",   # Line too long - formatter handles
+    "PLR0913", # Too many arguments - scientific code often needs many params
+    "PLR2004", # Magic values - common in scientific computing
+    "PD901",   # df is a good variable name for dataframes
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "S101",    # assert allowed in tests
+    "ARG",     # Unused arguments in tests
+    "PLR2004", # Magic numbers fine in tests
+    "SIM117",  # Allow multiple with statements
+]
+"benchmarks/*" = [
+    "T201",    # print() allowed in benchmarks
+    "PLR2004", # Magic numbers fine in benchmarks
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["nedc_bench"]
+combine-as-imports = true
+force-single-line = false
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12  # Slightly higher for scientific algorithms
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"  # Use NumPy docstring convention
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+docstring-code-line-length = 72
+skip-magic-trailing-comma = false
+line-ending = "lf"  # Force Unix line endings
+
+# ==================== MyPy Configuration ====================
+[tool.mypy]
+python_version = "3.9"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_unimported = false
+no_implicit_optional = true
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+follow_imports = "normal"
+
+# Ignore vendored NEDC code
+exclude = [
+    "nedc_eeg_eval/",
+    "tests/",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "scipy.*",
+    "lxml.*",
+    "numpy.*",
+]
+ignore_missing_imports = true
+
+# ==================== Pytest Configuration ====================
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=nedc_bench",
+    "--cov-branch",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-fail-under=80",
+    "-n=auto",  # Run tests in parallel
+    "--benchmark-disable",  # Disable benchmarks by default
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks integration tests",
+    "benchmark: marks benchmark tests",
+    "gpu: marks tests requiring GPU",
+]
+
+[tool.coverage.run]
+source = ["nedc_bench"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__init__.py",
+    "*/conftest.py",
+]
+
+[tool.coverage.report]
+precision = 2
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "@overload",
+    "@abstractmethod",
+]
+
+# ==================== Hatch Configuration ====================
+[tool.hatch.version]
+path = "nedc_bench/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.github",
+    "/docs",
+    "/tests",
+    "/benchmarks",
+    ".gitignore",
+    ".pre-commit-config.yaml",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["nedc_bench"]
