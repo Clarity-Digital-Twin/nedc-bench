@@ -1,0 +1,19 @@
+# version = csv_v1.0.0
+# bname = aaaaarvi_s001_t000
+# duration = 2464.0000 secs
+# montage_file = nedc_eas_default_montage.txt
+#
+channel,start_time,stop_time,label,confidence
+TERM,158.9423,164.4084,seiz,1.0000
+TERM,259.0139,277.9650,seiz,1.0000
+TERM,391.0294,396.0377,seiz,1.0000
+TERM,547.9206,554.6770,seiz,1.0000
+TERM,681.9978,696.0100,seiz,1.0000
+TERM,715.0572,724.1998,seiz,1.0000
+TERM,866.0416,888.9745,seiz,1.0000
+TERM,1035.0649,1043.0838,seiz,1.0000
+TERM,1191.8801,1201.0782,seiz,1.0000
+TERM,1313.0105,1321.9728,seiz,1.0000
+TERM,1522.0694,1542.0749,seiz,1.0000
+TERM,1573.0072,1583.5372,seiz,1.0000
+TERM,1685.9978,1705.1432,seiz,1.0000

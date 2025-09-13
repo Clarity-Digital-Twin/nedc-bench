@@ -1,0 +1,21 @@
+# version = csv_v1.0.0
+# bname = aaaaajqo_s008_t001
+# duration = 1077.0000 secs
+# montage_file = nedc_eas_default_montage.txt
+#
+channel,start_time,stop_time,label,confidence
+TERM,1.0000,41.0157,seiz,1.0000
+TERM,53.5360,61.0720,seiz,1.0000
+TERM,69.8120,90.1560,seiz,1.0000
+TERM,98.0400,105.4560,seiz,1.0000
+TERM,110.1880,122.8760,seiz,1.0000
+TERM,126.4520,175.4400,seiz,1.0000
+TERM,186.0960,202.5880,seiz,1.0000
+TERM,234.1880,247.9240,seiz,1.0000
+TERM,252.0840,263.8840,seiz,1.0000
+TERM,268.5160,327.6280,seiz,1.0000
+TERM,352.9400,398.0560,seiz,1.0000
+TERM,411.0280,443.1160,seiz,1.0000
+TERM,455.3400,514.2560,seiz,1.0000
+TERM,519.6960,557.1000,seiz,1.0000
+TERM,581.9320,678.9320,seiz,1.0000

@@ -1,0 +1,106 @@
+# file: $NEDC_NFC/util/python/nedc_eeg_eval/nedc_eeg_eval_params_v00.toml
+#
+# A parameter file that defines key paramters for the scoring algorithms.
+# This version does a "two-class" evaluation. It was originally designed
+# for seizure detection experiments.
+#
+
+# set version information
+#
+version = "param_v1.0.0"
+
+#------------------------------------------------------------------------------
+#
+# Section 0: General Annotation Mapping Parameters
+#
+#------------------------------------------------------------------------------
+
+# Multi-Class Evaluation:
+#  the software supports multiclass scoring by simply extending this list.
+#  for example, a five-way system can be built using a one-to-one mapping:
+#
+#    C0 = cat
+#    C1 = dog
+#    C2 = mouse
+#    C3 = horse
+#    C4 = cow
+#
+#  this can be collapsed to two-way scoring this way:
+#
+#    C0 = "cat, dog, mouse"
+#    C1 = "horse, cow"
+#
+#  here we define a mapping that defines which labels are seizures and
+#  which labels are background. note that every symbol that
+#  appears in the annotations must be specified here.
+#
+[MAP] 
+SEIZ = "SEIZ"
+BCKG = "BCKG"
+
+#------------------------------------------------------------------------------
+#
+# Section 1: NEDC DP Alignment Parameters
+#
+#------------------------------------------------------------------------------
+
+# define dynamic programming penalties and designate a symbol to be
+# treated as null (background)
+#
+[NEDC_DPALIGN]
+penalty_del = '1.0'
+penalty_ins = '1.0'
+penalty_sub = '1.0'
+
+#------------------------------------------------------------------------------
+#
+# Section 2: NEDC Epoch-related Parameters
+#
+#------------------------------------------------------------------------------
+
+# define the epoch duration in seconds and a null class
+#
+[NEDC_EPOCH]
+epoch_duration = '0.25'
+null_class = "BCKG"
+
+#------------------------------------------------------------------------------
+#
+# Section 3: NEDC Overlap-related Parameters
+#
+#------------------------------------------------------------------------------
+
+# no parameters are currently required for this technique
+#
+[NEDC_OVERLAP]
+guard_width = '0.001'
+ndigits_round = '3'
+
+#------------------------------------------------------------------------------
+#
+# Section 4: NEDC Time-Aligned Event-related Parameters
+#
+#------------------------------------------------------------------------------
+
+# TAES scoring uses the same approach as overlap-based scoring.
+#
+[NEDC_TAES] 
+
+#------------------------------------------------------------------------------
+#
+# Section 5: NEDC Inter-Rater Agreement
+#
+#------------------------------------------------------------------------------
+
+# IRA scoring uses the same approach as epoch-based scoring: time-alignment
+# of the transcriptions
+#
+[NEDC_IRA]
+epoch_duration = '0.25'
+null_class = "BCKG"
+
+#------------------------------------------------------------------------------
+#
+# end of file
+#
+#------------------------------------------------------------------------------

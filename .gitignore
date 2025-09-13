@@ -1,0 +1,137 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+.env
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS Specific
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Claude Assistant Config (local only)
+.claude/
+
+# RCS Version Control Files (legacy)
+*,v
+
+# NEDC Specific - Generated Output
+nedc_eeg_eval/v6.0.0/output/
+output/
+results/
+# BUT KEEP test/results for validation!
+!nedc_eeg_eval/v6.0.0/test/results/
+
+# Archives (we keep extracted source)
+*.tar.gz
+*.tar
+*.zip
+*.7z
+*.rar
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+.temp/
+tmp/
+temp/
+
+# Logs
+*.log
+logs/
+test_results/
+validation_results/
+# BUT KEEP golden test results
+!nedc_eeg_eval/v6.0.0/test/results/*.txt
+
+# Environment specific
+.env
+.env.local
+.env.*.local
+
+# Cache directories
+.cache/
+*.cache
+
+# Documentation build outputs
+docs/_build/
+docs/.doctrees/
+site/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# IMPORTANT: Files we EXPLICITLY KEEP:
+# - nedc_eeg_eval/v6.0.0/data/**/*.csv_bi (test annotations)
+# - nedc_eeg_eval/v6.0.0/test/results/*.txt (golden outputs)
+# - nedc_eeg_eval/v6.0.0/docs/* (original documentation)
+# - All source code in lib/ and src/

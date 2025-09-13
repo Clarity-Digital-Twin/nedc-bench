@@ -1,0 +1,180 @@
+    0: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaasf_s001_t000.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaasf_s001_t000.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 6.3320  Miss: 28.6680  False Alarms: 4.3290  Total: 32.9969)
+
+    1: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaedy_s002_t001.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaedy_s002_t001.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 4.3246  Miss: 32.6754  False Alarms: 2.4389  Total: 35.1143)
+
+    2: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaahge_s001_t001.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaahge_s001_t001.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.3967  Miss: 28.6033  False Alarms: 3.0000  Total: 31.6033)
+
+    3: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaahyp_s003_t000.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaahyp_s003_t000.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 3.0000  Miss: 36.0000  False Alarms: 3.0000  Total: 39.0000)
+
+    4: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaizz_s003_t001.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaizz_s003_t001.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 6.5363  Miss: 28.4637  False Alarms: 3.4380  Total: 31.9017)
+
+    5: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaajdn_s003_t005.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaajdn_s003_t005.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.3438  Miss: 30.6562  False Alarms: 3.0000  Total: 33.6562)
+
+    6: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaajdn_s003_t007.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaajdn_s003_t007.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.3326  Miss: 32.6674  False Alarms: 3.0000  Total: 35.6674)
+
+    7: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaajqo_s008_t001.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaajqo_s008_t001.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.0504  Miss: 28.9496  False Alarms: 2.0651  Total: 31.0148)
+
+    8: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaajqo_s019_t001.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaajqo_s019_t001.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 3.0000  Miss: 66.0000  False Alarms: 3.0000  Total: 69.0000)
+
+    9: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaakkm_s009_t000.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaakkm_s009_t000.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 6.0988  Miss: 24.9012  False Alarms: 4.5577  Total: 29.4589)
+
+   10: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaksg_s001_t002.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaksg_s001_t002.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.7716  Miss: 36.2284  False Alarms: 2.0716  Total: 38.3000)
+
+   11: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaamtk_s001_t000.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaamtk_s001_t000.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 6.5795  Miss: 76.4205  False Alarms: 4.7398  Total: 81.1603)
+
+   12: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaooo_s001_t000.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaooo_s001_t000.csv_bi
+  Ref: seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 5.2389  Miss: 28.7611  False Alarms: 6.9143  Total: 35.6755)
+
+   13: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaovk_s001_t000.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaovk_s001_t000.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 3.0000  Miss: 54.0000  False Alarms: 2.5996  Total: 56.5996)
+
+   14: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaovk_s001_t001.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaovk_s001_t001.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.8112  Miss: 84.1888  False Alarms: 3.0000  Total: 87.1888)
+
+   15: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaapks_s012_t001.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaapks_s012_t001.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 4.9346  Miss: 100.0654  False Alarms: 3.9014  Total: 103.9669)
+
+   16: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaapks_s016_t001.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaapks_s016_t001.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.0808  Miss: 64.9192  False Alarms: 3.0000  Total: 67.9192)
+
+   17: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaapks_s016_t002.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaapks_s016_t002.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.2687  Miss: 38.7313  False Alarms: 3.0000  Total: 41.7313)
+
+   18: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaapnl_s002_t001.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaapnl_s002_t001.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.9350  Miss: 54.0650  False Alarms: 3.0000  Total: 57.0650)
+
+   19: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaprj_s001_t000.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaprj_s001_t000.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 1.3583  Miss: 39.6417  False Alarms: 1.8940  Total: 41.5357)
+
+   20: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaprj_s002_t001.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaprj_s002_t001.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 3.0000  Miss: 22.0000  False Alarms: 3.0000  Total: 25.0000)
+
+   21: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaarvi_s001_t000.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaarvi_s001_t000.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 8.4743  Miss: 18.5257  False Alarms: 6.7531  Total: 25.2788)
+
+   22: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaqtx_s012_t005.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaqtx_s012_t005.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.3016  Miss: 50.6984  False Alarms: 3.0000  Total: 53.6984)
+
+   23: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaqtx_s012_t006.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaqtx_s012_t006.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.6699  Miss: 34.3301  False Alarms: 3.0000  Total: 37.3301)
+
+   24: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaqtx_s012_t007.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaqtx_s012_t007.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.5851  Miss: 84.4149  False Alarms: 3.0000  Total: 87.4149)
+
+   25: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaqtx_s012_t008.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaqtx_s012_t008.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.7766  Miss: 28.2234  False Alarms: 3.0000  Total: 31.2234)
+
+   26: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaaqtx_s012_t009.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaaqtx_s012_t009.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 2.2422  Miss: 24.7578  False Alarms: 3.0000  Total: 27.7578)
+
+   27: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaasdq_s002_t004.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaasdq_s002_t004.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 19.8378  Miss: 63.1622  False Alarms: 2.2931  Total: 65.4553)
+
+   28: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaates_s007_t000.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaates_s007_t000.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 4.4969  Miss: 26.5031  False Alarms: 5.0000  Total: 31.5031)
+
+   29: /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/ref_csv/aaaaates_s007_t002.csv_bi
+       /data/isip/tools/master/nfc/util/python/nedc_eeg_eval/v6.0.0/data/hyp_csv/aaaaates_s007_t002.csv_bi
+  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
+  Hyp: 
+       (Hit: 6.6428  Miss: 36.3572  False Alarms: 5.8186  Total: 42.1758)
+

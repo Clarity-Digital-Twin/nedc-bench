@@ -1,0 +1,13 @@
+# version = csv_v1.0.0
+# bname = aaaaamtk_s001_t000
+# duration = 3337.0000 secs
+# montage_file = montage_eeg_resnet_v00.txt
+#
+channel,start_time,stop_time,label,confidence
+TERM,0.0000,39.0000,bckg,1.0000
+TERM,39.0000,2013.0000,seiz,1.0000
+TERM,2013.0000,2110.0000,bckg,1.0000
+TERM,2110.0000,2301.0000,seiz,1.0000
+TERM,2301.0000,2393.0000,bckg,1.0000
+TERM,2393.0000,3298.0000,seiz,1.0000
+TERM,3298.0000,3337.0000,bckg,1.0000

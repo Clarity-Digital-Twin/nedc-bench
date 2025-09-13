@@ -1,0 +1,32 @@
+name: nedc_eeg_eval
+synopsis: nedc_eeg_eval [options] ref.txt hyp.txt
+descr: evaluates hypotheses using standard scoring metrics
+
+options:
+ -o, --odir: the output directory [$PWD/output]
+ -p, --parameters: scoring parameters [nedc_eeg_eval_params_v00.toml]
+  
+arguments:
+ ref.txt: a list of reference annotation files (see below)
+ hyp.txt: a list of hypothesis files (see below)
+
+example:
+ nedc_eeg_eval -odir ./output/report ref.list hyp.list
+
+  generates a scoring report and outputs it to the default directory.
+  the report contains results of the following algorithms:
+    (1) NEDC's dynamic programming alignment scoring algorithm (dpalign)
+    (2) NEDC's epoch scoring algorithm: (epoch)
+    (3) NEDC's overlap scoring algorithm (ovlp)
+    (4) NEDC's time-aligned event scoring algorithm (taes)
+    (5) NEDC's inter-rater agreement (ira)
+
+notes:
+
+(1) To learn more about these algorithms, see this publication:
+
+    Shah, V., Golmohammadi, M., Obeid, I., & Picone,
+    J. (2021). Objective Evaluation Metrics for Automatic
+    Classification of EEG Events. In I. Obeid, I. Selesnick, &
+    J. Picone (Eds.), Biomedical Signal Processing: Innovation and
+    Applications (1st ed., pp. 1–26). Springer. (Download).
