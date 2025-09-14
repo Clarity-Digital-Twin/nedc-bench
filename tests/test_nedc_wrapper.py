@@ -18,7 +18,8 @@ class TestNEDCWrapper:
         wrapper_path = project_root / "run_nedc.sh"
         result = subprocess.run(
             [str(wrapper_path), "--help"],
-            check=False, capture_output=True,
+            check=False,
+            capture_output=True,
             text=True,
             timeout=10,
         )
@@ -44,11 +45,7 @@ class TestNEDCWrapper:
         assert len(ref_files) > 0, "No reference CSV_BI files found"
         assert len(hyp_files) > 0, "No hypothesis CSV_BI files found"
 
-    def test_list_files_exist(
-        self,
-        ref_list_file: Path,
-        hyp_list_file: Path
-    ) -> None:
+    def test_list_files_exist(self, ref_list_file: Path, hyp_list_file: Path) -> None:
         """Test that list files exist."""
         assert ref_list_file.exists(), "Reference list file not found"
         assert hyp_list_file.exists(), "Hypothesis list file not found"

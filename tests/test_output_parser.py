@@ -42,13 +42,13 @@ def test_parse_taes_output():
     parser = TAESParser()
     result = parser.parse(sample_output)
 
-    assert result['sensitivity'] == 0.85
-    assert result['specificity'] == 0.92
-    assert abs(result['precision'] - 0.913978) < 1e-6
-    assert result['f1_score'] == 0.8817
-    assert result['accuracy'] == 0.885
-    assert result['true_positives'] == 85
-    assert result['false_positives'] == 8
+    assert result["sensitivity"] == 0.85
+    assert result["specificity"] == 0.92
+    assert abs(result["precision"] - 0.913978) < 1e-6
+    assert result["f1_score"] == 0.8817
+    assert result["accuracy"] == 0.885
+    assert result["true_positives"] == 85
+    assert result["false_positives"] == 8
 
 
 def test_parse_dp_alignment_output():
@@ -76,12 +76,12 @@ def test_parse_dp_alignment_output():
     parser = DPAlignmentParser()
     result = parser.parse(sample_output)
 
-    assert result['sensitivity'] == 0.082739
-    assert result['specificity'] == 1.0
-    assert result['precision'] == 1.0
-    assert result['f1_score'] == 0.1528
-    assert result['insertions'] == 0
-    assert result['deletions'] == 643
+    assert result["sensitivity"] == 0.082739
+    assert result["specificity"] == 1.0
+    assert result["precision"] == 1.0
+    assert result["f1_score"] == 0.1528
+    assert result["insertions"] == 0
+    assert result["deletions"] == 643
 
 
 def test_parse_epoch_output():
@@ -107,10 +107,10 @@ def test_parse_epoch_output():
     parser = EpochParser()
     result = parser.parse(sample_output)
 
-    assert result['sensitivity'] == 0.823765
-    assert result['specificity'] == 0.869885
-    assert result['f1_score'] == 0.8548
-    assert result['mcc'] == 0.6871
+    assert result["sensitivity"] == 0.823765
+    assert result["specificity"] == 0.869885
+    assert result["f1_score"] == 0.8548
+    assert result["mcc"] == 0.6871
 
 
 def test_parse_ira_output():
@@ -130,8 +130,8 @@ def test_parse_ira_output():
     parser = IRAParser()
     result = parser.parse(sample_output)
 
-    assert result['kappa'] == 0.4110
-    assert 'per_label_kappa' in result and result['per_label_kappa']['seiz'] == 0.4110
+    assert result["kappa"] == 0.4110
+    assert "per_label_kappa" in result and result["per_label_kappa"]["seiz"] == 0.4110
 
 
 def test_unified_parser():
@@ -179,14 +179,14 @@ def test_unified_parser():
     results = parser.parse_summary(sample_summary)
 
     # Check all algorithms were parsed
-    assert 'dp_alignment' in results
-    assert 'epoch' in results
-    assert 'overlap' in results
-    assert 'taes' in results
-    assert 'ira' in results
+    assert "dp_alignment" in results
+    assert "epoch" in results
+    assert "overlap" in results
+    assert "taes" in results
+    assert "ira" in results
 
     # Spot check some values
-    assert results['dp_alignment']['sensitivity'] == 0.082739
-    assert results['epoch']['sensitivity'] == 0.823765
-    assert results['taes']['sensitivity'] == 0.85
-    assert results['ira']['kappa'] == 0.6871
+    assert results["dp_alignment"]["sensitivity"] == 0.082739
+    assert results["epoch"]["sensitivity"] == 0.823765
+    assert results["taes"]["sensitivity"] == 0.85
+    assert results["ira"]["kappa"] == 0.6871

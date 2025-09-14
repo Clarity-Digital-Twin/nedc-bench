@@ -1,5 +1,6 @@
 """Test utilities for NEDC Alpha Pipeline"""
 
+import contextlib
 import tempfile
 from pathlib import Path
 
@@ -7,7 +8,7 @@ from pathlib import Path
 def create_csv_bi_annotation(
     events: list[tuple[str, float, float, str, float]],
     duration: float = 1000.0,
-    patient_id: str = "test_patient"
+    patient_id: str = "test_patient",
 ) -> str:
     """
     Create a temporary CSV_BI format annotation file.
@@ -22,10 +23,7 @@ def create_csv_bi_annotation(
     """
     # Create temp file
     with tempfile.NamedTemporaryFile(
-        encoding="utf-8", mode='w',
-        suffix='.csv_bi',
-        delete=False,
-        prefix=f"{patient_id}_"
+        encoding="utf-8", mode="w", suffix=".csv_bi", delete=False, prefix=f"{patient_id}_"
     ) as f:
         # Write CSV_BI header
         f.write("# version = csv_v1.0.0\n")
@@ -52,24 +50,18 @@ def create_test_list_file(csv_files: list[str]) -> str:
     Returns:
         Path to the created list file
     """
-    with tempfile.NamedTemporaryFile(
-        encoding="utf-8", mode='w',
-        suffix='.list',
-        delete=False
-    ) as f:
+    with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".list", delete=False) as f:
         for csv_file in csv_files:
             f.write(f"{Path(csv_file).absolute()}\n")
         return f.name
 
 
-def cleanup_temp_files(*files):
+def cleanup_temp_files(*files) -> None:
     """Clean up temporary test files"""
     for file_path in files:
         if file_path and Path(file_path).exists():
-            try:
+            with contextlib.suppress(Exception):
                 Path(file_path).unlink()
-            except Exception:
-                pass  # Ignore cleanup errors
 
 
 def create_perfect_match_pair() -> tuple[str, str]:

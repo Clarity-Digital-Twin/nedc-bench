@@ -2,6 +2,7 @@
 Output parsers for NEDC v6.0.0 text output
 Converts text-based scoring results to structured JSON
 """
+
 from __future__ import annotations
 
 import re
@@ -11,23 +12,26 @@ from pathlib import Path
 class BaseParser:
     """Base class for algorithm-specific parsers"""
 
-    def extract_percentage(self, text: str, pattern: str) -> float:
+    @staticmethod
+    def extract_percentage(text: str, pattern: str) -> float | None:
         """Extract percentage value from text"""
-        match = re.search(pattern + r':\s+(\d+\.?\d*)%', text)
+        match = re.search(pattern + r":\s+(\d+\.?\d*)%", text)
         if match:
             return float(match.group(1)) / 100.0
         return None
 
-    def extract_float(self, text: str, pattern: str) -> float:
+    @staticmethod
+    def extract_float(text: str, pattern: str) -> float | None:
         """Extract float value from text"""
-        match = re.search(pattern + r':\s+(\d+\.?\d*)', text)
+        match = re.search(pattern + r":\s+(\d+\.?\d*)", text)
         if match:
             return float(match.group(1))
         return None
 
-    def extract_int(self, text: str, pattern: str) -> int:
+    @staticmethod
+    def extract_int(text: str, pattern: str) -> int | None:
         """Extract integer value from text"""
-        match = re.search(pattern + r':\s+(\d+)', text)
+        match = re.search(pattern + r":\s+(\d+)", text)
         if match:
             return int(match.group(1))
         return None
@@ -42,9 +46,7 @@ class DPAlignmentParser(BaseParser):
 
         # Find DP Alignment section
         dp_section = re.search(
-            r'NEDC DP ALIGNMENT SCORING SUMMARY.*?(?=\n={70,}|\Z)',
-            text,
-            re.DOTALL
+            r"NEDC DP ALIGNMENT SCORING SUMMARY.*?(?=\n={70,}|\Z)", text, re.DOTALL
         )
 
         if not dp_section:
@@ -53,20 +55,22 @@ class DPAlignmentParser(BaseParser):
         section_text = dp_section.group(0)
 
         # Extract metrics
-        result['sensitivity'] = self.extract_percentage(section_text, r'Sensitivity \(TPR, Recall\)')
-        result['specificity'] = self.extract_percentage(section_text, r'Specificity \(TNR\)')
-        result['precision'] = self.extract_percentage(section_text, r'Precision \(PPV\)')
-        result['f1_score'] = self.extract_float(section_text, r'F1 Score \(F Ratio\)')
-        result['accuracy'] = self.extract_percentage(section_text, r'Accuracy')
+        result["sensitivity"] = self.extract_percentage(
+            section_text, r"Sensitivity \(TPR, Recall\)"
+        )
+        result["specificity"] = self.extract_percentage(section_text, r"Specificity \(TNR\)")
+        result["precision"] = self.extract_percentage(section_text, r"Precision \(PPV\)")
+        result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
+        result["accuracy"] = self.extract_percentage(section_text, r"Accuracy")
 
         # Extract counts
-        result['true_positives'] = self.extract_int(section_text, r'True Positives \(TP\)')
-        result['true_negatives'] = self.extract_int(section_text, r'True Negatives \(TN\)')
-        result['false_positives'] = self.extract_int(section_text, r'False Positives \(FP\)')
-        result['false_negatives'] = self.extract_int(section_text, r'False Negatives \(FN\)')
+        result["true_positives"] = self.extract_int(section_text, r"True Positives \(TP\)")
+        result["true_negatives"] = self.extract_int(section_text, r"True Negatives \(TN\)")
+        result["false_positives"] = self.extract_int(section_text, r"False Positives \(FP\)")
+        result["false_negatives"] = self.extract_int(section_text, r"False Negatives \(FN\)")
 
-        result['insertions'] = self.extract_int(section_text, r'Insertions')
-        result['deletions'] = self.extract_int(section_text, r'Deletions')
+        result["insertions"] = self.extract_int(section_text, r"Insertions")
+        result["deletions"] = self.extract_int(section_text, r"Deletions")
 
         return result
 
@@ -79,11 +83,7 @@ class EpochParser(BaseParser):
         result = {}
 
         # Find Epoch section
-        epoch_section = re.search(
-            r'NEDC EPOCH SCORING SUMMARY.*?(?=\n={70,}|\Z)',
-            text,
-            re.DOTALL
-        )
+        epoch_section = re.search(r"NEDC EPOCH SCORING SUMMARY.*?(?=\n={70,}|\Z)", text, re.DOTALL)
 
         if not epoch_section:
             return result
@@ -91,18 +91,20 @@ class EpochParser(BaseParser):
         section_text = epoch_section.group(0)
 
         # Extract metrics
-        result['sensitivity'] = self.extract_percentage(section_text, r'Sensitivity \(TPR, Recall\)')
-        result['specificity'] = self.extract_percentage(section_text, r'Specificity \(TNR\)')
-        result['precision'] = self.extract_percentage(section_text, r'Precision \(PPV\)')
-        result['f1_score'] = self.extract_float(section_text, r'F1 Score \(F Ratio\)')
-        result['accuracy'] = self.extract_percentage(section_text, r'Accuracy')
-        result['mcc'] = self.extract_float(section_text, r'Matthews \(MCC\)')
+        result["sensitivity"] = self.extract_percentage(
+            section_text, r"Sensitivity \(TPR, Recall\)"
+        )
+        result["specificity"] = self.extract_percentage(section_text, r"Specificity \(TNR\)")
+        result["precision"] = self.extract_percentage(section_text, r"Precision \(PPV\)")
+        result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
+        result["accuracy"] = self.extract_percentage(section_text, r"Accuracy")
+        result["mcc"] = self.extract_float(section_text, r"Matthews \(MCC\)")
 
         # Extract counts
-        result['true_positives'] = self.extract_int(section_text, r'True Positives \(TP\)')
-        result['true_negatives'] = self.extract_int(section_text, r'True Negatives \(TN\)')
-        result['false_positives'] = self.extract_int(section_text, r'False Positives \(FP\)')
-        result['false_negatives'] = self.extract_int(section_text, r'False Negatives \(FN\)')
+        result["true_positives"] = self.extract_int(section_text, r"True Positives \(TP\)")
+        result["true_negatives"] = self.extract_int(section_text, r"True Negatives \(TN\)")
+        result["false_positives"] = self.extract_int(section_text, r"False Positives \(FP\)")
+        result["false_negatives"] = self.extract_int(section_text, r"False Negatives \(FN\)")
 
         return result
 
@@ -115,11 +117,7 @@ class OverlapParser(BaseParser):
         result = {}
 
         # Find Overlap section
-        ovlp_section = re.search(
-            r'NEDC OVERLAP SCORING SUMMARY.*?(?=\n={70,}|\Z)',
-            text,
-            re.DOTALL
-        )
+        ovlp_section = re.search(r"NEDC OVERLAP SCORING SUMMARY.*?(?=\n={70,}|\Z)", text, re.DOTALL)
 
         if not ovlp_section:
             return result
@@ -127,17 +125,19 @@ class OverlapParser(BaseParser):
         section_text = ovlp_section.group(0)
 
         # Extract metrics
-        result['sensitivity'] = self.extract_percentage(section_text, r'Sensitivity \(TPR, Recall\)')
-        result['specificity'] = self.extract_percentage(section_text, r'Specificity \(TNR\)')
-        result['precision'] = self.extract_percentage(section_text, r'Precision \(PPV\)')
-        result['f1_score'] = self.extract_float(section_text, r'F1 Score \(F Ratio\)')
-        result['accuracy'] = self.extract_percentage(section_text, r'Accuracy')
+        result["sensitivity"] = self.extract_percentage(
+            section_text, r"Sensitivity \(TPR, Recall\)"
+        )
+        result["specificity"] = self.extract_percentage(section_text, r"Specificity \(TNR\)")
+        result["precision"] = self.extract_percentage(section_text, r"Precision \(PPV\)")
+        result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
+        result["accuracy"] = self.extract_percentage(section_text, r"Accuracy")
 
         # Extract counts
-        result['true_positives'] = self.extract_int(section_text, r'True Positives \(TP\)')
-        result['true_negatives'] = self.extract_int(section_text, r'True Negatives \(TN\)')
-        result['false_positives'] = self.extract_int(section_text, r'False Positives \(FP\)')
-        result['false_negatives'] = self.extract_int(section_text, r'False Negatives \(FN\)')
+        result["true_positives"] = self.extract_int(section_text, r"True Positives \(TP\)")
+        result["true_negatives"] = self.extract_int(section_text, r"True Negatives \(TN\)")
+        result["false_positives"] = self.extract_int(section_text, r"False Positives \(FP\)")
+        result["false_negatives"] = self.extract_int(section_text, r"False Negatives \(FN\)")
 
         return result
 
@@ -150,11 +150,7 @@ class TAESParser(BaseParser):
         result = {}
 
         # Find TAES section
-        taes_section = re.search(
-            r'NEDC TAES SCORING SUMMARY.*?(?=\n={70,}|\Z)',
-            text,
-            re.DOTALL
-        )
+        taes_section = re.search(r"NEDC TAES SCORING SUMMARY.*?(?=\n={70,}|\Z)", text, re.DOTALL)
 
         if not taes_section:
             return result
@@ -162,17 +158,19 @@ class TAESParser(BaseParser):
         section_text = taes_section.group(0)
 
         # Extract metrics
-        result['sensitivity'] = self.extract_percentage(section_text, r'Sensitivity \(TPR, Recall\)')
-        result['specificity'] = self.extract_percentage(section_text, r'Specificity \(TNR\)')
-        result['precision'] = self.extract_percentage(section_text, r'Precision \(PPV\)')
-        result['f1_score'] = self.extract_float(section_text, r'F1 Score \(F Ratio\)')
-        result['accuracy'] = self.extract_percentage(section_text, r'Accuracy')
+        result["sensitivity"] = self.extract_percentage(
+            section_text, r"Sensitivity \(TPR, Recall\)"
+        )
+        result["specificity"] = self.extract_percentage(section_text, r"Specificity \(TNR\)")
+        result["precision"] = self.extract_percentage(section_text, r"Precision \(PPV\)")
+        result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
+        result["accuracy"] = self.extract_percentage(section_text, r"Accuracy")
 
         # Extract counts
-        result['true_positives'] = self.extract_int(section_text, r'True Positives \(TP\)')
-        result['true_negatives'] = self.extract_int(section_text, r'True Negatives \(TN\)')
-        result['false_positives'] = self.extract_int(section_text, r'False Positives \(FP\)')
-        result['false_negatives'] = self.extract_int(section_text, r'False Negatives \(FN\)')
+        result["true_positives"] = self.extract_int(section_text, r"True Positives \(TP\)")
+        result["true_negatives"] = self.extract_int(section_text, r"True Negatives \(TN\)")
+        result["false_positives"] = self.extract_int(section_text, r"False Positives \(FP\)")
+        result["false_negatives"] = self.extract_int(section_text, r"False Negatives \(FN\)")
 
         return result
 
@@ -186,9 +184,7 @@ class IRAParser(BaseParser):
 
         # Find IRA section
         ira_section = re.search(
-            r'NEDC INTER-RATER AGREEMENT SUMMARY.*?(?=\n={70,}|\Z)',
-            text,
-            re.DOTALL
+            r"NEDC INTER-RATER AGREEMENT SUMMARY.*?(?=\n={70,}|\Z)", text, re.DOTALL
         )
 
         if not ira_section:
@@ -199,18 +195,18 @@ class IRAParser(BaseParser):
         # Kappa may appear as either "Cohen's Kappa" or "Multi-Class Kappa"
         cohens = re.search(r"Cohen's Kappa:\s+(\d+\.?\d*)", section_text)
         if cohens:
-            result['kappa'] = float(cohens.group(1))
+            result["kappa"] = float(cohens.group(1))
         else:
-            multi = re.search(r'Multi-Class Kappa:\s+(\d+\.?\d*)', section_text)
+            multi = re.search(r"Multi-Class Kappa:\s+(\d+\.?\d*)", section_text)
             if multi:
-                result['kappa'] = float(multi.group(1))
+                result["kappa"] = float(multi.group(1))
 
         # Per-label Kappa lines: "Label: seiz   Kappa:  0.xxxx"
         per_label = {}
-        for m in re.finditer(r'Label:\s+(\w+)\s+Kappa:\s+(\d+\.?\d*)', section_text):
+        for m in re.finditer(r"Label:\s+(\w+)\s+Kappa:\s+(\d+\.?\d*)", section_text):
             per_label[m.group(1)] = float(m.group(2))
         if per_label:
-            result['per_label_kappa'] = per_label
+            result["per_label_kappa"] = per_label
 
         return result
 
@@ -239,11 +235,11 @@ class UnifiedOutputParser:
         results = {}
 
         # Parse main summary
-        results['dp_alignment'] = self.dp_parser.parse(text)
-        results['epoch'] = self.epoch_parser.parse(text)
-        results['overlap'] = self.overlap_parser.parse(text)
-        results['taes'] = self.taes_parser.parse(text)
-        results['ira'] = self.ira_parser.parse(text)  # IRA is in main summary
+        results["dp_alignment"] = self.dp_parser.parse(text)
+        results["epoch"] = self.epoch_parser.parse(text)
+        results["overlap"] = self.overlap_parser.parse(text)
+        results["taes"] = self.taes_parser.parse(text)
+        results["ira"] = self.ira_parser.parse(text)  # IRA is in main summary
 
         # If output_dir provided, also check for individual summary files
         if output_dir:
@@ -251,10 +247,10 @@ class UnifiedOutputParser:
 
             # Check for individual algorithm files
             files_to_check = {
-                'dp_alignment': 'summary_dpalign.txt',
-                'epoch': 'summary_epoch.txt',
-                'overlap': 'summary_ovlp.txt',
-                'taes': 'summary_taes.txt'
+                "dp_alignment": "summary_dpalign.txt",
+                "epoch": "summary_epoch.txt",
+                "overlap": "summary_ovlp.txt",
+                "taes": "summary_taes.txt",
             }
 
             for algo, filename in files_to_check.items():
@@ -262,13 +258,13 @@ class UnifiedOutputParser:
                 if file_path.exists():
                     file_text = file_path.read_text()
                     # Parse dedicated file if it has more detail
-                    if algo == 'dp_alignment':
+                    if algo == "dp_alignment":
                         detailed = self.dp_parser.parse(file_text)
-                    elif algo == 'epoch':
+                    elif algo == "epoch":
                         detailed = self.epoch_parser.parse(file_text)
-                    elif algo == 'overlap':
+                    elif algo == "overlap":
                         detailed = self.overlap_parser.parse(file_text)
-                    elif algo == 'taes':
+                    elif algo == "taes":
                         detailed = self.taes_parser.parse(file_text)
 
                     # Merge with existing results (detailed file takes precedence)

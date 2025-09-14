@@ -11,11 +11,11 @@ from .parsers import (
 )
 
 __all__ = [
-    'DPAlignmentParser',
-    'EpochParser',
-    'IRAParser',
-    'NEDCAlphaWrapper',
-    'OverlapParser',
-    'TAESParser',
-    'UnifiedOutputParser'
+    "DPAlignmentParser",
+    "EpochParser",
+    "IRAParser",
+    "NEDCAlphaWrapper",
+    "OverlapParser",
+    "TAESParser",
+    "UnifiedOutputParser",
 ]

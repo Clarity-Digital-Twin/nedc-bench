@@ -142,8 +142,12 @@ unfixable = []
 "tests/*" = [
     "S101",    # assert allowed in tests
     "ARG",     # Unused arguments in tests
+    "PLR6301", # Pytest fixtures appear as methods that could be static
     "PLR2004", # Magic numbers fine in tests
     "SIM117",  # Allow multiple with statements
+]
+"alpha/wrapper/parsers.py" = [
+    "PLR6301", # Parser methods inherit from base class
 ]
 "benchmarks/*" = [
     "T201",    # print() allowed in benchmarks

@@ -2,6 +2,7 @@
 NEDC Alpha Pipeline Wrapper
 Wraps the original NEDC v6.0.0 tool and parses text output to JSON
 """
+
 from __future__ import annotations
 
 import os
@@ -77,17 +78,15 @@ class NEDCAlphaWrapper:
             cmd = [
                 "python3",
                 str(self.nedc_root / "bin" / "nedc_eeg_eval"),
-                "--odir", str(output_path / "output"),
+                "--odir",
+                str(output_path / "output"),
                 str(ref_list),
-                str(hyp_list)
+                str(hyp_list),
             ]
 
             # Run NEDC evaluation
             result = subprocess.run(
-                cmd,
-                check=False, capture_output=True,
-                text=True,
-                env=os.environ.copy()
+                cmd, check=False, capture_output=True, text=True, env=os.environ.copy()
             )
 
             # Check for errors
@@ -131,17 +130,15 @@ class NEDCAlphaWrapper:
         cmd = [
             "python3",
             str(self.nedc_root / "bin" / "nedc_eeg_eval"),
-            "--odir", str(output_path),
+            "--odir",
+            str(output_path),
             ref_list_file,
-            hyp_list_file
+            hyp_list_file,
         ]
 
         # Run NEDC evaluation
         result = subprocess.run(
-            cmd,
-            check=False, capture_output=True,
-            text=True,
-            env=os.environ.copy()
+            cmd, check=False, capture_output=True, text=True, env=os.environ.copy()
         )
 
         if result.returncode != 0:
