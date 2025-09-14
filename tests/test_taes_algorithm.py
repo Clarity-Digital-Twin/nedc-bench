@@ -83,16 +83,17 @@ def test_taes_empty_hypothesis():
 
 
 def test_taes_label_mismatch():
-    """Different labels should not match"""
+    """Different labels should not match - NEDC filters by target label"""
     ref = [EventAnnotation(start_time=0, stop_time=10, label="seiz", confidence=1.0)]
     hyp = [EventAnnotation(start_time=0, stop_time=10, label="bckg", confidence=1.0)]
 
     scorer = TAESScorer()
     result = scorer.score(ref, hyp)
 
-    assert result.true_positives == 0.0  # TAES uses floats
-    assert result.false_positives == 1.0
-    assert result.false_negatives == 1.0
+    # NEDC filters to target label (seiz), so bckg events are ignored
+    assert result.true_positives == 0.0  # No seiz hyps to match
+    assert result.false_positives == 0.0  # bckg is filtered out
+    assert result.false_negatives == 1.0  # seiz ref unmatched
 
 
 def test_taes_multiple_overlap():
