@@ -102,6 +102,8 @@ results/
 .temp/
 tmp/
 temp/
+*.list
+!nedc_eeg_eval/v6.0.0/data/lists/*.list
 
 # Logs
 *.log

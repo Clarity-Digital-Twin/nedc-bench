@@ -146,7 +146,12 @@ class TAESParser(BaseParser):
     """Parser for Time-Aligned Event Scoring output"""
 
     def parse(self, text: str) -> dict:
-        """Parse TAES section from summary or dedicated file"""
+        """Parse TAES section from summary or dedicated file
+
+        TAES uses fractional scoring, so TP/TN/FP/FN are floats.
+        Prefer summary_taes.txt for higher precision (4 decimals)
+        over summary.txt (2 decimals).
+        """
         result = {}
 
         # Find TAES section
@@ -166,11 +171,11 @@ class TAESParser(BaseParser):
         result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
         result["accuracy"] = self.extract_percentage(section_text, r"Accuracy")
 
-        # Extract counts
-        result["true_positives"] = self.extract_int(section_text, r"True Positives \(TP\)")
-        result["true_negatives"] = self.extract_int(section_text, r"True Negatives \(TN\)")
-        result["false_positives"] = self.extract_int(section_text, r"False Positives \(FP\)")
-        result["false_negatives"] = self.extract_int(section_text, r"False Negatives \(FN\)")
+        # Extract counts - TAES uses floats for fractional scoring
+        result["true_positives"] = self.extract_float(section_text, r"True Positives \(TP\)")
+        result["true_negatives"] = self.extract_float(section_text, r"True Negatives \(TN\)")
+        result["false_positives"] = self.extract_float(section_text, r"False Positives \(FP\)")
+        result["false_negatives"] = self.extract_float(section_text, r"False Negatives \(FN\)")
 
         return result
 
