@@ -1,0 +1,73 @@
+name: Alpha Pipeline Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-alpha:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Build Alpha Container
+      run: |
+        docker build -t nedc-alpha -f alpha/Dockerfile .
+
+    - name: Test Docker Environment
+      run: |
+        docker run nedc-alpha env | grep NEDC_NFC
+        docker run nedc-alpha env | grep PYTHONPATH
+
+    - name: Run Parser Tests
+      run: |
+        python -m pytest tests/test_output_parser.py -v
+
+    - name: Run Golden Tests in Container
+      run: |
+        docker run \
+          -e PYTHONPATH=/opt/nedc/lib:/app \
+          -e NEDC_NFC=/opt/nedc \
+          -v $PWD/tests:/tests \
+          nedc-alpha \
+          pytest /tests/golden/test_exact_match.py -v
+
+    - name: Test with Real NEDC Data
+      run: |
+        docker run \
+          -e PYTHONPATH=/opt/nedc/lib:/app \
+          -e NEDC_NFC=/opt/nedc \
+          nedc-alpha \
+          python -c "
+from pathlib import Path
+from alpha.wrapper import NEDCAlphaWrapper
+
+# Test with bundled test data
+wrapper = NEDCAlphaWrapper()
+ref_list = '/opt/nedc/data/lists/ref.list'
+hyp_list = '/opt/nedc/data/lists/hyp.list'
+
+if Path(ref_list).exists() and Path(hyp_list).exists():
+    result = wrapper.evaluate_batch(ref_list, hyp_list, '/tmp/output')
+    print('Successfully processed NEDC test data')
+    print(f'TAES Sensitivity: {result.get(\"taes\", {}).get(\"sensitivity\", \"N/A\")}')
+else:
+    print('Test data not found, skipping')
+"
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          **/output/
+          **/*.log
