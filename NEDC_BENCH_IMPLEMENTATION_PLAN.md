@@ -4,18 +4,20 @@
 ### Current Status (September 2025)
 
 **Repository State**: Initial setup phase
-- ✅ Original NEDC v6.0.0 tool vendored and functional
-- ✅ Basic wrapper script (`run_nedc.sh`) created
-- ✅ Python 3.11 compatibility fixes applied
+- ✅ Original NEDC v6.0.0 tool vendored and functional (18,588 lines of Python)
+- ✅ Basic wrapper script (`run_nedc.sh`) created and tested
+- ✅ Python 3.11 compatibility fix applied (tomllib/tomli compatibility)
+- ✅ Test data available (30 file pairs in CSV_BI format)
+- ✅ Sample outputs for validation (test/results/)
 - ⬜ Docker containerization not started
 - ⬜ Modern pipeline (Beta) not started
 - ⬜ CI/CD not configured
 
-**Next Steps**: Ready for initial GitHub commit and Phase 1 implementation
+**Next Steps**: Ready for Phase 1 implementation
 
 ### Vision Statement
 
-Transform the NEDC EEG Evaluation tool into **NEDC-BENCH**, a modern, production-ready benchmarking platform for EEG analysis systems while maintaining 100% algorithmic fidelity to the original implementation.
+Transform the NEDC EEG Evaluation tool (v6.0.0) into **NEDC-BENCH**, a modern, production-ready benchmarking platform for EEG analysis systems while maintaining 100% algorithmic fidelity to the original Temple University implementation through continuous dual-pipeline validation.
 
 ### Core Strategy: Dual-Pipeline Architecture
 
@@ -40,38 +42,39 @@ Transform the NEDC EEG Evaluation tool into **NEDC-BENCH**, a modern, production
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Phase 1: Foundation (Weeks 1-2)
+## Phase 1: Foundation (Week 1) - 5 Days
 
 ### 1.1 Repository Setup
 ```yaml
-nedc-bench/
+nedc-bench/  # Target structure after Phase 1 scaffolding
+├── nedc_eeg_eval/                # Vendored original tool (KEEP AS IS)
+│   └── v6.0.0/                   # Original NEDC code - DO NOT MODIFY
 ├── .github/
 │   ├── workflows/
 │   │   ├── alpha-pipeline.yml    # Legacy tests
 │   │   ├── beta-pipeline.yml     # Modern tests
 │   │   └── validation.yml        # Cross-validation
 │   └── ISSUE_TEMPLATE/
-├── alpha/                         # Pipeline Alpha (Legacy)
-│   ├── nedc_original/            # Git submodule or vendored
-│   ├── wrapper/                  # Minimal Python wrapper
-│   ├── Dockerfile                # Alpine + Python 3.9
-│   └── requirements.txt
+├── alpha/                         # Pipeline Alpha (Legacy Wrapper)
+│   ├── wrapper/                  # Python wrapper for text parsing
+│   ├── Dockerfile                # Python 3.11 container
+│   └── requirements.txt          # numpy, scipy, lxml, toml
 ├── beta/                          # Pipeline Beta (Modern)
 │   ├── src/
-│   │   ├── algorithms/           # Clean implementations
-│   │   ├── models/               # Type-safe data models
+│   │   ├── algorithms/           # Clean implementations of 5 algorithms
+│   │   ├── models/               # Pydantic models for type safety
 │   │   ├── api/                  # FastAPI endpoints
 │   │   └── cli/                  # Click-based CLI
-│   ├── tests/
+│   ├── tests/                    # Pytest test suite
 │   ├── Dockerfile                # Multi-stage optimized
 │   └── pyproject.toml            # Modern Python packaging
 ├── validator/                     # Cross-validation suite
-│   ├── datasets/                 # Test datasets
-│   ├── comparator.py             # Result comparison
-│   └── reports/                  # Validation reports
+│   ├── golden_tests/             # Test cases from NEDC paper
+│   ├── comparator.py             # Alpha vs Beta comparison
+│   └── reports/                  # Parity validation reports
 ├── docs/
-│   ├── api/                      # API documentation
-│   ├── algorithms/               # Algorithm specs
+│   ├── api/                      # OpenAPI documentation
+│   ├── algorithms/               # Mathematical specifications
 │   └── migration/                # Migration guide
 └── docker-compose.yml            # Full stack deployment
 ```
@@ -81,24 +84,33 @@ nedc-bench/
 #### Minimal Intervention Strategy
 ```python
 # alpha/wrapper/nedc_wrapper.py
+import os
 import subprocess
 import json
 from pathlib import Path
 from typing import Dict, List
 
-class NEDCLegacyWrapper:
-    """Minimal wrapper around original NEDC code"""
+class NEDCAlphaWrapper:
+    """Wrapper around original NEDC v6.0.0 code"""
 
-    def __init__(self, nedc_root: Path):
+    def __init__(self, nedc_root: Path = Path("/opt/nedc")):
         self.nedc_root = nedc_root
-        self._setup_environment()
+        os.environ["NEDC_NFC"] = str(self.nedc_root)
+        os.environ["PYTHONPATH"] = f"{self.nedc_root}/lib:{os.environ.get('PYTHONPATH', '')}"
+        self._validate_environment()
 
-    def evaluate(self, ref_list: List[Path], hyp_list: List[Path]) -> Dict:
-        """Run evaluation and parse results to JSON"""
-        # Run original tool
-        result = subprocess.run([...])
-        # Parse text output to structured data
-        return self._parse_output(result.stdout)
+    def evaluate(self, ref_list: str, hyp_list: str) -> Dict:
+        """Run NEDC evaluation and parse text output to JSON"""
+        cmd = [
+            "python",
+            str(self.nedc_root / "bin" / "nedc_eeg_eval"),
+            ref_list,
+            hyp_list
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        # Parse the 5 algorithm outputs from text
+        return self._parse_all_outputs(result.stdout)
 
     def _parse_output(self, text: str) -> Dict:
         """Convert text output to structured format"""
@@ -109,26 +121,34 @@ class NEDCLegacyWrapper:
 #### Dockerization
 ```dockerfile
 # alpha/Dockerfile
-FROM python:3.9-alpine
-RUN apk add --no-cache bash
-COPY nedc_original/ /opt/nedc/
-COPY wrapper/ /app/
+FROM python:3.11-slim
+RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+
+# Copy the vendored NEDC tool
+COPY nedc_eeg_eval/v6.0.0/ /opt/nedc/
+COPY alpha/wrapper/ /app/
+
+# Install Python dependencies
+RUN pip install numpy==2.0.2 scipy==1.14.1 lxml==5.3.0 toml==0.10.2
+
+# Set required environment variables
 ENV NEDC_NFC=/opt/nedc
 ENV PYTHONPATH=/opt/nedc/lib:$PYTHONPATH
+
 WORKDIR /app
-CMD ["python", "api_server.py"]
+CMD ["python", "nedc_wrapper.py"]
 ```
 
-## Phase 2: Modern Implementation (Weeks 3-6)
+## Phase 2: First Algorithm - TAES (Week 2) - 5 Days
 
-### 2.1 Pipeline Beta Architecture
+### 2.1 Beta Pipeline - Modern Implementation of 5 Algorithms
 
 #### Core Design Principles
 1. **Type Safety**: Full type hints with mypy strict mode
-2. **Async First**: AsyncIO for I/O operations
-3. **Modular**: Clean separation of concerns
-4. **Testable**: 100% unit test coverage
-5. **Observable**: OpenTelemetry integration
+2. **Async First**: AsyncIO for parallel processing
+3. **Exact Fidelity**: Identical numerical results to Alpha
+4. **100% Test Coverage**: Every algorithm fully tested
+5. **Continuous Validation**: Dual pipeline comparison on every run
 
 #### Algorithm Modules
 ```python
@@ -237,7 +257,7 @@ async def websocket_endpoint(websocket: WebSocket, job_id: UUID):
     ...
 ```
 
-## Phase 3: Validation Framework (Weeks 7-8)
+## Phase 3: Core Algorithms (Weeks 3-4) - 10 Days
 
 ### 3.1 Cross-Validation Suite
 
@@ -304,7 +324,7 @@ class SyntheticEEGGenerator:
         """Boundary conditions and edge cases"""
 ```
 
-## Phase 4: Performance Optimization (Weeks 9-10)
+## Phase 4: API Layer (Week 5) - 5 Days
 
 ### 4.1 Parallelization
 
@@ -381,7 +401,7 @@ class ResultCache:
         return result
 ```
 
-## Phase 5: Cloud-Native Features (Weeks 11-12)
+## Phase 5: Production Deployment (Week 6) - 5 Days
 
 ### 5.1 Kubernetes Deployment
 
@@ -460,7 +480,7 @@ class TAESScorer:
         # ... algorithm implementation
 ```
 
-## Phase 6: Migration & Deprecation (Weeks 13-14)
+## Summary: 30 Days Total (6 Weeks)
 
 ### 6.1 Migration Tools
 
@@ -594,29 +614,28 @@ def test_taes_performance(benchmark):
 
 ## Timeline Summary
 
-| Phase | Duration | Deliverable |
-|-------|----------|-------------|
-| Foundation | 2 weeks | Repository, Alpha pipeline |
-| Modern Implementation | 4 weeks | Beta pipeline core |
-| Validation | 2 weeks | Cross-validation suite |
-| Optimization | 2 weeks | Performance improvements |
-| Cloud-Native | 2 weeks | Kubernetes deployment |
-| Migration | 2 weeks | Tools and documentation |
-| **Total** | **14 weeks** | **Production-ready platform** |
+| Phase | Duration | Deliverable | Parity Checkpoint |
+|-------|----------|-------------|-------------------|
+| Foundation | 5 days | Alpha pipeline containerized | Text parser validated |
+| First Algorithm (TAES) | 5 days | Beta TAES implementation | TAES parity proven |
+| Core Algorithms | 10 days | All 5 algorithms in Beta | Full algorithm parity |
+| API Layer | 5 days | REST API with dual orchestration | Real-time validation |
+| Production | 5 days | Docker/K8s deployment | Production metrics |
+| **Total** | **30 days** | **Production platform with continuous parity** | **100% algorithmic fidelity** |
 
 ## Risk Mitigation
 
 ### Technical Risks
-- **Risk**: Algorithm discrepancies between pipelines
-- **Mitigation**: Extensive validation suite, numerical tolerance testing
+- **Risk**: Algorithm discrepancies between Alpha and Beta
+- **Mitigation**: Continuous dual-pipeline validation with tolerance < 1e-10
 
 ### Adoption Risks
-- **Risk**: Users reluctant to migrate
-- **Mitigation**: Maintain backward compatibility, provide migration tools
+- **Risk**: Users reluctant to trust new implementation
+- **Mitigation**: Continuous parity validation proves equivalence
 
 ### Performance Risks
-- **Risk**: Beta pipeline slower than Alpha
-- **Mitigation**: Profiling, caching, parallelization
+- **Risk**: Dual pipeline overhead
+- **Mitigation**: Run pipelines in parallel, cache results
 
 ## Next Steps
 

@@ -61,7 +61,7 @@ nedc_eeg_eval/v6.0.0/
 ### Weaknesses
 
 #### Development Practices
-- **No Type Hints**: Minimal type annotations (found in only 4 files)
+- **Minimal Type Hints**: Very few type annotations (found in 2 support modules; core scoring is untyped)
 - **No Unit Tests**: Test directory contains only sample outputs, no test suite
 - **No CI/CD**: No automated testing or deployment
 - **No Linting**: Code style is inconsistent
@@ -237,7 +237,7 @@ $NEDC_NFC/data/csv/ref/file2.csv_bi
 - **Parameters**:
   - epoch_duration = 0.25 seconds
   - null_class = "BCKG"
-- **Metrics**: Per-epoch accuracy, Cohen's kappa
+- **Metrics**: Per-epoch accuracy and standard binary metrics (TPR/TNR, Precision/Recall, F1, MCC, FA rate)
 
 #### 3. Overlap Scoring
 - **Module**: nedc_eeg_eval_ovlp.py
@@ -315,8 +315,8 @@ File: output/summary.txt
 - NEDC DP ALIGNMENT SCORING SUMMARY
 - NEDC EPOCH SCORING SUMMARY
 - NEDC OVERLAP SCORING SUMMARY
-- NEDC TIME-ALIGNED EVENT SCORING (TAES) SUMMARY
-- NEDC INTER-RATER AGREEMENT (IRA) SUMMARY
+- NEDC TAES SCORING SUMMARY
+- NEDC INTER-RATER AGREEMENT SUMMARY
 ```
 
 #### Individual Algorithm Output Files
@@ -324,7 +324,7 @@ File: output/summary.txt
 - `summary_epoch.txt` - Detailed epoch scoring results
 - `summary_ovlp.txt` - Detailed overlap scoring results
 - `summary_taes.txt` - Detailed TAES results
-- `summary_ira.txt` - Detailed IRA results (when generated)
+- Note: IRA results are written into `summary.txt`; no separate `summary_ira.txt` is produced by v6.0.0
 
 #### Per-File Output
 - Individual scoring for each file pair
@@ -351,7 +351,7 @@ File: output/summary.txt
 ### Environment Requirements
 
 #### System Dependencies
-- Python 3.9+ (developed for 3.9, works with 3.11+ after tomllib fix)
+- Python 3.9+ (developed for 3.9; works with 3.11+ via tomllib/tomli fallback)
 - Unix-like environment (bash shell)
 - Environment variables (REQUIRED):
   - `$NEDC_NFC`: Absolute path to nedc_eeg_eval/v6.0.0 directory
@@ -478,7 +478,7 @@ hyp = [(5, 15, "seiz")]
 | Metric | Current | Production Standard | Gap |
 |--------|---------|----------|-----|
 | Test Coverage | 0% (no unit tests) | 80%+ | Critical |
-| Type Hints | 0% (none found) | 100% | Critical |
+| Type Hints | Very low (<1%) | 100% | Critical |
 | Docstrings | ~40% (inline comments) | 100% | Major |
 | Cyclomatic Complexity | >20 (main function) | <10 | Major |
 | Code Duplication | ~15% (repeated patterns) | <5% | Major |
@@ -513,8 +513,8 @@ class NEDCWrapper:
 
 1. **Environment Setup** (Day 1) ✓ COMPLETED
    - Set environment variables: $NEDC_NFC and $PYTHONPATH
-   - Fixed tomllib import with compatibility layer (nedc_file_tools.py line 38-43)
-   - Generated docs by running src/Makefile.sh
+   - tomllib/tomli compatibility in nedc_file_tools.py (try/except import)
+   - Generated bin/docs via src/Makefile.sh (output dir is created at runtime by nedc_eeg_eval)
 
 2. **Containerization** (Day 2)
    - Create Dockerfile with all dependencies
