@@ -11,23 +11,55 @@
 - [ ] Numerical accuracy within 1e-10 (absolute tolerance)
 - [ ] Performance benchmarks established
 
+### Where We’re Diverging (and Fixes)
+- TAES semantics: Document assumed binary any-overlap; NEDC TAES is fractional (hit/miss/fa per ref). Fix: rewrite SSOT to fractional and multi-overlap sequencing.
+- Counts type: Document/tests assumed integer TP/FP/FN; NEDC reports floats (e.g., TP=46.41). Fix: treat counts as floats end-to-end; drop rounding to int.
+- Alpha parsing: Parser used integer extraction for TAES counts. Fix: parse TP/TN/FP/FN as floats; prefer `summary_taes.txt` where present.
+- Label case/mapping: Document implied case-sensitive raw labels. Fix: normalize via NEDC map (lowercase) to target classes (`seiz`/`bckg`).
+- Rounding/tolerance: Document compared raw floats to printed values at 1e-10. Fix: align rounding regime (4 decimals per-file, 2 decimals aggregate) and compare with absolute tolerance.
+- TN handling: Document said TAES doesn’t compute TN. Fix: NEDC reports TN as counterpart hits; record for reporting; exclude from gating parity.
+
+### Immediate Action Items (Code Changes Required)
+- nedc_bench/algorithms/taes.py
+  - Make `TAESResult.true_positives/false_positives/false_negatives` floats.
+  - Remove integer rounding; implement `calc_hf`, `ovlp_ref_seqs`, `ovlp_hyp_seqs`, and unmatched event handling per NEDC.
+  - Optionally expose TN as float for reporting only.
+- alpha/wrapper/parsers.py
+  - In `TAESParser`, parse TP/TN/FP/FN using float extraction; when `summary_taes.txt` exists, prefer its values to avoid precision loss.
+- nedc_bench/validation/parity.py
+  - Compare fractional counts first (floats); recompute metrics centrally; reserve exact-int comparisons for algorithms with integer counts only (not TAES).
+- nedc_bench/models/annotations.py
+  - Apply NEDC label map (lowercased) before scoring; ensure `TERM` filtering remains consistent with dataset.
+- tests/
+  - Update TAES unit tests to expect fractional counts and sequencing behavior; update parity tests to float counts-first comparisons.
+
 ### Ground Rules (from Phase 1 learnings)
 - Code lives under `nedc_bench/` (not `beta/`).
 - Integrate with `alpha/wrapper` `NEDCAlphaWrapper` for Alpha results.
 - Parse real CSV_BI from NEDC v6.0.0; reuse `tests/utils.py` helpers.
 - Use `setup_nedc_env` fixture for environment setup.
-- Compare counts first; recompute floats centrally to avoid print rounding drift.
+- Compare counts first (fractional TP/FP/FN); recompute metrics centrally from those floats to avoid print rounding drift.
+- Alpha wrapper must parse TAES counts as floats (TP/TN/FP/FN) and prefer `summary_taes.txt` when present for higher precision.
 
-### TAES Semantics (Source of Truth)
-- Matching rule: per-label, any temporal overlap (> 0) constitutes a detection.
-- True Positives (TP): number of reference events that overlap at least one hypothesis of the same label.
-- False Negatives (FN): number of reference events that do not overlap any hypothesis of the same label.
-- False Positives (FP): number of hypothesis events that do not overlap any reference of the same label.
-- One-to-many allowed for TP (a single hypothesis can detect multiple reference events if it overlaps them); FP is counted per unmatched hypothesis event.
-- Labels: compared case-sensitively; non-matching labels do not overlap.
+### TAES Semantics (Single Source of Truth)
+- TAES is fractional, not binary. Per reference event, compute fractional contributions:
+  - hit = overlap_duration / ref_duration
+  - miss = 1 - hit
+  - false alarm (fa) = non_overlap_duration_of_hyp_adjacent_to_ref / ref_duration (capped at 1.0)
+- Multi-overlap sequencing (matches NEDC v6.0.0 `NedcTAES`):
+  - Hyp spans multiple refs: compute fractional hit/fa on the first overlapped ref; for subsequent refs overlapped by the same hyp segment, increment miss by 1.0 each (ovlp_ref_seqs).
+  - Ref overlapped by multiple hyps: accumulate fractional hits and fas across hyps; adjust miss to keep hit + miss = 1.0 for the ref (ovlp_hyp_seqs).
+  - Unmatched refs/hyps: add 1.0 to miss per unmatched ref and 1.0 to false alarms per unmatched hyp of the same class.
+- Per-label tallies are floats:
+  - Targets = number of reference events (integer-valued but reported as float).
+  - True Positives (TP) = Hits (float), False Negatives (FN) = Misses (float), False Positives (FP) = False Alarms (float).
+  - True Negatives (TN) reported by NEDC correspond to counterpart hits in two-class mapping (e.g., TN[SEIZ] = TP[BCKG]). TN is recorded for reporting, not used for gating parity.
+- Label mapping and case: normalize labels using the NEDC map (lowercased) and collapse to target classes (default: `seiz`, `bckg`). Do not treat raw labels as case-sensitive.
 - Empty sets: if `TP+FN == 0`, sensitivity is `0.0`; if `TP+FP == 0`, precision is `0.0`.
-- Metrics: `sensitivity = TP/(TP+FN)`, `precision = TP/(TP+FP)`, `f1 = 2*TP/(2*TP+FP+FN)`.
-- Tolerance: absolute tolerance (`atol=1e-10`) for numeric parity; do not use `rtol`.
+- Metrics from counts (floats): sensitivity = TP/(TP+FN); precision = TP/(TP+FP); f1 = 2*TP/(2*TP+FP+FN).
+- Rounding and tolerance:
+  - NEDC prints per-file H/M/FA to 4 decimals in `summary_taes.txt` and aggregate counts to 2 decimals in `summary.txt`.
+  - For parity, round Beta’s aggregated TP/FP/FN to 2 decimals to match Alpha; compare using absolute tolerance 1e-10. Do not use rtol.
 
 ---
 
@@ -222,188 +254,55 @@ def test_integration_with_existing_utils():
 
 ## Day 2: TAES Algorithm Implementation
 
-### Morning: Core TAES Algorithm
+### Morning: Core TAES Algorithm (Fractional)
 
 #### Test First (TDD)
 ```python
 # tests/test_taes_algorithm.py
-import pytest
-from nedc_bench.algorithms.taes import TAESScorer, TAESResult
+from nedc_bench.algorithms.taes import TAESScorer
 from nedc_bench.models.annotations import EventAnnotation
 
-def test_taes_exact_match():
-    """Perfect match should give perfect scores"""
+def test_taes_exact_match_fractional():
     ref = [
         EventAnnotation(start_time=0, stop_time=10, label="seiz", confidence=1.0),
-        EventAnnotation(start_time=20, stop_time=30, label="seiz", confidence=1.0)
+        EventAnnotation(start_time=20, stop_time=30, label="seiz", confidence=1.0),
     ]
     hyp = [
         EventAnnotation(start_time=0, stop_time=10, label="seiz", confidence=1.0),
-        EventAnnotation(start_time=20, stop_time=30, label="seiz", confidence=1.0)
+        EventAnnotation(start_time=20, stop_time=30, label="seiz", confidence=1.0),
     ]
-
-    scorer = TAESScorer()
-    result = scorer.score(ref, hyp)
-
-    assert result.sensitivity == 1.0
-    assert result.precision == 1.0
+    result = TAESScorer().score(ref, hyp)
+    assert result.true_positives == 2.0
+    assert result.false_positives == 0.0
+    assert result.false_negatives == 0.0
     assert result.f1_score == 1.0
-    assert result.true_positives == 2
-    assert result.false_positives == 0
-    assert result.false_negatives == 0
 
-def test_taes_no_overlap():
-    """No overlap should give zero sensitivity"""
-    ref = [EventAnnotation(start_time=0, stop_time=10, label="seiz", confidence=1.0)]
-    hyp = [EventAnnotation(start_time=20, stop_time=30, label="seiz", confidence=1.0)]
-
-    scorer = TAESScorer()
-    result = scorer.score(ref, hyp)
-
-    assert result.sensitivity == 0.0
-    assert result.precision == 0.0
-    assert result.false_positives == 1
-    assert result.false_negatives == 1
-
-def test_taes_partial_overlap():
-    """Test partial overlap detection"""
+def test_taes_partial_overlap_fractional():
     ref = [EventAnnotation(start_time=0, stop_time=10, label="seiz", confidence=1.0)]
     hyp = [EventAnnotation(start_time=5, stop_time=15, label="seiz", confidence=1.0)]
+    result = TAESScorer().score(ref, hyp)
+    assert abs(result.true_positives - 0.5) <= 1e-12
+    assert abs(result.false_negatives - 0.5) <= 1e-12
 
-    scorer = TAESScorer()
-    result = scorer.score(ref, hyp)
-
-    # TAES counts any overlap as detection
-    assert result.true_positives == 1
-    assert result.sensitivity == 1.0
+def test_taes_many_to_many_sequences():
+    # hyp spans two refs
+    ref = [
+        EventAnnotation(start_time=0, stop_time=10, label="seiz", confidence=1.0),
+        EventAnnotation(start_time=12, stop_time=22, label="seiz", confidence=1.0),
+    ]
+    hyp = [EventAnnotation(start_time=5, stop_time=18, label="seiz", confidence=1.0)]
+    result = TAESScorer().score(ref, hyp)
+    # expect fractional hit on first ref, miss increment on second per NEDC sequencing
+    assert result.true_positives >= 0.0
+    assert result.false_negatives >= 1.0
 ```
 
-#### Implementation
-```python
-# nedc_bench/algorithms/taes.py
-"""
-Time-Aligned Event Scoring (TAES) Algorithm
-Based on NEDC v6.0.0 implementation
-"""
-from dataclasses import dataclass
-from typing import List, Tuple, Set
-from nedc_bench.models.annotations import EventAnnotation
-
-@dataclass
-class TAESResult:
-    """TAES scoring results matching NEDC output format"""
-    true_positives: int
-    false_positives: int
-    false_negatives: int
-    true_negatives: int = 0  # TAES doesn't compute TN
-
-    @property
-    def sensitivity(self) -> float:
-        """TPR = TP / (TP + FN)"""
-        denominator = self.true_positives + self.false_negatives
-        return self.true_positives / denominator if denominator > 0 else 0.0
-
-    @property
-    def specificity(self) -> float:
-        """TNR = TN / (TN + FP) - Not computed by TAES"""
-        return 0.0  # TAES doesn't compute specificity
-
-    @property
-    def precision(self) -> float:
-        """PPV = TP / (TP + FP)"""
-        denominator = self.true_positives + self.false_positives
-        return self.true_positives / denominator if denominator > 0 else 0.0
-
-    @property
-    def f1_score(self) -> float:
-        """F1 = 2 * (precision * sensitivity) / (precision + sensitivity)"""
-        if self.precision + self.sensitivity == 0:
-            return 0.0
-        return 2 * (self.precision * self.sensitivity) / (self.precision + self.sensitivity)
-
-    @property
-    def accuracy(self) -> float:
-        """(TP + TN) / (TP + TN + FP + FN) - Not meaningful for TAES"""
-        return 0.0
-
-class TAESScorer:
-    """
-    Time-Aligned Event Scoring implementation
-    Matches NEDC v6.0.0 behavior exactly
-    """
-
-    def __init__(self, overlap_threshold: float = 0.0):
-        """
-        Initialize TAES scorer
-
-        Args:
-            overlap_threshold: Minimum overlap fraction (0.0 = any overlap counts)
-                              NEDC uses 0.0 by default
-        """
-        self.overlap_threshold = overlap_threshold
-
-    def score(self,
-              reference: List[EventAnnotation],
-              hypothesis: List[EventAnnotation]) -> TAESResult:
-        """
-        Score hypothesis against reference using TAES algorithm
-
-        Args:
-            reference: Ground truth events
-            hypothesis: Predicted events
-
-        Returns:
-            TAESResult with scoring metrics
-        """
-        # Track which events have been matched
-        ref_matched: Set[int] = set()
-        hyp_matched: Set[int] = set()
-
-        # Check each hypothesis against each reference
-        for h_idx, hyp_event in enumerate(hypothesis):
-            for r_idx, ref_event in enumerate(reference):
-                if self._events_overlap(ref_event, hyp_event):
-                    ref_matched.add(r_idx)
-                    hyp_matched.add(h_idx)
-
-        # Count metrics
-        true_positives = len(ref_matched)  # Reference events that were detected
-        false_negatives = len(reference) - len(ref_matched)  # Missed events
-        false_positives = len(hypothesis) - len(hyp_matched)  # Extra detections
-
-        return TAESResult(
-            true_positives=true_positives,
-            false_positives=false_positives,
-            false_negatives=false_negatives
-        )
-
-    def _events_overlap(self, event1: EventAnnotation, event2: EventAnnotation) -> bool:
-        """
-        Check if two events overlap
-
-        NEDC v6.0.0 behavior: ANY overlap counts as a match
-        """
-        # Events must have same label
-        if event1.label != event2.label:
-            return False
-
-        # Check temporal overlap
-        overlap_start = max(event1.start_time, event2.start_time)
-        overlap_end = min(event1.stop_time, event2.stop_time)
-
-        # Any overlap counts (NEDC default behavior)
-        if overlap_end > overlap_start:
-            if self.overlap_threshold == 0.0:
-                return True
-
-            # Optional: require minimum overlap fraction
-            overlap_duration = overlap_end - overlap_start
-            event1_duration = event1.duration
-            overlap_fraction = overlap_duration / event1_duration
-            return overlap_fraction >= self.overlap_threshold
-
-        return False
-```
+#### Implementation Notes
+- Use float fields for TP/FP/FN (no integer rounding at any stage).
+- Implement `calc_hf` with the four canonical cases; cap FA at 1.0.
+- Implement `ovlp_ref_seqs` and `ovlp_hyp_seqs` for multi-overlap sequencing per NEDC.
+- Count unmatched references/hypotheses as +1.0 miss/false alarm respectively.
+- Keep TN as an optional float derived for reporting; exclude from gating parity.
 
 ### Afternoon: Edge Cases and Validation
 
@@ -417,8 +316,8 @@ def test_taes_empty_reference():
     scorer = TAESScorer()
     result = scorer.score(ref, hyp)
 
-    assert result.false_positives == 1
-    assert result.false_negatives == 0
+    assert result.false_positives == 1.0
+    assert result.false_negatives == 0.0
     assert result.sensitivity == 0.0  # 0/0 case
 
 def test_taes_empty_hypothesis():
@@ -429,8 +328,8 @@ def test_taes_empty_hypothesis():
     scorer = TAESScorer()
     result = scorer.score(ref, hyp)
 
-    assert result.false_negatives == 1
-    assert result.false_positives == 0
+    assert result.false_negatives == 1.0
+    assert result.false_positives == 0.0
     assert result.precision == 0.0  # 0/0 case
 
 def test_taes_label_mismatch():
@@ -441,9 +340,9 @@ def test_taes_label_mismatch():
     scorer = TAESScorer()
     result = scorer.score(ref, hyp)
 
-    assert result.true_positives == 0
-    assert result.false_positives == 1
-    assert result.false_negatives == 1
+    assert result.true_positives == 0.0
+    assert result.false_positives == 1.0
+    assert result.false_negatives == 1.0
 ```
 
 ## Day 3: Parity Validator Framework
@@ -478,7 +377,7 @@ def test_parity_exact_match(setup_nedc_env, test_data_dir):
     scorer = TAESScorer()
     beta_result = scorer.score(ref_annotations.events, hyp_annotations.events)
 
-    # Validate parity
+    # Validate parity (compare fractional counts first, then recompute metrics)
     validator = ParityValidator(tolerance=1e-10)
     report = validator.compare_taes(alpha_result['taes'], beta_result)
 
@@ -488,17 +387,20 @@ def test_parity_exact_match(setup_nedc_env, test_data_dir):
 def test_parity_with_discrepancy():
     """Detect and report discrepancies"""
     alpha_result = {
+        'true_positives': 19.0,
+        'false_positives': 2.0,
+        'false_negatives': 1.0,
         'sensitivity': 0.95,
-        'precision': 0.90,
-        'f1_score': 0.925
+        'precision': 0.9047619048,
+        'f1_score': 0.9275362319,
     }
 
-    # Create Beta result with slight difference
+    # Create Beta result with slight difference in FP to trigger discrepancy
     from nedc_bench.algorithms.taes import TAESResult
     beta_result = TAESResult(
-        true_positives=19,  # Should give 0.95 sensitivity
-        false_positives=2,   # Should give 0.905 precision (small discrepancy)
-        false_negatives=1
+        true_positives=19.0,
+        false_positives=2.1,
+        false_negatives=1.0,
     )
 
     validator = ParityValidator(tolerance=1e-3)
@@ -1203,43 +1105,32 @@ def test_phase2_criteria():
 
 ## Summary of Corrections Made
 
-### 1. **Directory Structure** ✅
-- Changed from `beta/` to `nedc_bench/`
-- Aligned with actual project structure
+### 1. TAES Semantics — Binary → Fractional ✅
+- Replaced any-overlap/binary semantics with NEDC’s fractional scoring (hit/miss/fa per reference) and explicit multi-overlap sequencing.
+- Counts (TP/FP/FN) are floats; removed integer assumptions and rounding.
+- Clarified TN as counterpart hits in two-class mapping; record for reporting; exclude from gating parity.
 
-### 2. **Import Paths** ✅
-- Fixed all imports to use `nedc_bench` namespace
-- Added proper integration with `alpha.wrapper`
+### 2. Alpha Wrapper Parsing — Int → Float ✅
+- Update `TAESParser` to parse TP/TN/FP/FN as floats and prefer `summary_taes.txt` where present for higher precision before aggregating.
+- Keep counts-first parity by comparing fractional counts first; recompute metrics centrally from those floats.
 
-### 3. **Data Format Integration** ✅
-- Added CSV_BI parsing to models
-- Created `AnnotationFile.from_csv_bi()` method
-- Handled metadata parsing
+### 3. Rounding & Tolerance Alignment ✅
+- Lock rounding to NEDC presentation: 4 decimals per-file, 2 decimals aggregate in summary; compare with absolute tolerance 1e-10.
 
-### 4. **Test Integration** ✅
-- Used existing `setup_nedc_env` fixture
-- Referenced actual test data paths
-- Integrated with existing test utilities
+### 4. Label Mapping Normalization ✅
+- Normalize labels via NEDC map (lowercase) to `seiz`/`bckg` prior to scoring; do not rely on raw case-sensitive labels.
 
-### 5. **Alpha Wrapper Integration** ✅
-- Used actual `NEDCAlphaWrapper` class
-- Proper path handling for CSV_BI files
-- Maintained compatibility
-
-### 6. **Validation Framework** ✅
-- Created proper parity validator
-- Tolerance-based comparison
-- Detailed discrepancy reporting
-
-### Ready for Implementation ✅
-Phase 2 documentation is now 100% accurate and ready for implementation!
+### 5. Tests & Orchestration ✅
+- Update unit tests to assert fractional counts and sequencing behavior.
+- Parity tests compare fractional TP/FP/FN then recomputed metrics; TN optional.
+- Orchestrator unchanged; ensure Beta rounds aggregated counts to 2 decimals before comparison for exact parity.
 
 ## Definition of Done
-- Beta TAES fully implemented with full type hints
-- 100% unit test coverage on Beta TAES
-- Parity with Alpha validated within 1e-10 absolute tolerance
-- Performance benchmarks recorded and documented
-- Documentation complete and aligned with repo structure
+- Beta TAES fully implements fractional scoring (calc_hf + multi-overlap) with full type hints.
+- 100% unit test coverage on Beta TAES core.
+- Alpha wrapper TAES parser returns floats for TP/TN/FP/FN; Beta parity validator compares fractional counts first, then recomputed metrics; absolute tolerance 1e-10 with rounding alignment.
+- Performance benchmarks recorded and documented.
+- Documentation reflects NEDC semantics and rounding behavior.
 
 ## Next Phase Entry Criteria
 - TAES parity proven on all 30 golden files
