@@ -22,23 +22,33 @@ def test_docker_build():
 
 def test_environment_variables():
     """Container has correct environment"""
-    result = docker.run("nedc-alpha", "env")
+    result = subprocess.run(
+        ["docker", "run", "nedc-alpha", "env"],
+        capture_output=True, text=True
+    )
     assert "NEDC_NFC=/opt/nedc" in result.stdout
-    assert "PYTHONPATH" in result.stdout
+    assert "PYTHONPATH=/opt/nedc/lib" in result.stdout
 ```
 
 #### Afternoon: Basic Wrapper
 ```python
 # alpha/wrapper/nedc_wrapper.py
+import os
+import subprocess
+from pathlib import Path
+from typing import Dict
+
 class NEDCAlphaWrapper:
     def __init__(self):
         self.nedc_root = Path("/opt/nedc")
+        os.environ["NEDC_NFC"] = str(self.nedc_root)
+        os.environ["PYTHONPATH"] = f"{self.nedc_root}/lib:{os.environ.get('PYTHONPATH', '')}"
         self._validate_installation()
 
     def _validate_installation(self):
         """TDD: Verify NEDC installation"""
         assert (self.nedc_root / "lib").exists()
-        assert (self.nedc_root / "bin/nedc_eeg_eval").exists()
+        assert (self.nedc_root / "bin" / "nedc_eeg_eval").exists()
 ```
 
 ### Day 2: Output Parser Implementation
@@ -49,10 +59,11 @@ class NEDCAlphaWrapper:
 def test_parse_taes_output():
     """Parse TAES text output to structured data"""
     sample_output = """
-    TAES SUMMARY:
-    Sensitivity: 0.8500
-    Specificity: 0.9200
-    F1 Score: 0.7800
+    NEDC TAES SCORING SUMMARY (v6.0.0):
+
+    Sensitivity (TPR, Recall):      85.0000%
+    Specificity (TNR):              92.0000%
+    F1 Score (F Ratio):              0.7800
     """
     parser = TAESParser()
     result = parser.parse(sample_output)
@@ -84,11 +95,19 @@ class UnifiedOutputParser:
 # tests/golden/test_exact_match.py
 def test_golden_exact_match():
     """Reference and hypothesis are identical"""
-    ref = create_annotation([(0, 10, "seiz"), (20, 30, "seiz")])
-    hyp = create_annotation([(0, 10, "seiz"), (20, 30, "seiz")])
+    # Create CSV_BI format test files
+    ref_file = create_csv_bi_annotation([
+        ("TERM", 0.0, 10.0, "seiz", 1.0),
+        ("TERM", 20.0, 30.0, "seiz", 1.0)
+    ])
+    hyp_file = create_csv_bi_annotation([
+        ("TERM", 0.0, 10.0, "seiz", 1.0),
+        ("TERM", 20.0, 30.0, "seiz", 1.0)
+    ])
 
-    result = alpha_wrapper.evaluate(ref, hyp)
+    result = alpha_wrapper.evaluate(ref_file, hyp_file)
 
+    # Perfect match should yield 100% for all metrics
     assert result['taes']['sensitivity'] == 1.0
     assert result['taes']['specificity'] == 1.0
     assert result['taes']['f1_score'] == 1.0
@@ -98,13 +117,18 @@ def test_golden_exact_match():
 ```python
 # tests/golden/test_edge_cases.py
 def test_no_events_in_reference():
-    """Empty reference file"""
-    ref = create_annotation([])
-    hyp = create_annotation([(0, 10, "seiz")])
+    """Empty reference file - all hypothesis events are false positives"""
+    ref_file = create_csv_bi_annotation([])  # No events
+    hyp_file = create_csv_bi_annotation([
+        ("TERM", 0.0, 10.0, "seiz", 1.0)
+    ])
 
-    result = alpha_wrapper.evaluate(ref, hyp)
+    result = alpha_wrapper.evaluate(ref_file, hyp_file)
+
+    # With no reference events, everything is a false positive
     assert result['taes']['false_positives'] == 1
     assert result['taes']['true_positives'] == 0
+    assert result['taes']['sensitivity'] == 0.0  # No true positives possible
 ```
 
 ### Day 4: Integration & CI/CD
@@ -121,6 +145,7 @@ services:
       - ./output:/output
     environment:
       - NEDC_NFC=/opt/nedc
+      - PYTHONPATH=/opt/nedc/lib
 ```
 
 #### Afternoon: GitHub Actions
@@ -166,12 +191,13 @@ def test_alpha_validation_suite(test_case):
 - Output format specification
 
 ### Deliverables Checklist
-- [ ] `alpha/Dockerfile` - Container definition
-- [ ] `alpha/wrapper/nedc_wrapper.py` - Python wrapper
-- [ ] `alpha/wrapper/parsers.py` - Output parsers
-- [ ] `tests/test_alpha_*.py` - Test suite
-- [ ] `.github/workflows/alpha-pipeline.yml` - CI/CD
-- [ ] `docs/alpha-pipeline.md` - Documentation
+- [ ] `alpha/Dockerfile` - Python 3.9+ container with NEDC v6.0.0
+- [ ] `alpha/requirements.txt` - numpy==2.0.2, scipy==1.14.1, lxml==5.3.0, tomli==2.0.1
+- [ ] `alpha/wrapper/nedc_wrapper.py` - Python wrapper for subprocess calls
+- [ ] `alpha/wrapper/parsers.py` - Text-to-JSON parsers for all 5 algorithms
+- [ ] `tests/test_alpha_*.py` - Test suite with golden tests
+- [ ] `.github/workflows/alpha-pipeline.yml` - CI/CD pipeline
+- [ ] `docs/alpha-pipeline.md` - API and output format documentation
 
 ### Definition of Done
 1. ✅ Alpha pipeline runs in Docker
