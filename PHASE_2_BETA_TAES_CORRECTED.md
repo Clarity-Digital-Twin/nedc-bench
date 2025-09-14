@@ -1,24 +1,35 @@
-# Phase 2: Beta TAES Algorithm - CORRECTED Implementation Plan
-## Vertical Slice Goal: Modern TAES Implementation with Dual-Pipeline Validation
+# Phase 2: TAES Parity — Final Plan (Corrected)
+## Vertical Slice Goal: Beta TAES with Dual-Pipeline Validation
 
-### Duration: 5 Days
-### Start Date: After Phase 1 Completion ✅
-
-### Critical Updates from Phase 1 Learnings
-- **Directory Structure**: Use `nedc_bench/` not `beta/`
-- **Integration**: Work with existing `NEDCAlphaWrapper` from `alpha/wrapper/`
-- **Data Format**: Parse actual CSV_BI format from NEDC v6.0.0
-- **Testing**: Use existing fixtures from `tests/conftest.py`
-- **Environment**: Leverage `setup_nedc_env` fixture for NEDC paths
+### Duration
+- 5 days (starts after Phase 1 completion)
 
 ### Success Criteria (TDD)
-- [ ] Beta TAES algorithm implemented in `nedc_bench/algorithms/taes.py`
-- [ ] CSV_BI parser implemented for data ingestion
+- [ ] Beta TAES algorithm implemented with full type hints
 - [ ] Parity validator compares Alpha vs Beta results
 - [ ] 100% test coverage on Beta TAES
-- [ ] Numerical accuracy within 1e-10
+- [ ] Numerical accuracy within 1e-10 (absolute tolerance)
 - [ ] Performance benchmarks established
-- [ ] Integration with existing Alpha wrapper
+
+### Ground Rules (from Phase 1 learnings)
+- Code lives under `nedc_bench/` (not `beta/`).
+- Integrate with `alpha/wrapper` `NEDCAlphaWrapper` for Alpha results.
+- Parse real CSV_BI from NEDC v6.0.0; reuse `tests/utils.py` helpers.
+- Use `setup_nedc_env` fixture for environment setup.
+- Compare counts first; recompute floats centrally to avoid print rounding drift.
+
+### TAES Semantics (Source of Truth)
+- Matching rule: per-label, any temporal overlap (> 0) constitutes a detection.
+- True Positives (TP): number of reference events that overlap at least one hypothesis of the same label.
+- False Negatives (FN): number of reference events that do not overlap any hypothesis of the same label.
+- False Positives (FP): number of hypothesis events that do not overlap any reference of the same label.
+- One-to-many allowed for TP (a single hypothesis can detect multiple reference events if it overlaps them); FP is counted per unmatched hypothesis event.
+- Labels: compared case-sensitively; non-matching labels do not overlap.
+- Empty sets: if `TP+FN == 0`, sensitivity is `0.0`; if `TP+FP == 0`, precision is `0.0`.
+- Metrics: `sensitivity = TP/(TP+FN)`, `precision = TP/(TP+FP)`, `f1 = 2*TP/(2*TP+FP+FN)`.
+- Tolerance: absolute tolerance (`atol=1e-10`) for numeric parity; do not use `rtol`.
+
+---
 
 ## Day 1: Data Models & CSV_BI Parsing
 
@@ -577,7 +588,7 @@ class ParityValidator:
         """
         discrepancies = []
 
-        # Define metrics to compare
+        # Define metrics to compare (counts-first, then floats)
         metrics_map = {
             'sensitivity': beta_result.sensitivity,
             'precision': beta_result.precision,
@@ -597,16 +608,25 @@ class ParityValidator:
             if alpha_value is None:
                 continue
 
-            # Convert to float for comparison
+            # Compare ints exactly
+            if metric_name in ("true_positives", "false_positives", "false_negatives"):
+                if int(alpha_value) != int(beta_value):
+                    discrepancies.append(DiscrepancyReport(
+                        metric=metric_name,
+                        alpha_value=float(alpha_value),
+                        beta_value=float(beta_value),
+                        absolute_difference=abs(float(alpha_value) - float(beta_value)),
+                        relative_difference=0.0,
+                        tolerance=0.0
+                    ))
+                continue
+
+            # Floats: absolute tolerance only
             if isinstance(alpha_value, (int, float)):
                 alpha_float = float(alpha_value)
                 beta_float = float(beta_value)
-
-                # Calculate differences
                 abs_diff = abs(alpha_float - beta_float)
-                rel_diff = abs_diff / max(abs(alpha_float), 1e-10)
-
-                # Check if within tolerance
+                rel_diff = abs_diff / max(abs(alpha_float), 1e-16)
                 if abs_diff > self.tolerance:
                     discrepancies.append(DiscrepancyReport(
                         metric=metric_name,
@@ -643,8 +663,7 @@ class ParityValidator:
                 beta_results['taes']
             )
 
-        # Future: Add other algorithms
-        # reports['epoch'] = self.compare_epoch(...)
+        # Future: Add other algorithms (epoch, overlap, dpalign, ira)
         # reports['overlap'] = self.compare_overlap(...)
 
         return reports
@@ -1209,3 +1228,15 @@ def test_phase2_criteria():
 
 ### Ready for Implementation ✅
 Phase 2 documentation is now 100% accurate and ready for implementation!
+
+## Definition of Done
+- Beta TAES fully implemented with full type hints
+- 100% unit test coverage on Beta TAES
+- Parity with Alpha validated within 1e-10 absolute tolerance
+- Performance benchmarks recorded and documented
+- Documentation complete and aligned with repo structure
+
+## Next Phase Entry Criteria
+- TAES parity proven on all 30 golden files
+- Validation framework operational (reports, tolerances, CI)
+- Dual-pipeline orchestration in place and exercised by tests
