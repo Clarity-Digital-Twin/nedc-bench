@@ -27,6 +27,10 @@ jobs:
         docker run nedc-alpha env | grep NEDC_NFC
         docker run nedc-alpha env | grep PYTHONPATH
 
+    - name: Install Test Dependencies
+      run: |
+        pip install pytest numpy scipy lxml tomli
+
     - name: Run Parser Tests
       run: |
         python -m pytest tests/test_output_parser.py -v

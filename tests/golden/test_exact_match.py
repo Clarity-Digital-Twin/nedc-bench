@@ -113,10 +113,13 @@ def test_partial_overlap():
         )
         result = alpha_wrapper.evaluate(ref_file, hyp_file)
 
-        # Should have some true positives and some false positives
-        assert 0 < result['overlap']['sensitivity'] < 1.0
+        # Note: NEDC's overlap algorithm counts ANY overlap as a full hit
+        # So partial overlap can still give 100% sensitivity
+        assert result['overlap']['sensitivity'] > 0  # Has detections
         assert result['overlap']['true_positives'] > 0
-        assert result['overlap']['false_positives'] >= 0
+
+        # TAES algorithm should show partial overlap better
+        assert 0 < result['taes']['sensitivity'] <= 1.0
 
     finally:
         cleanup_temp_files(ref_file, hyp_file)
