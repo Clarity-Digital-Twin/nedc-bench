@@ -1,6 +1,11 @@
 """
 Time-Aligned Event Scoring (TAES) Algorithm
 Based on NEDC v6.0.0 implementation
+
+CRITICAL: NEDC TAES uses FRACTIONAL scoring, not binary matching!
+- hit = overlap_duration / ref_duration
+- fa = non_overlap_duration / ref_duration
+- miss = 1 - hit (for unmatched refs)
 """
 
 from dataclasses import dataclass
@@ -50,24 +55,23 @@ class TAESResult:
 class TAESScorer:
     """
     Time-Aligned Event Scoring implementation
-    Matches NEDC v6.0.0 behavior exactly
+    Matches NEDC v6.0.0 fractional scoring behavior
     """
 
-    def __init__(self, overlap_threshold: float = 0.0):
-        """
-        Initialize TAES scorer
-
-        Args:
-            overlap_threshold: Minimum overlap fraction (0.0 = any overlap counts)
-                              NEDC uses 0.0 by default
-        """
-        self.overlap_threshold = overlap_threshold
+    def __init__(self):
+        """Initialize TAES scorer"""
+        pass
 
     def score(
         self, reference: list[EventAnnotation], hypothesis: list[EventAnnotation]
     ) -> TAESResult:
         """
-        Score hypothesis against reference using TAES algorithm
+        Score hypothesis against reference using TAES fractional algorithm
+
+        NEDC v6.0.0 uses FRACTIONAL scoring:
+        - hit = overlap_duration / ref_duration
+        - fa = non_overlap_duration / ref_duration
+        - miss = 1 - hit
 
         Args:
             reference: Ground truth events
@@ -76,21 +80,57 @@ class TAESScorer:
         Returns:
             TAESResult with scoring metrics
         """
-        # Track which events have been matched
-        ref_matched: set[int] = set()
-        hyp_matched: set[int] = set()
+        # Initialize fractional counters
+        total_hit = 0.0
+        total_miss = 0.0
+        total_fa = 0.0
 
-        # Check each hypothesis against each reference
-        for h_idx, hyp_event in enumerate(hypothesis):
-            for r_idx, ref_event in enumerate(reference):
-                if self._events_overlap(ref_event, hyp_event):
-                    ref_matched.add(r_idx)
-                    hyp_matched.add(h_idx)
+        # Track which events have been processed
+        ref_flags = [True] * len(reference)
+        hyp_flags = [True] * len(hypothesis)
 
-        # Count metrics
-        true_positives = len(ref_matched)  # Reference events that were detected
-        false_negatives = len(reference) - len(ref_matched)  # Missed events
-        false_positives = len(hypothesis) - len(hyp_matched)  # Extra detections
+        # Process each reference event
+        for r_idx, ref_event in enumerate(reference):
+            if not ref_flags[r_idx]:
+                continue
+
+            # Find all overlapping hypothesis events with same label
+            for h_idx, hyp_event in enumerate(hypothesis):
+                if not hyp_flags[h_idx]:
+                    continue
+
+                if ref_event.label != hyp_event.label:
+                    continue
+
+                # Check for overlap
+                overlap_start = max(ref_event.start_time, hyp_event.start_time)
+                overlap_end = min(ref_event.stop_time, hyp_event.stop_time)
+
+                if overlap_end > overlap_start:
+                    # Calculate fractional hit/fa
+                    hit, fa = self._calc_hf(ref_event, hyp_event)
+                    total_hit += hit
+                    total_fa += fa
+
+                    # Mark events as processed
+                    ref_flags[r_idx] = False
+                    hyp_flags[h_idx] = False
+                    break  # Move to next ref event after first match
+
+        # Count unmatched events as absolute misses/FAs
+        # Only count events with same label that weren't matched
+        for i, flag in enumerate(ref_flags):
+            if flag:
+                total_miss += 1.0
+
+        for i, flag in enumerate(hyp_flags):
+            if flag:
+                total_fa += 1.0
+
+        # Convert fractional to integer counts (rounding)
+        true_positives = int(round(total_hit))
+        false_negatives = int(round(total_miss))
+        false_positives = int(round(total_fa))
 
         return TAESResult(
             true_positives=true_positives,
@@ -98,29 +138,59 @@ class TAESScorer:
             false_negatives=false_negatives,
         )
 
-    def _events_overlap(self, event1: EventAnnotation, event2: EventAnnotation) -> bool:
+    def _calc_hf(self, ref: EventAnnotation, hyp: EventAnnotation) -> tuple[float, float]:
         """
-        Check if two events overlap
+        Calculate fractional hit and false alarm between two events.
+        Based on NEDC v6.0.0 calc_hf method.
 
-        NEDC v6.0.0 behavior: ANY overlap counts as a match
+        Args:
+            ref: Reference event
+            hyp: Hypothesis event
+
+        Returns:
+            (hit, fa) as fractional values
         """
-        # Events must have same label
-        if event1.label != event2.label:
-            return False
+        start_r = ref.start_time
+        stop_r = ref.stop_time
+        start_h = hyp.start_time
+        stop_h = hyp.stop_time
 
-        # Check temporal overlap
-        overlap_start = max(event1.start_time, event2.start_time)
-        overlap_end = min(event1.stop_time, event2.stop_time)
+        ref_dur = stop_r - start_r
+        if ref_dur <= 0:
+            return (0.0, 0.0)
 
-        # Any overlap counts (NEDC default behavior)
-        if overlap_end > overlap_start:
-            if self.overlap_threshold == 0.0:
-                return True
+        hit = 0.0
+        fa = 0.0
 
-            # Optional: require minimum overlap fraction
-            overlap_duration = overlap_end - overlap_start
-            event1_duration = event1.duration
-            overlap_fraction = overlap_duration / event1_duration
-            return overlap_fraction >= self.overlap_threshold
+        # Case 1: Pre-prediction (hyp starts before ref)
+        #     ref:         <--------------------->\
+        #     hyp:   <---------------->\
+        if start_h <= start_r and stop_h <= stop_r:
+            hit = (stop_h - start_r) / ref_dur
+            fa_duration = start_r - start_h
+            fa = min(1.0, fa_duration / ref_dur)
 
-        return False
+        # Case 2: Post-prediction (hyp ends after ref)
+        #     ref:         <--------------------->\
+        #     hyp:                  <-------------------->\
+        elif start_h >= start_r and stop_h >= stop_r:
+            hit = (stop_r - start_h) / ref_dur
+            fa_duration = stop_h - stop_r
+            fa = min(1.0, fa_duration / ref_dur)
+
+        # Case 3: Over-prediction (hyp covers entire ref)
+        #     ref:              <------->\
+        #     hyp:        <------------------->\
+        elif start_h < start_r and stop_h > stop_r:
+            hit = 1.0
+            fa_duration = (stop_h - stop_r) + (start_r - start_h)
+            fa = min(1.0, fa_duration / ref_dur)
+
+        # Case 4: Under-prediction (hyp entirely within ref)
+        #     ref:        <--------------------->\
+        #     hyp:            <------>\
+        else:
+            hit = (stop_h - start_h) / ref_dur
+            fa = 0.0
+
+        return (hit, fa)
