@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Dict, Optional
 import json
 
-from parsers import UnifiedOutputParser
+from .parsers import UnifiedOutputParser
 
 
 class NEDCAlphaWrapper:

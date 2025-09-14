@@ -45,7 +45,7 @@ def test_parse_taes_output():
 
     assert result['sensitivity'] == 0.85
     assert result['specificity'] == 0.92
-    assert result['precision'] == 0.913978
+    assert abs(result['precision'] - 0.913978) < 1e-6
     assert result['f1_score'] == 0.8817
     assert result['accuracy'] == 0.885
     assert result['true_positives'] == 85
