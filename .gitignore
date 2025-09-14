@@ -73,6 +73,9 @@ $RECYCLE.BIN/
 # Claude Assistant Config (local only)
 .claude/
 
+# Reference repositories for comparison/study
+reference_repos/
+
 # RCS Version Control Files (legacy)
 *,v
 
