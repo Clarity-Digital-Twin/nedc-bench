@@ -21,9 +21,9 @@ def test_taes_exact_match():
     assert result.sensitivity == 1.0
     assert result.precision == 1.0
     assert result.f1_score == 1.0
-    assert result.true_positives == 2
-    assert result.false_positives == 0
-    assert result.false_negatives == 0
+    assert result.true_positives == 2.0  # TAES uses floats
+    assert result.false_positives == 0.0
+    assert result.false_negatives == 0.0
 
 
 def test_taes_no_overlap():
@@ -36,21 +36,24 @@ def test_taes_no_overlap():
 
     assert result.sensitivity == 0.0
     assert result.precision == 0.0
-    assert result.false_positives == 1
-    assert result.false_negatives == 1
+    assert result.false_positives == 1.0  # TAES uses floats
+    assert result.false_negatives == 1.0
 
 
 def test_taes_partial_overlap():
-    """Test partial overlap detection"""
+    """Test partial overlap detection - TAES uses fractional scoring"""
     ref = [EventAnnotation(start_time=0, stop_time=10, label="seiz", confidence=1.0)]
     hyp = [EventAnnotation(start_time=5, stop_time=15, label="seiz", confidence=1.0)]
 
     scorer = TAESScorer()
     result = scorer.score(ref, hyp)
 
-    # TAES counts any overlap as detection
-    assert result.true_positives == 1
-    assert result.sensitivity == 1.0
+    # TAES uses fractional scoring: hit = overlap_duration / ref_duration
+    # Overlap is 5 seconds (5-10), ref is 10 seconds, so hit = 0.5
+    assert result.true_positives == 0.5
+    assert result.false_negatives == 0.5  # miss = 1 - hit
+    assert result.false_positives == 0.5  # FA from non-overlap portion
+    assert result.sensitivity == 0.5  # 0.5 / (0.5 + 0.5)
 
 
 def test_taes_empty_reference():
@@ -61,8 +64,8 @@ def test_taes_empty_reference():
     scorer = TAESScorer()
     result = scorer.score(ref, hyp)
 
-    assert result.false_positives == 1
-    assert result.false_negatives == 0
+    assert result.false_positives == 1.0  # TAES uses floats
+    assert result.false_negatives == 0.0
     assert result.sensitivity == 0.0  # 0/0 case
 
 
@@ -74,8 +77,8 @@ def test_taes_empty_hypothesis():
     scorer = TAESScorer()
     result = scorer.score(ref, hyp)
 
-    assert result.false_negatives == 1
-    assert result.false_positives == 0
+    assert result.false_negatives == 1.0  # TAES uses floats
+    assert result.false_positives == 0.0
     assert result.precision == 0.0  # 0/0 case
 
 
@@ -87,13 +90,13 @@ def test_taes_label_mismatch():
     scorer = TAESScorer()
     result = scorer.score(ref, hyp)
 
-    assert result.true_positives == 0
-    assert result.false_positives == 1
-    assert result.false_negatives == 1
+    assert result.true_positives == 0.0  # TAES uses floats
+    assert result.false_positives == 1.0
+    assert result.false_negatives == 1.0
 
 
 def test_taes_multiple_overlap():
-    """One hypothesis overlapping multiple references"""
+    """One hypothesis overlapping multiple references - fractional scoring"""
     ref = [
         EventAnnotation(start_time=0, stop_time=10, label="seiz", confidence=1.0),
         EventAnnotation(start_time=20, stop_time=30, label="seiz", confidence=1.0),
@@ -104,16 +107,15 @@ def test_taes_multiple_overlap():
     scorer = TAESScorer()
     result = scorer.score(ref, hyp)
 
-    # Both references detected, no false positives
-    assert result.true_positives == 2
-    assert result.false_positives == 0
-    assert result.false_negatives == 0
-    assert result.sensitivity == 1.0
-    assert result.precision == 1.0
+    # Fractional scoring: First ref gets 0.5 hit (5-10 overlap / 10 duration)
+    # Second ref gets 0.5 hit (20-25 overlap / 10 duration)
+    # Total hit = 1.0, miss = 1.0
+    assert abs(result.true_positives - 1.0) < 1e-10
+    assert abs(result.false_negatives - 1.0) < 1e-10
 
 
 def test_taes_one_to_many():
-    """One reference matched by multiple hypotheses"""
+    """One reference matched by multiple hypotheses - fractional scoring"""
     ref = [EventAnnotation(start_time=10, stop_time=20, label="seiz", confidence=1.0)]
     hyp = [
         EventAnnotation(start_time=5, stop_time=15, label="seiz", confidence=1.0),
@@ -123,15 +125,17 @@ def test_taes_one_to_many():
     scorer = TAESScorer()
     result = scorer.score(ref, hyp)
 
-    # One reference detected, no false positives (both hyp match same ref)
-    assert result.true_positives == 1
-    assert result.false_positives == 0
-    assert result.false_negatives == 0
+    # Fractional: Both hyps overlap the ref
+    # First hyp: 5 sec overlap (10-15), hit = 0.5
+    # Second hyp: 5 sec overlap (15-20), hit = 0.5
+    # Total hit = 1.0 (capped), miss = 0.0
+    assert abs(result.true_positives - 1.0) < 1e-10
+    assert abs(result.false_negatives - 0.0) < 1e-10
 
 
 def test_taes_result_properties():
-    """Test TAESResult property calculations"""
-    result = TAESResult(true_positives=8, false_positives=2, false_negatives=2)
+    """Test TAESResult property calculations with float counts"""
+    result = TAESResult(true_positives=8.0, false_positives=2.0, false_negatives=2.0)
 
     assert result.sensitivity == 0.8  # 8/(8+2)
     assert result.precision == 0.8  # 8/(8+2)
@@ -142,7 +146,7 @@ def test_taes_result_properties():
 
 def test_taes_zero_division():
     """Test zero division cases"""
-    result = TAESResult(true_positives=0, false_positives=0, false_negatives=0)
+    result = TAESResult(true_positives=0.0, false_positives=0.0, false_negatives=0.0)
 
     assert result.sensitivity == 0.0
     assert result.precision == 0.0

@@ -73,6 +73,9 @@ class ParityValidator:
         """
         Compare TAES results from both pipelines
 
+        IMPORTANT: TAES uses fractional scoring, so TP/FP/FN are floats.
+        We compare counts first, then recompute metrics centrally.
+
         Args:
             alpha_result: Dictionary from Alpha pipeline
             beta_result: TAESResult from Beta pipeline
@@ -82,14 +85,14 @@ class ParityValidator:
         """
         discrepancies = []
 
-        # Define metrics to compare (counts-first, then floats)
+        # Define metrics to compare (counts-first as floats, then metrics)
         metrics_map = {
-            "sensitivity": beta_result.sensitivity,
-            "precision": beta_result.precision,
-            "f1_score": beta_result.f1_score,
             "true_positives": beta_result.true_positives,
             "false_positives": beta_result.false_positives,
             "false_negatives": beta_result.false_negatives,
+            "sensitivity": beta_result.sensitivity,
+            "precision": beta_result.precision,
+            "f1_score": beta_result.f1_score,
         }
 
         beta_metrics = {}
@@ -102,27 +105,32 @@ class ParityValidator:
             if alpha_value is None:
                 continue
 
-            # Compare ints exactly
+            # TAES counts are floats - compare with tolerance
+            # Round to 2 decimals to match NEDC summary.txt aggregation
             if metric_name in {"true_positives", "false_positives", "false_negatives"}:
-                if int(alpha_value) != int(beta_value):
+                # Round both to 2 decimals for comparison (NEDC aggregation precision)
+                alpha_rounded = round(float(alpha_value), 2)
+                beta_rounded = round(float(beta_value), 2)
+                abs_diff = abs(alpha_rounded - beta_rounded)
+
+                if abs_diff > self.tolerance:
                     discrepancies.append(
                         DiscrepancyReport(
                             metric=metric_name,
-                            alpha_value=float(alpha_value),
-                            beta_value=float(beta_value),
-                            absolute_difference=abs(float(alpha_value) - float(beta_value)),
-                            relative_difference=0.0,
-                            tolerance=0.0,
+                            alpha_value=alpha_rounded,
+                            beta_value=beta_rounded,
+                            absolute_difference=abs_diff,
+                            relative_difference=abs_diff / max(abs(alpha_rounded), 1e-16),
+                            tolerance=self.tolerance,
                         )
                     )
-                continue
-
-            # Floats: absolute tolerance only
-            if isinstance(alpha_value, (int, float)):
+            else:
+                # Metrics: absolute tolerance only
                 alpha_float = float(alpha_value)
                 beta_float = float(beta_value)
                 abs_diff = abs(alpha_float - beta_float)
                 rel_diff = abs_diff / max(abs(alpha_float), 1e-16)
+
                 if abs_diff > self.tolerance:
                     discrepancies.append(
                         DiscrepancyReport(

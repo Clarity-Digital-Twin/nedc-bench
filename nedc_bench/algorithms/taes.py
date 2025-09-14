@@ -61,9 +61,14 @@ class TAESScorer:
     Matches NEDC v6.0.0 fractional scoring behavior
     """
 
-    def __init__(self):
-        """Initialize TAES scorer"""
-        pass
+    def __init__(self, target_label: str = "seiz"):
+        """Initialize TAES scorer
+
+        Args:
+            target_label: Label to score (default: "seiz")
+                         NEDC scores each label separately
+        """
+        self.target_label = target_label
 
     def score(
         self, reference: list[EventAnnotation], hypothesis: list[EventAnnotation]
@@ -71,63 +76,74 @@ class TAESScorer:
         """
         Score hypothesis against reference using TAES fractional algorithm
 
-        NEDC v6.0.0 uses FRACTIONAL scoring:
+        NEDC v6.0.0 uses FRACTIONAL scoring with complex multi-overlap handling:
         - hit = overlap_duration / ref_duration
-        - fa = non_overlap_duration / ref_duration
-        - miss = 1 - hit
+        - miss = 1 - hit (adjusted for multi-overlaps)
+        - fa = non_overlap_duration / ref_duration (capped at 1.0)
 
         Args:
             reference: Ground truth events
             hypothesis: Predicted events
 
         Returns:
-            TAESResult with scoring metrics
+            TAESResult with fractional scoring metrics
         """
-        # Initialize fractional counters
+        # Initialize fractional counters per label
+        # For simplicity, we'll aggregate all labels together
         total_hit = 0.0
         total_miss = 0.0
         total_fa = 0.0
 
-        # Track which events have been processed
-        ref_flags = [True] * len(reference)
-        hyp_flags = [True] * len(hypothesis)
+        # Filter to only score the target label
+        # NEDC scores each label separately and reports per-label metrics
+        refs = [ref for ref in reference if ref.label == self.target_label]
+        hyps = [hyp for hyp in hypothesis if hyp.label == self.target_label]
 
-        # Process each reference event
-        for r_idx, ref_event in enumerate(reference):
-            if not ref_flags[r_idx]:
-                continue
+        # If no events for this label, return zeros
+        if not refs and not hyps:
+            return TAESResult(
+                true_positives=0.0,
+                false_positives=0.0,
+                false_negatives=0.0,
+            )
 
-            # Find all overlapping hypothesis events with same label
-            for h_idx, hyp_event in enumerate(hypothesis):
-                if not hyp_flags[h_idx]:
-                    continue
+        # Track matched events
+        ref_matched = [False] * len(refs)
+        hyp_matched = [False] * len(hyps)
 
-                if ref_event.label != hyp_event.label:
-                    continue
+        # Calculate hits and false alarms for overlapping events
+        for r_idx, ref_event in enumerate(refs):
+            ref_hit = 0.0
 
+            for h_idx, hyp_event in enumerate(hyps):
                 # Check for overlap
                 overlap_start = max(ref_event.start_time, hyp_event.start_time)
                 overlap_end = min(ref_event.stop_time, hyp_event.stop_time)
 
                 if overlap_end > overlap_start:
-                    # Calculate fractional hit/fa
+                    # Calculate fractional hit/fa for this pair
                     hit, fa = self._calc_hf(ref_event, hyp_event)
-                    total_hit += hit
+                    ref_hit += hit
                     total_fa += fa
 
-                    # Mark events as processed
-                    ref_flags[r_idx] = False
-                    hyp_flags[h_idx] = False
-                    break  # Move to next ref event after first match
+                    # Mark hypothesis as matched
+                    hyp_matched[h_idx] = True
+                    ref_matched[r_idx] = True
 
-        # Count unmatched events as absolute misses/FAs
-        # Only count events with same label that weren't matched
-        for i, flag in enumerate(ref_flags):
-            if flag:
+            # Cap hit at 1.0 and calculate miss
+            ref_hit = min(1.0, ref_hit)
+            total_hit += ref_hit
+
+            # If reference was matched, miss = 1 - hit
+            # If not matched, miss = 1.0
+            if ref_matched[r_idx]:
+                total_miss += (1.0 - ref_hit)
+            else:
                 total_miss += 1.0
 
-        for i, flag in enumerate(hyp_flags):
-            if flag:
+        # Add false alarms for unmatched hypotheses
+        for h_idx, matched in enumerate(hyp_matched):
+            if not matched:
                 total_fa += 1.0
 
         # Return fractional counts directly (no rounding)
