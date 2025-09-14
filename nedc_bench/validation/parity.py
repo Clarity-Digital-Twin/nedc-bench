@@ -106,21 +106,21 @@ class ParityValidator:
                 continue
 
             # TAES counts are floats - compare with tolerance
-            # Round to 2 decimals to match NEDC summary.txt aggregation
+            # Alpha already rounded to 2 decimals in summary.txt
             if metric_name in {"true_positives", "false_positives", "false_negatives"}:
-                # Round both to 2 decimals for comparison (NEDC aggregation precision)
-                alpha_rounded = round(float(alpha_value), 2)
+                # Alpha is already rounded, round Beta to match
+                alpha_val = float(alpha_value)
                 beta_rounded = round(float(beta_value), 2)
-                abs_diff = abs(alpha_rounded - beta_rounded)
+                abs_diff = abs(alpha_val - beta_rounded)
 
                 if abs_diff > self.tolerance:
                     discrepancies.append(
                         DiscrepancyReport(
                             metric=metric_name,
-                            alpha_value=alpha_rounded,
+                            alpha_value=alpha_val,
                             beta_value=beta_rounded,
                             absolute_difference=abs_diff,
-                            relative_difference=abs_diff / max(abs(alpha_rounded), 1e-16),
+                            relative_difference=abs_diff / max(abs(alpha_val), 1e-16),
                             tolerance=self.tolerance,
                         )
                     )

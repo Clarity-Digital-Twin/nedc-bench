@@ -1,4 +1,5 @@
 # Phase 2: TAES Parity — Final Plan (Corrected)
+Status: Parity Achieved (counts-first; metrics within atol)
 ## Vertical Slice Goal: Beta TAES with Dual-Pipeline Validation
 
 ### Duration

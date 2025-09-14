@@ -49,7 +49,7 @@ class TAESResult:
         return 0.0
 
 
-class TAESScorer:
+class TAESExactScorer:
     """
     EXACT NEDC TAES implementation with full multi-overlap sequencing
     """
