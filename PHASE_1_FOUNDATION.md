@@ -15,6 +15,7 @@
 #### Morning: Docker Environment
 ```python
 # tests/test_alpha_environment.py
+import subprocess
 def test_docker_build():
     """Alpha container builds successfully"""
     result = subprocess.run(["docker", "build", "-t", "nedc-alpha", "alpha/"])
@@ -27,6 +28,7 @@ def test_environment_variables():
         capture_output=True, text=True
     )
     assert "NEDC_NFC=/opt/nedc" in result.stdout
+    # allow extra path segments; check prefix exists
     assert "PYTHONPATH=/opt/nedc/lib" in result.stdout
 ```
 
@@ -56,6 +58,7 @@ class NEDCAlphaWrapper:
 #### Morning: Text Parser for TAES
 ```python
 # tests/test_output_parser.py
+from alpha.wrapper.parsers import TAESParser
 def test_parse_taes_output():
     """Parse TAES text output to structured data"""
     sample_output = """
@@ -75,6 +78,7 @@ def test_parse_taes_output():
 #### Afternoon: Parser for All Algorithms
 ```python
 # alpha/wrapper/parsers.py
+from typing import Dict
 class UnifiedOutputParser:
     """Parse all 5 algorithm outputs"""
 
@@ -88,11 +92,24 @@ class UnifiedOutputParser:
         }
 ```
 
+#### Wrapper Evaluate Contract
+```python
+# alpha/wrapper/nedc_wrapper.py (contract)
+class NEDCAlphaWrapper:
+    def evaluate(self, ref_csv: str, hyp_csv: str) -> Dict:
+        """Run nedc_eeg_eval on a single file pair by creating temp lists,
+        then parse summary files into structured JSON (all 5 algorithms)."""
+        ...
+```
+
 ### Day 3: Golden Test Implementation
 
 #### Morning: Create Golden Dataset
 ```python
 # tests/golden/test_exact_match.py
+from alpha.wrapper.nedc_wrapper import NEDCAlphaWrapper
+from tests.utils import create_csv_bi_annotation
+
 def test_golden_exact_match():
     """Reference and hypothesis are identical"""
     # Create CSV_BI format test files
@@ -105,6 +122,7 @@ def test_golden_exact_match():
         ("TERM", 20.0, 30.0, "seiz", 1.0)
     ])
 
+    alpha_wrapper = NEDCAlphaWrapper()
     result = alpha_wrapper.evaluate(ref_file, hyp_file)
 
     # Perfect match should yield 100% for all metrics
@@ -116,6 +134,9 @@ def test_golden_exact_match():
 #### Afternoon: Edge Cases
 ```python
 # tests/golden/test_edge_cases.py
+from alpha.wrapper.nedc_wrapper import NEDCAlphaWrapper
+from tests.utils import create_csv_bi_annotation
+
 def test_no_events_in_reference():
     """Empty reference file - all hypothesis events are false positives"""
     ref_file = create_csv_bi_annotation([])  # No events
@@ -123,6 +144,7 @@ def test_no_events_in_reference():
         ("TERM", 0.0, 10.0, "seiz", 1.0)
     ])
 
+    alpha_wrapper = NEDCAlphaWrapper()
     result = alpha_wrapper.evaluate(ref_file, hyp_file)
 
     # With no reference events, everything is a false positive
@@ -145,7 +167,7 @@ services:
       - ./output:/output
     environment:
       - NEDC_NFC=/opt/nedc
-      - PYTHONPATH=/opt/nedc/lib
+      - PYTHONPATH=/opt/nedc/lib:/app
 ```
 
 #### Afternoon: GitHub Actions
@@ -163,8 +185,8 @@ jobs:
         run: docker build -t nedc-alpha alpha/
       - name: Run Golden Tests
         run: |
-          docker run -v $PWD/tests:/tests nedc-alpha \
-            pytest /tests/test_alpha_golden.py -v
+          docker run -e PYTHONPATH=/opt/nedc/lib:/app -v $PWD/tests:/tests nedc-alpha \
+            pytest /tests -q
 ```
 
 ### Day 5: Validation & Documentation
@@ -192,12 +214,35 @@ def test_alpha_validation_suite(test_case):
 
 ### Deliverables Checklist
 - [ ] `alpha/Dockerfile` - Python 3.9+ container with NEDC v6.0.0
-- [ ] `alpha/requirements.txt` - numpy==2.0.2, scipy==1.14.1, lxml==5.3.0, tomli==2.0.1
+- [ ] `alpha/requirements.txt` - numpy==2.0.2, scipy==1.14.1, lxml==5.3.0, tomli==2.0.1, pytest==8.3.2
 - [ ] `alpha/wrapper/nedc_wrapper.py` - Python wrapper for subprocess calls
 - [ ] `alpha/wrapper/parsers.py` - Text-to-JSON parsers for all 5 algorithms
 - [ ] `tests/test_alpha_*.py` - Test suite with golden tests
 - [ ] `.github/workflows/alpha-pipeline.yml` - CI/CD pipeline
 - [ ] `docs/alpha-pipeline.md` - API and output format documentation
+
+#### Alpha Dockerfile (reference)
+```dockerfile
+# alpha/Dockerfile
+FROM python:3.9-slim
+RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+
+# Vendored NEDC tool and wrapper
+COPY nedc_eeg_eval/v6.0.0/ /opt/nedc/
+COPY alpha/wrapper/ /app/
+COPY alpha/requirements.txt /tmp/requirements.txt
+
+# Python dependencies (include pytest for in-container tests)
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Required env
+ENV NEDC_NFC=/opt/nedc
+ENV PYTHONPATH=/opt/nedc/lib:/app
+WORKDIR /app
+```
+
+#### Notes on IRA Output
+- IRA does not produce a standalone `summary_ira.txt`; parse the IRA section from `output/summary.txt`.
 
 ### Definition of Done
 1. ✅ Alpha pipeline runs in Docker
