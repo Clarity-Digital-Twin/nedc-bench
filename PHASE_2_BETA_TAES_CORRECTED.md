@@ -456,6 +456,8 @@ def test_taes_label_mismatch():
 import pytest
 from nedc_bench.validation.parity import ParityValidator, DiscrepancyReport
 from alpha.wrapper import NEDCAlphaWrapper
+import os
+from pathlib import Path
 
 def test_parity_exact_match(setup_nedc_env, test_data_dir):
     """Alpha and Beta produce identical results"""
@@ -463,7 +465,7 @@ def test_parity_exact_match(setup_nedc_env, test_data_dir):
     hyp_file = test_data_dir / "csv" / "hyp" / "00000258_s001.csv_bi"
 
     # Run Alpha pipeline
-    alpha_wrapper = NEDCAlphaWrapper()
+    alpha_wrapper = NEDCAlphaWrapper(nedc_root=Path(os.environ["NEDC_NFC"]))
     alpha_result = alpha_wrapper.evaluate(str(ref_file), str(hyp_file))
 
     # Run Beta pipeline
@@ -676,8 +678,10 @@ class ParityValidator:
 import pytest
 from pathlib import Path
 from nedc_bench.validation.parity import ParityValidator
-from nedc_bench.orchestration.runner import BetaPipeline
+from nedc_bench.orchestration.dual_pipeline import BetaPipeline
 from alpha.wrapper import NEDCAlphaWrapper
+import os
+from pathlib import Path
 
 @pytest.mark.integration
 def test_full_pipeline_parity(setup_nedc_env, test_data_dir):
@@ -690,7 +694,7 @@ def test_full_pipeline_parity(setup_nedc_env, test_data_dir):
 
     assert len(ref_files) == len(hyp_files), "Mismatched test files"
 
-    alpha_wrapper = NEDCAlphaWrapper()
+    alpha_wrapper = NEDCAlphaWrapper(nedc_root=Path(os.environ["NEDC_NFC"]))
     beta_pipeline = BetaPipeline()
 
     all_passed = True
@@ -774,6 +778,7 @@ import shutil
 
 from alpha.wrapper import NEDCAlphaWrapper
 from nedc_bench.algorithms.taes import TAESScorer
+import os
 from nedc_bench.models.annotations import AnnotationFile
 from nedc_bench.validation.parity import ParityValidator, ValidationReport
 
@@ -815,7 +820,7 @@ class DualPipelineOrchestrator:
         Args:
             tolerance: Numerical tolerance for parity validation
         """
-        self.alpha_wrapper = NEDCAlphaWrapper()
+        self.alpha_wrapper = NEDCAlphaWrapper(nedc_root=Path(os.environ["NEDC_NFC"]))
         self.beta_pipeline = BetaPipeline()
         self.validator = ParityValidator(tolerance=tolerance)
 
