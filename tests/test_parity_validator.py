@@ -6,7 +6,7 @@ from pathlib import Path
 from alpha.wrapper import NEDCAlphaWrapper
 from nedc_bench.algorithms.taes import TAESResult, TAESScorer
 from nedc_bench.models.annotations import AnnotationFile
-from nedc_bench.validation.parity import DiscrepancyReport, ParityValidator
+from nedc_bench.validation.parity import DiscrepancyReport, ParityValidator, ValidationReport
 
 
 def test_parity_exact_match(setup_nedc_env, test_data_dir):
