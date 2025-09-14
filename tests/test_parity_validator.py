@@ -77,8 +77,6 @@ def test_discrepancy_report():
 
 def test_validation_report_string():
     """Test ValidationReport string representation"""
-    from nedc_bench.validation.parity import ValidationReport
-
     # Passing report
     report = ValidationReport(
         algorithm="TAES", passed=True, discrepancies=[], alpha_metrics={}, beta_metrics={}
