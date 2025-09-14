@@ -81,9 +81,9 @@ class AnnotationFile(BaseModel):
         metadata = {}
         events = []
 
-        with open(file_path, encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:  # noqa: PTH123
             for line in f:
-                line = line.strip()
+                line = line.strip()  # noqa: PLW2901
 
                 # Skip empty lines
                 if not line:

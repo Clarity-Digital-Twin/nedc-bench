@@ -37,7 +37,7 @@ class DualPipelineResult:
 class BetaPipeline:
     """Beta pipeline runner"""
 
-    def evaluate_taes(self, ref_file: Path, hyp_file: Path) -> Any:
+    def evaluate_taes(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
         """Run TAES evaluation on single file pair"""
         ref_annotations = AnnotationFile.from_csv_bi(ref_file)
         hyp_annotations = AnnotationFile.from_csv_bi(hyp_file)
@@ -118,10 +118,10 @@ class DualPipelineOrchestrator:
         ref_files = []
         hyp_files = []
 
-        with open(ref_list, encoding="utf-8") as f:
+        with open(ref_list, encoding="utf-8") as f:  # noqa: PTH123
             ref_files = [line.strip() for line in f if line.strip()]
 
-        with open(hyp_list, encoding="utf-8") as f:
+        with open(hyp_list, encoding="utf-8") as f:  # noqa: PTH123
             hyp_files = [line.strip() for line in f if line.strip()]
 
         assert len(ref_files) == len(hyp_files), "List files must have same length"

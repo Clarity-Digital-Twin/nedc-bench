@@ -7,6 +7,7 @@ from nedc_bench.orchestration.dual_pipeline import (
     DualPipelineOrchestrator,
     DualPipelineResult,
 )
+from nedc_bench.validation.parity import ValidationReport
 
 
 @pytest.mark.integration
@@ -47,8 +48,6 @@ def test_beta_pipeline_taes(test_data_dir):
 
 def test_dual_pipeline_result():
     """Test DualPipelineResult dataclass"""
-    from nedc_bench.validation.parity import ValidationReport
-
     result = DualPipelineResult(
         alpha_result={"taes": {"sensitivity": 0.9}},
         beta_result={"sensitivity": 0.9},

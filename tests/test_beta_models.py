@@ -7,6 +7,7 @@ import pytest
 from pydantic import ValidationError
 
 from nedc_bench.models.annotations import AnnotationFile, EventAnnotation
+from tests.utils import create_csv_bi_annotation
 
 
 def test_event_annotation_validation():
@@ -45,12 +46,6 @@ def test_csv_bi_parsing(test_data_dir):
 
 def test_integration_with_existing_utils():
     """Beta models work with existing test utilities"""
-    import sys
-
-    sys.path.insert(0, str(Path(__file__).parent))
-
-    from tests.utils import create_csv_bi_annotation
-
     # Use existing utility to create test data
     events = [
         ("TERM", 10.0, 20.0, "seiz", 1.0),
