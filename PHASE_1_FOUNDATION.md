@@ -1,0 +1,193 @@
+# Phase 1: Foundation - Containerized Alpha Pipeline
+## Vertical Slice Goal: Working Alpha Pipeline with Structured Output
+
+### Duration: 5 Days
+
+### Success Criteria (TDD)
+- [ ] Alpha pipeline runs in Docker container
+- [ ] Text output parsed to JSON structure
+- [ ] All 5 algorithms produce parseable output
+- [ ] Golden test file passes with 100% match
+- [ ] CI/CD runs Alpha pipeline on every commit
+
+### Day 1: Environment & Container Setup
+
+#### Morning: Docker Environment
+```python
+# tests/test_alpha_environment.py
+def test_docker_build():
+    """Alpha container builds successfully"""
+    result = subprocess.run(["docker", "build", "-t", "nedc-alpha", "alpha/"])
+    assert result.returncode == 0
+
+def test_environment_variables():
+    """Container has correct environment"""
+    result = docker.run("nedc-alpha", "env")
+    assert "NEDC_NFC=/opt/nedc" in result.stdout
+    assert "PYTHONPATH" in result.stdout
+```
+
+#### Afternoon: Basic Wrapper
+```python
+# alpha/wrapper/nedc_wrapper.py
+class NEDCAlphaWrapper:
+    def __init__(self):
+        self.nedc_root = Path("/opt/nedc")
+        self._validate_installation()
+
+    def _validate_installation(self):
+        """TDD: Verify NEDC installation"""
+        assert (self.nedc_root / "lib").exists()
+        assert (self.nedc_root / "bin/nedc_eeg_eval").exists()
+```
+
+### Day 2: Output Parser Implementation
+
+#### Morning: Text Parser for TAES
+```python
+# tests/test_output_parser.py
+def test_parse_taes_output():
+    """Parse TAES text output to structured data"""
+    sample_output = """
+    TAES SUMMARY:
+    Sensitivity: 0.8500
+    Specificity: 0.9200
+    F1 Score: 0.7800
+    """
+    parser = TAESParser()
+    result = parser.parse(sample_output)
+    assert result['sensitivity'] == 0.85
+    assert result['specificity'] == 0.92
+    assert result['f1_score'] == 0.78
+```
+
+#### Afternoon: Parser for All Algorithms
+```python
+# alpha/wrapper/parsers.py
+class UnifiedOutputParser:
+    """Parse all 5 algorithm outputs"""
+
+    def parse_summary(self, text: str) -> Dict:
+        return {
+            'dp_alignment': self._parse_dp(text),
+            'epoch': self._parse_epoch(text),
+            'overlap': self._parse_overlap(text),
+            'taes': self._parse_taes(text),
+            'ira': self._parse_ira(text)
+        }
+```
+
+### Day 3: Golden Test Implementation
+
+#### Morning: Create Golden Dataset
+```python
+# tests/golden/test_exact_match.py
+def test_golden_exact_match():
+    """Reference and hypothesis are identical"""
+    ref = create_annotation([(0, 10, "seiz"), (20, 30, "seiz")])
+    hyp = create_annotation([(0, 10, "seiz"), (20, 30, "seiz")])
+
+    result = alpha_wrapper.evaluate(ref, hyp)
+
+    assert result['taes']['sensitivity'] == 1.0
+    assert result['taes']['specificity'] == 1.0
+    assert result['taes']['f1_score'] == 1.0
+```
+
+#### Afternoon: Edge Cases
+```python
+# tests/golden/test_edge_cases.py
+def test_no_events_in_reference():
+    """Empty reference file"""
+    ref = create_annotation([])
+    hyp = create_annotation([(0, 10, "seiz")])
+
+    result = alpha_wrapper.evaluate(ref, hyp)
+    assert result['taes']['false_positives'] == 1
+    assert result['taes']['true_positives'] == 0
+```
+
+### Day 4: Integration & CI/CD
+
+#### Morning: Docker Compose Setup
+```yaml
+# docker-compose.test.yml
+version: '3.8'
+services:
+  alpha:
+    build: ./alpha
+    volumes:
+      - ./tests/data:/data
+      - ./output:/output
+    environment:
+      - NEDC_NFC=/opt/nedc
+```
+
+#### Afternoon: GitHub Actions
+```yaml
+# .github/workflows/alpha-pipeline.yml
+name: Alpha Pipeline Tests
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Alpha Container
+        run: docker build -t nedc-alpha alpha/
+      - name: Run Golden Tests
+        run: |
+          docker run -v $PWD/tests:/tests nedc-alpha \
+            pytest /tests/test_alpha_golden.py -v
+```
+
+### Day 5: Validation & Documentation
+
+#### Morning: Comprehensive Test Suite
+```python
+# tests/test_alpha_validation.py
+@pytest.mark.parametrize("test_case", load_validation_cases())
+def test_alpha_validation_suite(test_case):
+    """Run all validation cases from NEDC paper"""
+    result = alpha_wrapper.evaluate(
+        test_case['ref'],
+        test_case['hyp']
+    )
+
+    # Allow small numerical tolerance
+    for metric, expected in test_case['expected'].items():
+        assert abs(result[metric] - expected) < 1e-6
+```
+
+#### Afternoon: Documentation
+- API documentation for wrapper
+- Docker usage guide
+- Output format specification
+
+### Deliverables Checklist
+- [ ] `alpha/Dockerfile` - Container definition
+- [ ] `alpha/wrapper/nedc_wrapper.py` - Python wrapper
+- [ ] `alpha/wrapper/parsers.py` - Output parsers
+- [ ] `tests/test_alpha_*.py` - Test suite
+- [ ] `.github/workflows/alpha-pipeline.yml` - CI/CD
+- [ ] `docs/alpha-pipeline.md` - Documentation
+
+### Definition of Done
+1. ✅ Alpha pipeline runs in Docker
+2. ✅ All 5 algorithms produce JSON output
+3. ✅ Golden tests pass
+4. ✅ CI/CD runs on every commit
+5. ✅ Documentation complete
+
+### Next Phase Entry Criteria
+- Alpha pipeline stable and tested
+- Output format documented
+- Ready to implement Beta TAES algorithm
+
+---
+## Notes
+- Keep wrapper minimal - just parse output
+- Don't modify NEDC code at all
+- Focus on reproducibility
+- Document any quirks found
