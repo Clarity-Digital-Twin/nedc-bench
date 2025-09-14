@@ -7,12 +7,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from alpha.wrapper.parsers import (
-    TAESParser,
     DPAlignmentParser,
     EpochParser,
-    OverlapParser,
     IRAParser,
-    UnifiedOutputParser
+    TAESParser,
+    UnifiedOutputParser,
 )
 
 

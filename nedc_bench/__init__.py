@@ -12,9 +12,9 @@ PACKAGE_VERSION: Final[str] = __version__
 
 # Re-export main components when they're ready
 __all__ = [
-    "__version__",
-    "__author__",
-    "__license__",
     "PACKAGE_NAME",
     "PACKAGE_VERSION",
+    "__author__",
+    "__license__",
+    "__version__",
 ]

@@ -2,13 +2,12 @@
 NEDC Alpha Pipeline Wrapper
 Wraps the original NEDC v6.0.0 tool and parses text output to JSON
 """
+from __future__ import annotations
 
 import os
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Dict, Optional
-import json
 
 from .parsers import UnifiedOutputParser
 
@@ -16,7 +15,7 @@ from .parsers import UnifiedOutputParser
 class NEDCAlphaWrapper:
     """Wrapper around original NEDC v6.0.0 code"""
 
-    def __init__(self, nedc_root: Optional[Path] = None):
+    def __init__(self, nedc_root: Path | None = None):
         """Initialize wrapper with NEDC installation path"""
         self.nedc_root = nedc_root or Path("/opt/nedc")
 
@@ -43,7 +42,7 @@ class NEDCAlphaWrapper:
         if not eval_script.exists():
             raise RuntimeError(f"NEDC evaluation script not found: {eval_script}")
 
-    def evaluate(self, ref_csv: str, hyp_csv: str, output_dir: Optional[str] = None) -> Dict:
+    def evaluate(self, ref_csv: str, hyp_csv: str, output_dir: str | None = None) -> dict:
         """
         Run nedc_eeg_eval on a single file pair by creating temp lists,
         then parse summary files into structured JSON (all 5 algorithms).
@@ -86,7 +85,7 @@ class NEDCAlphaWrapper:
             # Run NEDC evaluation
             result = subprocess.run(
                 cmd,
-                capture_output=True,
+                check=False, capture_output=True,
                 text=True,
                 env=os.environ.copy()
             )
@@ -113,7 +112,7 @@ class NEDCAlphaWrapper:
             if temp_dir:
                 temp_dir.cleanup()
 
-    def evaluate_batch(self, ref_list_file: str, hyp_list_file: str, output_dir: str) -> Dict:
+    def evaluate_batch(self, ref_list_file: str, hyp_list_file: str, output_dir: str) -> dict:
         """
         Run NEDC evaluation on pre-existing list files (original mode).
 
@@ -140,7 +139,7 @@ class NEDCAlphaWrapper:
         # Run NEDC evaluation
         result = subprocess.run(
             cmd,
-            capture_output=True,
+            check=False, capture_output=True,
             text=True,
             env=os.environ.copy()
         )

@@ -2,20 +2,20 @@
 
 from .nedc_wrapper import NEDCAlphaWrapper
 from .parsers import (
-    UnifiedOutputParser,
-    TAESParser,
     DPAlignmentParser,
     EpochParser,
+    IRAParser,
     OverlapParser,
-    IRAParser
+    TAESParser,
+    UnifiedOutputParser,
 )
 
 __all__ = [
-    'NEDCAlphaWrapper',
-    'UnifiedOutputParser',
-    'TAESParser',
     'DPAlignmentParser',
     'EpochParser',
+    'IRAParser',
+    'NEDCAlphaWrapper',
     'OverlapParser',
-    'IRAParser'
+    'TAESParser',
+    'UnifiedOutputParser'
 ]

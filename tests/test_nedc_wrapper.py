@@ -3,8 +3,6 @@
 import subprocess
 from pathlib import Path
 
-import pytest
-
 
 class TestNEDCWrapper:
     """Test the NEDC wrapper script."""
@@ -20,7 +18,7 @@ class TestNEDCWrapper:
         wrapper_path = project_root / "run_nedc.sh"
         result = subprocess.run(
             [str(wrapper_path), "--help"],
-            capture_output=True,
+            check=False, capture_output=True,
             text=True,
             timeout=10,
         )

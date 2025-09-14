@@ -1,7 +1,7 @@
 """Test Alpha Pipeline environment and Docker setup"""
 
-import subprocess
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -15,7 +15,7 @@ def test_docker_build():
     if os.environ.get('CI'):
         result = subprocess.run(
             ["docker", "build", "-t", "nedc-alpha", "alpha/"],
-            capture_output=True,
+            check=False, capture_output=True,
             text=True
         )
         assert result.returncode == 0, f"Docker build failed: {result.stderr}"
@@ -26,7 +26,7 @@ def test_environment_variables():
     if os.environ.get('CI'):
         result = subprocess.run(
             ["docker", "run", "nedc-alpha", "env"],
-            capture_output=True,
+            check=False, capture_output=True,
             text=True
         )
         assert "NEDC_NFC=/opt/nedc" in result.stdout
@@ -45,7 +45,7 @@ def test_wrapper_imports():
     """Test that wrapper modules can be imported"""
     try:
         from alpha.wrapper import NEDCAlphaWrapper
-        from alpha.wrapper.parsers import UnifiedOutputParser, TAESParser
+        from alpha.wrapper.parsers import TAESParser, UnifiedOutputParser
         assert NEDCAlphaWrapper is not None
         assert UnifiedOutputParser is not None
         assert TAESParser is not None

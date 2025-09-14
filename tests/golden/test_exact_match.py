@@ -1,7 +1,7 @@
 """Golden tests for perfect match scenarios"""
 
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Add parent directories to path
@@ -9,11 +9,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from tests.utils import (
-    create_perfect_match_pair,
-    create_no_overlap_pair,
+    cleanup_temp_files,
     create_empty_reference_pair,
+    create_no_overlap_pair,
     create_partial_overlap_pair,
-    cleanup_temp_files
+    create_perfect_match_pair,
 )
 
 

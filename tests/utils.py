@@ -2,12 +2,10 @@
 
 import tempfile
 from pathlib import Path
-from typing import List, Tuple
-import os
 
 
 def create_csv_bi_annotation(
-    events: List[Tuple[str, float, float, str, float]],
+    events: list[tuple[str, float, float, str, float]],
     duration: float = 1000.0,
     patient_id: str = "test_patient"
 ) -> str:
@@ -24,16 +22,16 @@ def create_csv_bi_annotation(
     """
     # Create temp file
     with tempfile.NamedTemporaryFile(
-        mode='w',
+        encoding="utf-8", mode='w',
         suffix='.csv_bi',
         delete=False,
         prefix=f"{patient_id}_"
     ) as f:
         # Write CSV_BI header
-        f.write(f"# version = csv_v1.0.0\n")
+        f.write("# version = csv_v1.0.0\n")
         f.write(f"# bname = {patient_id}\n")
         f.write(f"# duration = {duration:.4f} secs\n")
-        f.write(f"# montage_file = nedc_eas_default_montage.txt\n")
+        f.write("# montage_file = nedc_eas_default_montage.txt\n")
         f.write("#\n")
         f.write("channel,start_time,stop_time,label,confidence\n")
 
@@ -44,7 +42,7 @@ def create_csv_bi_annotation(
         return f.name
 
 
-def create_test_list_file(csv_files: List[str]) -> str:
+def create_test_list_file(csv_files: list[str]) -> str:
     """
     Create a list file pointing to CSV_BI files.
 
@@ -55,7 +53,7 @@ def create_test_list_file(csv_files: List[str]) -> str:
         Path to the created list file
     """
     with tempfile.NamedTemporaryFile(
-        mode='w',
+        encoding="utf-8", mode='w',
         suffix='.list',
         delete=False
     ) as f:
@@ -67,14 +65,14 @@ def create_test_list_file(csv_files: List[str]) -> str:
 def cleanup_temp_files(*files):
     """Clean up temporary test files"""
     for file_path in files:
-        if file_path and os.path.exists(file_path):
+        if file_path and Path(file_path).exists():
             try:
-                os.unlink(file_path)
+                Path(file_path).unlink()
             except Exception:
                 pass  # Ignore cleanup errors
 
 
-def create_perfect_match_pair() -> Tuple[str, str]:
+def create_perfect_match_pair() -> tuple[str, str]:
     """Create identical reference and hypothesis files for perfect scoring"""
     events = [
         ("TERM", 10.0, 20.0, "seiz", 1.0),
@@ -88,7 +86,7 @@ def create_perfect_match_pair() -> Tuple[str, str]:
     return ref_file, hyp_file
 
 
-def create_no_overlap_pair() -> Tuple[str, str]:
+def create_no_overlap_pair() -> tuple[str, str]:
     """Create files with no overlapping events"""
     ref_events = [
         ("TERM", 10.0, 20.0, "seiz", 1.0),
@@ -106,7 +104,7 @@ def create_no_overlap_pair() -> Tuple[str, str]:
     return ref_file, hyp_file
 
 
-def create_empty_reference_pair() -> Tuple[str, str]:
+def create_empty_reference_pair() -> tuple[str, str]:
     """Create empty reference with events in hypothesis"""
     ref_events = []  # No events
 
@@ -121,7 +119,7 @@ def create_empty_reference_pair() -> Tuple[str, str]:
     return ref_file, hyp_file
 
 
-def create_partial_overlap_pair() -> Tuple[str, str]:
+def create_partial_overlap_pair() -> tuple[str, str]:
     """Create files with partial overlap"""
     ref_events = [
         ("TERM", 10.0, 30.0, "seiz", 1.0),  # 20 seconds

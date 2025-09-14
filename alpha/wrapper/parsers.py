@@ -2,9 +2,9 @@
 Output parsers for NEDC v6.0.0 text output
 Converts text-based scoring results to structured JSON
 """
+from __future__ import annotations
 
 import re
-from typing import Dict, Optional
 from pathlib import Path
 
 
@@ -36,7 +36,7 @@ class BaseParser:
 class DPAlignmentParser(BaseParser):
     """Parser for DP Alignment algorithm output"""
 
-    def parse(self, text: str) -> Dict:
+    def parse(self, text: str) -> dict:
         """Parse DP Alignment section from summary"""
         result = {}
 
@@ -74,7 +74,7 @@ class DPAlignmentParser(BaseParser):
 class EpochParser(BaseParser):
     """Parser for Epoch-based scoring output"""
 
-    def parse(self, text: str) -> Dict:
+    def parse(self, text: str) -> dict:
         """Parse Epoch section from summary"""
         result = {}
 
@@ -110,7 +110,7 @@ class EpochParser(BaseParser):
 class OverlapParser(BaseParser):
     """Parser for Overlap scoring output"""
 
-    def parse(self, text: str) -> Dict:
+    def parse(self, text: str) -> dict:
         """Parse Overlap section from summary"""
         result = {}
 
@@ -145,7 +145,7 @@ class OverlapParser(BaseParser):
 class TAESParser(BaseParser):
     """Parser for Time-Aligned Event Scoring output"""
 
-    def parse(self, text: str) -> Dict:
+    def parse(self, text: str) -> dict:
         """Parse TAES section from summary or dedicated file"""
         result = {}
 
@@ -180,9 +180,9 @@ class TAESParser(BaseParser):
 class IRAParser(BaseParser):
     """Parser for Inter-Rater Agreement output"""
 
-    def parse(self, text: str) -> Dict:
+    def parse(self, text: str) -> dict:
         """Parse IRA section from summary (no separate file)"""
-        result: Dict = {}
+        result: dict = {}
 
         # Find IRA section
         ira_section = re.search(
@@ -225,7 +225,7 @@ class UnifiedOutputParser:
         self.taes_parser = TAESParser()
         self.ira_parser = IRAParser()
 
-    def parse_summary(self, text: str, output_dir: Optional[Path] = None) -> Dict:
+    def parse_summary(self, text: str, output_dir: Path | None = None) -> dict:
         """
         Parse main summary and individual algorithm files
 
