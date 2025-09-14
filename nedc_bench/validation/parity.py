@@ -83,71 +83,87 @@ class ParityValidator:
         Returns:
             ValidationReport with comparison details
         """
-        discrepancies = []
+        discrepancies: list[DiscrepancyReport] = []
 
-        # Define metrics to compare (counts-first as floats, then metrics)
-        metrics_map = {
-            "true_positives": beta_result.true_positives,
-            "false_positives": beta_result.false_positives,
-            "false_negatives": beta_result.false_negatives,
-            "sensitivity": beta_result.sensitivity,
-            "precision": beta_result.precision,
-            "f1_score": beta_result.f1_score,
+        # Round counts to NEDC aggregation precision (2 decimals)
+        alpha_tp = round(float(alpha_result.get("true_positives", 0.0)), 2)
+        alpha_fp = round(float(alpha_result.get("false_positives", 0.0)), 2)
+        alpha_fn = round(float(alpha_result.get("false_negatives", 0.0)), 2)
+
+        beta_tp = round(float(beta_result.true_positives), 2)
+        beta_fp = round(float(beta_result.false_positives), 2)
+        beta_fn = round(float(beta_result.false_negatives), 2)
+
+        # Compare counts first
+        for name, a, b in (
+            ("true_positives", alpha_tp, beta_tp),
+            ("false_positives", alpha_fp, beta_fp),
+            ("false_negatives", alpha_fn, beta_fn),
+        ):
+            abs_diff = abs(a - b)
+            if abs_diff > self.tolerance:
+                discrepancies.append(
+                    DiscrepancyReport(
+                        metric=name,
+                        alpha_value=a,
+                        beta_value=b,
+                        absolute_difference=abs_diff,
+                        relative_difference=abs_diff / max(abs(a), 1e-16),
+                        tolerance=self.tolerance,
+                    )
+                )
+
+        # Compute metrics centrally from the same-rounded counts
+        def metrics_from_counts(tp: float, fp: float, fn: float) -> tuple[float, float, float]:
+            sen = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+            pre = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+            f1 = 0.0 if (pre + sen) == 0 else 2 * (pre * sen) / (pre + sen)
+            return sen, pre, f1
+
+        alpha_sen, alpha_pre, alpha_f1 = metrics_from_counts(alpha_tp, alpha_fp, alpha_fn)
+        beta_sen, beta_pre, beta_f1 = metrics_from_counts(beta_tp, beta_fp, beta_fn)
+
+        for name, a, b in (
+            ("sensitivity", alpha_sen, beta_sen),
+            ("precision", alpha_pre, beta_pre),
+            ("f1_score", alpha_f1, beta_f1),
+        ):
+            abs_diff = abs(a - b)
+            if abs_diff > self.tolerance:
+                discrepancies.append(
+                    DiscrepancyReport(
+                        metric=name,
+                        alpha_value=a,
+                        beta_value=b,
+                        absolute_difference=abs_diff,
+                        relative_difference=abs_diff / max(abs(a), 1e-16),
+                        tolerance=self.tolerance,
+                    )
+                )
+
+        beta_metrics = {
+            "true_positives": beta_tp,
+            "false_positives": beta_fp,
+            "false_negatives": beta_fn,
+            "sensitivity": beta_sen,
+            "precision": beta_pre,
+            "f1_score": beta_f1,
         }
 
-        beta_metrics = {}
-
-        for metric_name, beta_value in metrics_map.items():
-            beta_metrics[metric_name] = beta_value
-
-            # Get Alpha value
-            alpha_value = alpha_result.get(metric_name)
-            if alpha_value is None:
-                continue
-
-            # TAES counts are floats - compare with tolerance
-            # Alpha already rounded to 2 decimals in summary.txt
-            if metric_name in {"true_positives", "false_positives", "false_negatives"}:
-                # Alpha is already rounded, round Beta to match
-                alpha_val = float(alpha_value)
-                beta_rounded = round(float(beta_value), 2)
-                abs_diff = abs(alpha_val - beta_rounded)
-
-                if abs_diff > self.tolerance:
-                    discrepancies.append(
-                        DiscrepancyReport(
-                            metric=metric_name,
-                            alpha_value=alpha_val,
-                            beta_value=beta_rounded,
-                            absolute_difference=abs_diff,
-                            relative_difference=abs_diff / max(abs(alpha_val), 1e-16),
-                            tolerance=self.tolerance,
-                        )
-                    )
-            else:
-                # Metrics: absolute tolerance only
-                alpha_float = float(alpha_value)
-                beta_float = float(beta_value)
-                abs_diff = abs(alpha_float - beta_float)
-                rel_diff = abs_diff / max(abs(alpha_float), 1e-16)
-
-                if abs_diff > self.tolerance:
-                    discrepancies.append(
-                        DiscrepancyReport(
-                            metric=metric_name,
-                            alpha_value=alpha_float,
-                            beta_value=beta_float,
-                            absolute_difference=abs_diff,
-                            relative_difference=rel_diff,
-                            tolerance=self.tolerance,
-                        )
-                    )
+        alpha_metrics = {
+            "true_positives": alpha_tp,
+            "false_positives": alpha_fp,
+            "false_negatives": alpha_fn,
+            "sensitivity": alpha_sen,
+            "precision": alpha_pre,
+            "f1_score": alpha_f1,
+        }
 
         return ValidationReport(
             algorithm="TAES",
             passed=len(discrepancies) == 0,
             discrepancies=discrepancies,
-            alpha_metrics=alpha_result,
+            alpha_metrics=alpha_metrics,
             beta_metrics=beta_metrics,
         )
 
