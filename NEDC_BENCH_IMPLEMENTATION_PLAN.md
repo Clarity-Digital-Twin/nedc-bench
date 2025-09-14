@@ -4,9 +4,9 @@
 ### Current Status (September 2025)
 
 **Repository State**: Initial setup phase
-- ✅ Original NEDC v6.0.0 tool vendored and functional (18,588 lines of Python)
+- ✅ Original NEDC v6.0.0 tool vendored and functional (18,981 lines of Python)
 - ✅ Basic wrapper script (`run_nedc.sh`) created and tested
-- ✅ Python 3.11 compatibility fix applied (tomllib/tomli compatibility)
+- ✅ Python 3.9+ compatibility via tomllib/tomli try/except fallback
 - ✅ Test data available (30 file pairs in CSV_BI format)
 - ✅ Sample outputs for validation (test/results/)
 - ⬜ Docker containerization not started
@@ -57,8 +57,8 @@ nedc-bench/  # Target structure after Phase 1 scaffolding
 │   └── ISSUE_TEMPLATE/
 ├── alpha/                         # Pipeline Alpha (Legacy Wrapper)
 │   ├── wrapper/                  # Python wrapper for text parsing
-│   ├── Dockerfile                # Python 3.11 container
-│   └── requirements.txt          # numpy, scipy, lxml, toml
+│   ├── Dockerfile                # Python 3.9+ container
+│   └── requirements.txt          # numpy, scipy, lxml, tomli
 ├── beta/                          # Pipeline Beta (Modern)
 │   ├── src/
 │   │   ├── algorithms/           # Clean implementations of 5 algorithms
@@ -121,7 +121,7 @@ class NEDCAlphaWrapper:
 #### Dockerization
 ```dockerfile
 # alpha/Dockerfile
-FROM python:3.11-slim
+FROM python:3.9-slim
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 # Copy the vendored NEDC tool
@@ -129,7 +129,7 @@ COPY nedc_eeg_eval/v6.0.0/ /opt/nedc/
 COPY alpha/wrapper/ /app/
 
 # Install Python dependencies
-RUN pip install numpy==2.0.2 scipy==1.14.1 lxml==5.3.0 toml==0.10.2
+RUN pip install numpy==2.0.2 scipy==1.14.1 lxml==5.3.0 tomli==2.0.1
 
 # Set required environment variables
 ENV NEDC_NFC=/opt/nedc
