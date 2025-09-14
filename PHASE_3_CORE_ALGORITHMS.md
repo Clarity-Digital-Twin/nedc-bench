@@ -1,35 +1,45 @@
-# Phase 3: Core Algorithms - Complete Algorithm Suite
-## Vertical Slice Goal: All 5 Algorithms with Full Parity Validation
+# Phase 3: Core Algorithms — Final Plan (Corrected)
+## Vertical Slice Goal: All 5 Algorithms with Full Parity Validation (DP, Epoch, Overlap, TAES, IRA)
 
 ### Duration: 10 Days (2 Weeks)
 
 ### Success Criteria (TDD)
-- [ ] All 4 remaining algorithms implemented (DP, Epoch, Overlap, IRA)
-- [ ] Each algorithm has 100% test coverage
-- [ ] Full parity with Alpha pipeline
-- [ ] Comprehensive validation suite passes
+- [ ] All 4 remaining algorithms implemented under `nedc_bench/algorithms/`
+- [ ] 100% unit test coverage on each algorithm’s core logic
+- [ ] Counts-first parity with Alpha (metrics recomputed centrally)
+- [ ] Comprehensive validation suite passes (`atol=1e-10` for floats)
 - [ ] Performance metrics documented
+
+### Ground Rules
+- Code lives under `nedc_bench/`; tests under `tests/`.
+- Use `alpha/wrapper.NEDCAlphaWrapper` with `NEDC_NFC` for Alpha runs.
+- Apply NEDC label map (lowercased) for all algorithms before scoring.
+- Compare counts first; recompute floats centrally to avoid print rounding drift.
+- Rounding/tolerance: DP/Epoch/Overlap counts (ints) exact; IRA floats (`kappa`, per-label) with `atol=1e-10`.
 
 ### Days 1-2: Dynamic Programming Alignment
 
-#### Day 1 Morning: DP Algorithm Core
+#### Day 1 Morning: DP Algorithm Core (Counts + Path for debug)
 ```python
 # tests/test_dp_alignment.py
-def test_dp_exact_alignment():
-    """Test exact sequence alignment"""
+from nedc_bench.algorithms.dp_alignment import DPAligner
+
+def test_dp_exact_alignment_counts():
     ref = ["seiz", "bckg", "seiz"]
     hyp = ["seiz", "bckg", "seiz"]
 
-    aligner = DPAligner()
-    result = aligner.align(ref, hyp)
+    result = DPAligner().align(ref, hyp)
 
-    assert result.alignment_score == 0  # Perfect match
-    assert result.path == [(0,0), (1,1), (2,2)]
+    # Counts-first checks (NEDC DP reports counts + metrics)
+    assert result.true_positives == 3
+    assert result.false_positives == 0
+    assert result.false_negatives == 0
+    assert result.sensitivity == 1.0
 ```
 
 #### Day 1 Afternoon: DP Edge Cases
 ```python
-# beta/src/algorithms/dp_alignment.py
+# nedc_bench/algorithms/dp_alignment.py
 import numpy as np
 from typing import List, Tuple
 
@@ -47,7 +57,7 @@ class DPAligner:
         }
 
     def align(self, ref: List[str], hyp: List[str]) -> AlignmentResult:
-        """Classic DP alignment with configurable penalties"""
+        """Classic DP alignment with NEDC-compatible counts"""
         m, n = len(ref), len(hyp)
         dp = np.zeros((m + 1, n + 1))
 
@@ -69,22 +79,26 @@ class DPAligner:
                         dp[i-1][j-1] + self.penalties['substitution']
                     )
 
-        return self._traceback(dp, ref, hyp)
+        return self._traceback(dp, ref, hyp)  # Produces counts + optional path
 ```
 
 #### Day 2: DP Parity Testing
 ```python
 # tests/test_dp_parity.py
-@pytest.mark.parametrize("test_case", load_dp_test_cases())
-def test_dp_parity(test_case):
-    """Verify DP alignment matches Alpha exactly"""
-    alpha_result = run_alpha_dp(test_case)
-    beta_result = run_beta_dp(test_case)
+from nedc_bench.validation.parity import ParityValidator
+from nedc_bench.algorithms.dp_alignment import DPAligner
 
-    np.testing.assert_array_equal(
-        alpha_result['confusion_matrix'],
-        beta_result['confusion_matrix']
-    )
+def test_dp_parity_simple():
+    ref = ["seiz", "bckg", "seiz"]
+    hyp = ["seiz", "bckg", "bckg"]
+
+    # Alpha (stubbed values for illustration; in real tests, use wrapper)
+    alpha = {"true_positives": 2, "false_positives": 0, "false_negatives": 1}
+
+    # Beta
+    beta_counts = DPAligner().align(ref, hyp).counts_dict()
+    report = ParityValidator().compare_dp(alpha, beta_counts)
+    assert report.passed
 ```
 
 ### Days 3-4: Epoch-Based Scoring
@@ -106,7 +120,7 @@ def test_epoch_window_segmentation():
 
 #### Day 3 Afternoon: Epoch Classification
 ```python
-# beta/src/algorithms/epoch.py
+# nedc_bench/algorithms/epoch.py
 from typing import List, Tuple
 import numpy as np
 
@@ -164,26 +178,30 @@ def test_epoch_cohen_kappa():
     assert abs(result - expected) < 1e-10
 ```
 
-### Days 5-6: Overlap Scoring
+### Days 5-6: Overlap Scoring (NEDC semantics)
 
 #### Day 5 Morning: Temporal Overlap
 ```python
 # tests/test_overlap_scoring.py
-def test_overlap_calculation():
-    """Test Jaccard index for temporal overlap"""
-    ref_event = EventAnnotation(start_time=0, stop_time=10)
-    hyp_event = EventAnnotation(start_time=5, stop_time=15)
+from nedc_bench.algorithms.overlap import OverlapScorer
+from nedc_bench.models.annotations import EventAnnotation
 
-    overlap = OverlapScorer.calculate_overlap(ref_event, hyp_event)
+def test_overlap_guard_and_threshold():
+    ref = EventAnnotation(start_time=10.0, stop_time=20.0, label="seiz", confidence=1.0)
+    hyp = EventAnnotation(start_time=9.999, stop_time=20.001, label="seiz", confidence=1.0)
 
-    assert overlap == 5.0  # 5 seconds overlap
-    jaccard = 5.0 / 15.0  # intersection / union
-    assert abs(jaccard - 0.3333) < 0.0001
+    scorer = OverlapScorer(guard_width=0.001)
+    result = scorer.score([ref], [hyp])
+
+    # With guard width, should be a perfect match at threshold 0.0
+    assert result.true_positives == 1
+    assert result.false_positives == 0
+    assert result.false_negatives == 0
 ```
 
 #### Day 5 Afternoon: Overlap Metrics
 ```python
-# beta/src/algorithms/overlap.py
+# nedc_bench/algorithms/overlap.py
 class OverlapScorer:
     """Temporal overlap-based scoring"""
 
@@ -195,21 +213,9 @@ class OverlapScorer:
         # Build overlap matrix
         overlap_matrix = self.build_overlap_matrix(reference, hypothesis)
 
-        # Compute metrics at different thresholds
-        thresholds = np.arange(0.0, 1.01, 0.05)
-        metrics = []
-
-        for threshold in thresholds:
-            tp, fp, fn = self.count_at_threshold(
-                overlap_matrix, threshold
-            )
-            metrics.append({
-                'threshold': threshold,
-                'sensitivity': tp / (tp + fn) if (tp + fn) > 0 else 0,
-                'precision': tp / (tp + fp) if (tp + fp) > 0 else 0
-            })
-
-        return OverlapResult(metrics=metrics)
+        # Compute final counts (ints) per NEDC semantics
+        tp, fp, fn, tn = self.count_events(overlap_matrix)
+        return OverlapResult(true_positives=tp, false_positives=fp, false_negatives=fn, true_negatives=tn)
 ```
 
 #### Day 6: Overlap Validation
@@ -246,7 +252,7 @@ def test_ira_perfect_agreement():
 
 #### Day 7 Afternoon: Multi-class IRA
 ```python
-# beta/src/algorithms/ira.py
+# nedc_bench/algorithms/ira.py
 from sklearn.metrics import cohen_kappa_score
 import numpy as np
 
@@ -341,17 +347,17 @@ def test_algorithm_performance_suite(benchmark):
 ```
 
 ### Deliverables Checklist
-- [ ] `beta/src/algorithms/dp_alignment.py` - DP implementation
-- [ ] `beta/src/algorithms/epoch.py` - Epoch scoring
-- [ ] `beta/src/algorithms/overlap.py` - Overlap scoring
-- [ ] `beta/src/algorithms/ira.py` - IRA scoring
+- [ ] `nedc_bench/algorithms/dp_alignment.py` - DP implementation
+- [ ] `nedc_bench/algorithms/epoch.py` - Epoch scoring
+- [ ] `nedc_bench/algorithms/overlap.py` - Overlap scoring
+- [ ] `nedc_bench/algorithms/ira.py` - IRA scoring
 - [ ] `tests/test_*_algorithm.py` - Algorithm tests
 - [ ] `tests/test_*_parity.py` - Parity tests
 - [ ] `benchmarks/` - Performance tests
-- [ ] `docs/algorithms/` - Documentation for each
+- [ ] `PHASE_3_CORE_ALGORITHMS.md` - Updated documentation
 
 ### Definition of Done
-1. ✅ All 5 algorithms implemented in Beta
+1. ✅ All 5 algorithms implemented under `nedc_bench/`
 2. ✅ 100% test coverage on each
 3. ✅ Full parity with Alpha validated
 4. ✅ Performance benchmarks documented
@@ -365,7 +371,15 @@ def test_algorithm_performance_suite(benchmark):
 ---
 ## Notes
 - Implement algorithms in order of complexity
-- TAES already done, start with Epoch (simplest remaining)
+- TAES already done, start with Epoch or DP (simpler)
 - Use existing libraries (sklearn) where appropriate
 - Document any algorithmic ambiguities found
-- Keep numerical precision as top priority
+- Keep numerical precision as top priority (counts-first; metrics recomputed centrally; `atol=1e-10`)
+
+### Parity Validation Additions
+- Extend `nedc_bench/validation/parity.py` with:
+  - `compare_dp(alpha_dp: dict, beta_dp: dict) -> ValidationReport`
+  - `compare_epoch(alpha_epoch: dict, beta_epoch: dict) -> ValidationReport`
+  - `compare_overlap(alpha_overlap: dict, beta_overlap: OverlapResult) -> ValidationReport`
+  - `compare_ira(alpha_ira: dict, beta_ira: IRAResult) -> ValidationReport`
+- All comparisons use counts-first; recompute metrics centrally with absolute tolerance.
