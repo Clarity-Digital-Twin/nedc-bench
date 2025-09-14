@@ -182,7 +182,7 @@ class IRAParser(BaseParser):
 
     def parse(self, text: str) -> Dict:
         """Parse IRA section from summary (no separate file)"""
-        result = {}
+        result: Dict = {}
 
         # Find IRA section
         ira_section = re.search(
@@ -196,13 +196,21 @@ class IRAParser(BaseParser):
 
         section_text = ira_section.group(0)
 
-        # Extract IRA-specific metrics
-        result['kappa'] = self.extract_float(section_text, r'Cohen\'s Kappa')
-        result['percent_agreement'] = self.extract_percentage(section_text, r'Percent Agreement')
+        # Kappa may appear as either "Cohen's Kappa" or "Multi-Class Kappa"
+        cohens = re.search(r"Cohen's Kappa:\s+(\d+\.?\d*)", section_text)
+        if cohens:
+            result['kappa'] = float(cohens.group(1))
+        else:
+            multi = re.search(r'Multi-Class Kappa:\s+(\d+\.?\d*)', section_text)
+            if multi:
+                result['kappa'] = float(multi.group(1))
 
-        # Also look for standard metrics if present
-        result['sensitivity'] = self.extract_percentage(section_text, r'Sensitivity')
-        result['specificity'] = self.extract_percentage(section_text, r'Specificity')
+        # Per-label Kappa lines: "Label: seiz   Kappa:  0.xxxx"
+        per_label = {}
+        for m in re.finditer(r'Label:\s+(\w+)\s+Kappa:\s+(\d+\.?\d*)', section_text):
+            per_label[m.group(1)] = float(m.group(2))
+        if per_label:
+            result['per_label_kappa'] = per_label
 
         return result
 

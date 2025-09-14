@@ -120,21 +120,19 @@ def test_parse_ira_output():
     ==============================================================================
     NEDC INTER-RATER AGREEMENT SUMMARY (v6.0.0):
 
-    Cohen's Kappa:                      0.6871
-    Percent Agreement:                 84.5555%
+    Label: seiz   Kappa:       0.4110
+    Label: bckg   Kappa:       0.4110
 
-    Sensitivity:                       82.3765%
-    Specificity:                       86.9885%
+    SUMMARY:
+       Multi-Class Kappa:       0.4110
     ==============================================================================
     """
 
     parser = IRAParser()
     result = parser.parse(sample_output)
 
-    assert result['kappa'] == 0.6871
-    assert result['percent_agreement'] == 0.845555
-    assert result['sensitivity'] == 0.823765
-    assert result['specificity'] == 0.869885
+    assert result['kappa'] == 0.4110
+    assert 'per_label_kappa' in result and result['per_label_kappa']['seiz'] == 0.4110
 
 
 def test_unified_parser():
@@ -174,7 +172,7 @@ def test_unified_parser():
     ==============================================================================
     NEDC INTER-RATER AGREEMENT SUMMARY (v6.0.0):
 
-    Cohen's Kappa:                      0.6871
+    Multi-Class Kappa:                  0.6871
     ==============================================================================
     """
 

@@ -6,14 +6,14 @@ RUN apt-get update && apt-get install -y \
     bash \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the vendored NEDC tool
-COPY ../nedc_eeg_eval/v6.0.0/ /opt/nedc/
+# Copy the vendored NEDC tool (relative to repo root build context)
+COPY nedc_eeg_eval/v6.0.0/ /opt/nedc/
 
-# Copy wrapper code
-COPY wrapper/ /app/
+# Copy wrapper package under /app/alpha
+COPY alpha/ /app/alpha/
 
 # Copy requirements
-COPY requirements.txt /tmp/requirements.txt
+COPY alpha/requirements.txt /tmp/requirements.txt
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r /tmp/requirements.txt

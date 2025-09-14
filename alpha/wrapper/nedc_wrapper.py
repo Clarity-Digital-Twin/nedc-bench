@@ -76,7 +76,7 @@ class NEDCAlphaWrapper:
 
             # Build command
             cmd = [
-                "python",
+                "python3",
                 str(self.nedc_root / "bin" / "nedc_eeg_eval"),
                 "--odir", str(output_path / "output"),
                 str(ref_list),
@@ -130,7 +130,7 @@ class NEDCAlphaWrapper:
 
         # Build command
         cmd = [
-            "python",
+            "python3",
             str(self.nedc_root / "bin" / "nedc_eeg_eval"),
             "--odir", str(output_path),
             ref_list_file,
