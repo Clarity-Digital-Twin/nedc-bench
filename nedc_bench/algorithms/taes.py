@@ -15,12 +15,15 @@ from nedc_bench.models.annotations import EventAnnotation
 
 @dataclass
 class TAESResult:
-    """TAES scoring results matching NEDC output format"""
+    """TAES scoring results matching NEDC output format
 
-    true_positives: int
-    false_positives: int
-    false_negatives: int
-    true_negatives: int = 0  # TAES doesn't compute TN
+    IMPORTANT: TAES uses fractional scoring, so all counts are floats.
+    """
+
+    true_positives: float
+    false_positives: float
+    false_negatives: float
+    true_negatives: float = 0.0  # TAES reports TN as counterpart hits
 
     @property
     def sensitivity(self) -> float:
@@ -127,15 +130,11 @@ class TAESScorer:
             if flag:
                 total_fa += 1.0
 
-        # Convert fractional to integer counts (rounding)
-        true_positives = int(round(total_hit))
-        false_negatives = int(round(total_miss))
-        false_positives = int(round(total_fa))
-
+        # Return fractional counts directly (no rounding)
         return TAESResult(
-            true_positives=true_positives,
-            false_positives=false_positives,
-            false_negatives=false_negatives,
+            true_positives=total_hit,
+            false_positives=total_fa,
+            false_negatives=total_miss,
         )
 
     def _calc_hf(self, ref: EventAnnotation, hyp: EventAnnotation) -> tuple[float, float]:
