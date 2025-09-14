@@ -19,8 +19,8 @@ class TestPhase2Integration:
         orchestrator = DualPipelineOrchestrator(tolerance=1e-10)
         monitor = PerformanceMonitor()
 
-        ref_dir = test_data_dir / "csv" / "ref"
-        hyp_dir = test_data_dir / "csv" / "hyp"
+        ref_dir = test_data_dir / "ref"
+        hyp_dir = test_data_dir / "hyp"
 
         ref_files = sorted(ref_dir.glob("*.csv_bi"))
         hyp_files = sorted(hyp_dir.glob("*.csv_bi"))
