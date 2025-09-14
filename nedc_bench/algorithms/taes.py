@@ -6,7 +6,6 @@ including ovlp_ref_seqs and ovlp_hyp_seqs behavior.
 """
 
 from dataclasses import dataclass
-from typing import List, Tuple
 
 from nedc_bench.models.annotations import EventAnnotation
 
@@ -59,7 +58,7 @@ class TAESScorer:
         self.target_label = target_label
 
     def score(
-        self, reference: List[EventAnnotation], hypothesis: List[EventAnnotation]
+        self, reference: list[EventAnnotation], hypothesis: list[EventAnnotation]
     ) -> TAESResult:
         """
         Score using EXACT NEDC algorithm with multi-overlap sequencing
@@ -93,7 +92,7 @@ class TAESScorer:
                 if not hyp_flags[h_idx]:
                     continue
 
-                if not self._overlaps(refs[r_idx], hyps[h_idx]):
+                if not TAESScorer._overlaps(refs[r_idx], hyps[h_idx]):
                     continue
 
                 # Compute partial scores based on which extends beyond which
@@ -106,11 +105,11 @@ class TAESScorer:
                 total_fa += fa
 
         # Add penalties for unmatched events
-        for i, flag in enumerate(ref_flags):
+        for flag in ref_flags:
             if flag:  # Unmatched reference
                 total_miss += 1.0
 
-        for j, flag in enumerate(hyp_flags):
+        for flag in hyp_flags:
             if flag:  # Unmatched hypothesis
                 total_fa += 1.0
 
@@ -120,11 +119,11 @@ class TAESScorer:
             false_negatives=total_miss,
         )
 
-    def _compute_partial(
-        self, refs: List[EventAnnotation], hyps: List[EventAnnotation],
+    def _compute_partial(  # noqa: PLR0917
+        self, refs: list[EventAnnotation], hyps: list[EventAnnotation],
         r_idx: int, h_idx: int,
-        ref_flags: List[bool], hyp_flags: List[bool]
-    ) -> Tuple[float, float, float]:
+        ref_flags: list[bool], hyp_flags: list[bool]
+    ) -> tuple[float, float, float]:
         """
         Compute partial scores for overlapping ref-hyp pair
 
@@ -142,18 +141,18 @@ class TAESScorer:
             # Reference extends beyond hypothesis
             return self._ovlp_hyp_seqs(refs, hyps, r_idx, h_idx, ref_flags, hyp_flags)
 
-    def _ovlp_ref_seqs(
-        self, refs: List[EventAnnotation], hyps: List[EventAnnotation],
+    def _ovlp_ref_seqs(  # noqa: PLR0917, PLR6301
+        self, refs: list[EventAnnotation], hyps: list[EventAnnotation],
         r_idx: int, h_idx: int,
-        ref_flags: List[bool], hyp_flags: List[bool]
-    ) -> Tuple[float, float, float]:
+        ref_flags: list[bool], hyp_flags: list[bool]
+    ) -> tuple[float, float, float]:
         """
         Handle case where hypothesis spans multiple references
 
         CRITICAL: Each additional overlapped ref adds +1.0 to miss!
         """
         # Calculate scores for first reference
-        hit, fa = self._calc_hf(refs[r_idx], hyps[h_idx])
+        hit, fa = TAESScorer._calc_hf(refs[r_idx], hyps[h_idx])
         miss = 1.0 - hit
 
         # Mark as processed
@@ -163,24 +162,24 @@ class TAESScorer:
         # Check for additional overlapping references
         # THIS IS THE KEY: Each additional ref adds +1.0 miss!
         for i in range(r_idx + 1, len(refs)):
-            if ref_flags[i] and self._overlaps(refs[i], hyps[h_idx]):
+            if ref_flags[i] and TAESScorer._overlaps(refs[i], hyps[h_idx]):
                 miss += 1.0  # FULL PENALTY for each additional ref!
                 ref_flags[i] = False
 
         return hit, miss, fa
 
-    def _ovlp_hyp_seqs(
-        self, refs: List[EventAnnotation], hyps: List[EventAnnotation],
+    def _ovlp_hyp_seqs(  # noqa: PLR0917, PLR6301
+        self, refs: list[EventAnnotation], hyps: list[EventAnnotation],
         r_idx: int, h_idx: int,
-        ref_flags: List[bool], hyp_flags: List[bool]
-    ) -> Tuple[float, float, float]:
+        ref_flags: list[bool], hyp_flags: list[bool]
+    ) -> tuple[float, float, float]:
         """
         Handle case where reference is hit by multiple hypotheses
 
         Multiple hyps can contribute to hit and reduce miss
         """
         # Calculate scores for first hypothesis
-        hit, fa = self._calc_hf(refs[r_idx], hyps[h_idx])
+        hit, fa = TAESScorer._calc_hf(refs[r_idx], hyps[h_idx])
         miss = 1.0 - hit
 
         # Mark as processed
@@ -189,8 +188,8 @@ class TAESScorer:
 
         # Check for additional overlapping hypotheses
         for j in range(h_idx + 1, len(hyps)):
-            if hyp_flags[j] and self._overlaps(refs[r_idx], hyps[j]):
-                ovlp_hit, ovlp_fa = self._calc_hf(refs[r_idx], hyps[j])
+            if hyp_flags[j] and TAESScorer._overlaps(refs[r_idx], hyps[j]):
+                ovlp_hit, ovlp_fa = TAESScorer._calc_hf(refs[r_idx], hyps[j])
                 hit += ovlp_hit
                 miss -= ovlp_hit  # Reduce miss!
                 fa += ovlp_fa
@@ -198,7 +197,8 @@ class TAESScorer:
 
         return hit, miss, fa
 
-    def _calc_hf(self, ref: EventAnnotation, hyp: EventAnnotation) -> Tuple[float, float]:
+    @staticmethod
+    def _calc_hf(ref: EventAnnotation, hyp: EventAnnotation) -> tuple[float, float]:
         """
         Calculate fractional hit and false alarm (EXACT NEDC calc_hf)
         """
@@ -239,7 +239,8 @@ class TAESScorer:
 
         return (hit, fa)
 
-    def _overlaps(self, event1: EventAnnotation, event2: EventAnnotation) -> bool:
+    @staticmethod
+    def _overlaps(event1: EventAnnotation, event2: EventAnnotation) -> bool:
         """Check if two events overlap temporally"""
         return (
             event1.start_time < event2.stop_time and

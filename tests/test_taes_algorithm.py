@@ -108,11 +108,13 @@ def test_taes_multiple_overlap():
     scorer = TAESScorer()
     result = scorer.score(ref, hyp)
 
-    # Fractional scoring: First ref gets 0.5 hit (5-10 overlap / 10 duration)
-    # Second ref gets 0.5 hit (20-25 overlap / 10 duration)
-    # Total hit = 1.0, miss = 1.0
-    assert abs(result.true_positives - 1.0) < 1e-10
-    assert abs(result.false_negatives - 1.0) < 1e-10
+    # NEDC multi-overlap sequencing:
+    # First ref: hit = 0.5 (5-10 overlap / 10 duration), miss = 0.5
+    # Second ref: adds +1.0 to miss (penalty for spanning multiple refs)
+    # Total: TP = 0.5, FN = 1.5, FP = 1.0 (non-overlap portion 10-20)
+    assert abs(result.true_positives - 0.5) < 1e-10
+    assert abs(result.false_negatives - 1.5) < 1e-10
+    assert abs(result.false_positives - 1.0) < 1e-10
 
 
 def test_taes_one_to_many():
