@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List
 
+import numpy as np
+
 os.environ["NEDC_NFC"] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")
 os.environ["PYTHONPATH"] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHONPATH', '')}"
 
@@ -35,12 +37,12 @@ def get_alpha_metrics() -> Dict[str, AlgorithmResult]:
 
 def run_all_beta_algorithms():
     """Run all Beta algorithms and collect results"""
-from nedc_bench.algorithms.dp_alignment import DPAligner
-from nedc_bench.algorithms.epoch import EpochScorer
-from nedc_bench.algorithms.overlap import OverlapScorer
-from nedc_bench.algorithms.taes import TAESScorer
-from nedc_bench.models.annotations import AnnotationFile
-from nedc_bench.utils.params import load_nedc_params, map_event_label
+    from nedc_bench.algorithms.dp_alignment import DPAligner
+    from nedc_bench.algorithms.epoch import EpochScorer
+    from nedc_bench.algorithms.overlap import OverlapScorer
+    from nedc_bench.algorithms.taes import TAESScorer
+    from nedc_bench.models.annotations import AnnotationFile
+    from nedc_bench.utils.params import load_nedc_params, map_event_label
 
     data_root = Path(__file__).parent.parent / "data" / "csv_bi_parity" / "csv_bi_export_clean"
 
@@ -48,9 +50,9 @@ from nedc_bench.utils.params import load_nedc_params, map_event_label
     ref_list = data_root / "lists" / "ref.list"
     hyp_list = data_root / "lists" / "hyp.list"
 
-    with open(ref_list) as f:
+    with ref_list.open(encoding="utf-8") as f:
         ref_files = [line.strip() for line in f if line.strip()]
-    with open(hyp_list) as f:
+    with hyp_list.open(encoding="utf-8") as f:
         hyp_files = [line.strip() for line in f if line.strip()]
 
     # Fix paths
@@ -86,33 +88,19 @@ from nedc_bench.utils.params import load_nedc_params, map_event_label
             ev.label = map_event_label(ev.label, params.label_map)
         return events
 
-    # Simple helper to expand sparse events with background to cover full duration
-    def _expand_with_null(events, duration: float, null_label: str):
-        if not events:
-            return []
-        evs = sorted(events, key=lambda e: e.start_time)
-        expanded = []
-        cur = 0.0
-        for ev in evs:
-            if ev.start_time > cur:
-                expanded.append(type(ev)(
-                    channel=ev.channel,
-                    start_time=cur,
-                    stop_time=ev.start_time,
-                    label=null_label,
-                    confidence=1.0,
-                ))
-            expanded.append(ev)
-            cur = ev.stop_time
-        if cur < duration:
-            expanded.append(type(evs[0])(
-                channel=evs[0].channel,
-                start_time=cur,
-                stop_time=duration,
-                label=null_label,
-                confidence=1.0,
-            ))
-        return expanded
+    # Helper to convert events to epoch label sequences for DP/IRA
+    def _events_to_epoch_sequence(events, duration: float, epoch_duration: float, null_label: str):
+        """Convert events to epoch label sequence"""
+        n_epochs = int(np.ceil(duration / epoch_duration))
+        labels = [null_label] * n_epochs
+
+        for event in events:
+            start_epoch = int(event.start_time / epoch_duration)
+            end_epoch = int(np.ceil(event.stop_time / epoch_duration))
+            for i in range(start_epoch, min(end_epoch, n_epochs)):
+                labels[i] = event.label
+
+        return labels
 
     # Process each algorithm
     for algo_name, scorer in scorers.items():
@@ -152,11 +140,13 @@ from nedc_bench.utils.params import load_nedc_params, map_event_label
                     total_fp += result.false_alarms.get("seiz", 0)
                     total_fn += result.misses.get("seiz", 0)
                 elif algo_name == "dp":
-                    # Build per-epoch label sequences consistent with Beta pipeline
-                    ref_events = _expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
-                    hyp_events = _expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
-                    ref_seq = [e.label for e in ref_events]
-                    hyp_seq = [e.label for e in hyp_events]
+                    # Convert events to epoch sequences for DP alignment
+                    ref_seq = _events_to_epoch_sequence(
+                        ref_ann.events, ref_ann.duration, params.epoch_duration, params.null_class
+                    )
+                    hyp_seq = _events_to_epoch_sequence(
+                        hyp_ann.events, hyp_ann.duration, params.epoch_duration, params.null_class
+                    )
                     result = scorer.align(ref_seq, hyp_seq)
                     total_tp += result.true_positives
                     total_fp += result.false_positives
@@ -196,7 +186,7 @@ def compare_results(alpha: Dict[str, AlgorithmResult], beta: Dict[str, Algorithm
 
     all_pass = True
 
-    for algo in ["taes", "epoch", "ovlp"]:  # Skip DP for now
+    for algo in ["taes", "epoch", "ovlp", "dp"]:  # Include all algorithms
         if algo not in alpha or algo not in beta:
             print(f"\n{algo.upper()}: Skipped (not in both results)")
             continue
