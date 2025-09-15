@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nedc-bench"
-version = "0.1.0"
+version = "1.0.0"
 description = "Modern benchmarking platform for EEG event detection systems"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -17,7 +17,7 @@ maintainers = [
 ]
 keywords = ["eeg", "neuroscience", "benchmarking", "evaluation", "seizure-detection"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
