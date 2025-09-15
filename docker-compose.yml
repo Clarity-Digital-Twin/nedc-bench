@@ -32,7 +32,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./nedc_bench/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     restart: unless-stopped
 
   grafana:

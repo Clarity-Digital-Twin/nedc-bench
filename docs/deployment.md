@@ -33,6 +33,8 @@ kubectl port-forward svc/nedc-bench-api 8000:80
 curl http://localhost:8000/api/v1/health
 ```
 
+Note: In production, deploy Redis, Prometheus, and Grafana using their official Helm charts. This repo intentionally includes only API manifests; configure ServiceMonitors and dashboards in your platform repo.
+
 ## Image Build and Tagging
 
 ```bash
@@ -43,6 +45,5 @@ docker run --rm -p 8000:8000 nedc-bench/api:latest
 
 ## Configuration Matrix
 
-- Compose: `REDIS_URL=redis://redis:6379`; Prometheus scrapes `api:8000`.
+- Compose: `REDIS_URL=redis://redis:6379`; Prometheus scrapes `api:8000` via `monitoring/prometheus.yml`.
 - K8s: use cluster DNS (e.g., `redis.default.svc.cluster.local:6379`) if Redis runs in‑cluster.
-
