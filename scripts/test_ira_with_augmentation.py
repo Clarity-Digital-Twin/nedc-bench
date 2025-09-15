@@ -102,28 +102,24 @@ def main():
             ev.label = map_event_label(ev.label, params.label_map)
 
         # WITHOUT full augmentation (current approach - only empty files)
-        ref_events_without = (
-            ref_ann.events or [
-                EventAnnotation(
-                    channel="TERM",
-                    start_time=0.0,
-                    stop_time=ref_ann.duration,
-                    label=params.null_class,
-                    confidence=1.0,
-                )
-            ]
-        )
-        hyp_events_without = (
-            hyp_ann.events or [
-                EventAnnotation(
-                    channel="TERM",
-                    start_time=0.0,
-                    stop_time=hyp_ann.duration,
-                    label=params.null_class,
-                    confidence=1.0,
-                )
-            ]
-        )
+        ref_events_without = ref_ann.events or [
+            EventAnnotation(
+                channel="TERM",
+                start_time=0.0,
+                stop_time=ref_ann.duration,
+                label=params.null_class,
+                confidence=1.0,
+            )
+        ]
+        hyp_events_without = hyp_ann.events or [
+            EventAnnotation(
+                channel="TERM",
+                start_time=0.0,
+                stop_time=hyp_ann.duration,
+                label=params.null_class,
+                confidence=1.0,
+            )
+        ]
 
         res_without = ira.score(
             ref_events_without,

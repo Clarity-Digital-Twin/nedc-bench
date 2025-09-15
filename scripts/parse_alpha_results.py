@@ -48,7 +48,9 @@ def parse_alpha_results() -> dict:
         return {
             k: v
             for k, v in (
-                re.findall(r"^\s*([A-Za-z \(\)]+):\s+([0-9\.]+)", block, re.MULTILINE) if block else []
+                re.findall(r"^\s*([A-Za-z \(\)]+):\s+([0-9\.]+)", block, re.MULTILINE)
+                if block
+                else []
             )
         }
 
