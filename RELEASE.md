@@ -18,10 +18,10 @@ We follow [Semantic Versioning](https://semver.org/):
 
 ## Current Version
 
-**v0.1.0** - Alpha Release
-- Status: Early development
-- API stability: Unstable (expect breaking changes)
-- Production ready: No
+**v1.0.0** - Production Stable
+- Status: Production ready
+- API stability: Stable
+- Production ready: Yes
 
 ## Release Checklist
 
@@ -74,10 +74,8 @@ git push origin v0.1.0
 | Version | Date | Status | Notes |
 |---------|------|--------|-------|
 | 0.0.1 | 2024-12-01 | Released | Initial structure |
-| 0.1.0 | 2025-01-15 | Current | Alpha release |
-| 0.2.0 | TBD | Planned | Beta pipeline implementation |
-| 0.3.0 | TBD | Planned | Validation framework complete |
-| 1.0.0 | TBD | Future | Production ready |
+| 0.1.0 | 2024-12-15 | Released | Alpha release |
+| 1.0.0 | 2025-09-15 | Current | Production stable |
 
 ## Versioning Guidelines
 
