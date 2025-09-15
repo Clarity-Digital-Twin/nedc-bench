@@ -49,7 +49,9 @@ for filename in error_files:
 
     # Check if seiz exists
     if "seiz" in result.hits:
-        print(f"Seiz: TP={result.hits['seiz']}, FP={result.false_alarms.get('seiz', 0)}, FN={result.misses['seiz']}")
+        print(
+            f"Seiz: TP={result.hits['seiz']}, FP={result.false_alarms.get('seiz', 0)}, FN={result.misses['seiz']}"
+        )
     else:
         print("NO SEIZ IN RESULTS - this is why it errors!")
 

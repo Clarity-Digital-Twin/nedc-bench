@@ -28,7 +28,7 @@ if test_file.exists():
     print(f"\nCorrect duration to use: {ann.duration} (from metadata)")
 
     # Now test aggregation
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("Testing aggregation across multiple files...")
 
     ref_dir = Path("data/csv_bi_parity/csv_bi_export_clean/ref")
@@ -41,6 +41,6 @@ if test_file.exists():
         print(f"{f.name}: {ann.duration:.2f} seconds")
 
     print(f"\nTotal duration (CORRECT): {total_duration:.2f} seconds")
-    print(f"Average per file: {total_duration/len(files):.2f} seconds")
+    print(f"Average per file: {total_duration / len(files):.2f} seconds")
 else:
     print(f"Test file not found: {test_file}")

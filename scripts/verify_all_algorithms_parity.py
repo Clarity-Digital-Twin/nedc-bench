@@ -6,6 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+
 def get_alpha_results():
     """Extract Alpha results from summary.txt"""
     summary_file = Path("output/parity_20250915_104120/alpha/summary.txt")
@@ -21,7 +22,7 @@ def get_alpha_results():
         "EPOCH": "epoch",
         "OVERLAP": "ovlp",
         "TAES": "taes",
-        "INTER-RATER": "ira"
+        "INTER-RATER": "ira",
     }
 
     for algo_name, algo_key in algorithms.items():
@@ -29,11 +30,11 @@ def get_alpha_results():
         section_marker = f"NEDC {algo_name} SCORING SUMMARY"
         if section_marker in content:
             section_start = content.index(section_marker)
-            section = content[section_start:section_start+2000]
+            section = content[section_start : section_start + 2000]
 
             # Extract key metrics for SEIZ label
             if "LABEL: SEIZ" in section:
-                label_section = section[section.index("LABEL: SEIZ"):]
+                label_section = section[section.index("LABEL: SEIZ") :]
 
                 # Extract metrics
                 import re
@@ -49,16 +50,15 @@ def get_alpha_results():
                     "fp": float(fp_match.group(1)) if fp_match else 0,
                     "fn": float(fn_match.group(1)) if fn_match else 0,
                     "sensitivity": float(sens_match.group(1)) if sens_match else 0,
-                    "fa_per_24h": float(fa_match.group(1)) if fa_match else 0
+                    "fa_per_24h": float(fa_match.group(1)) if fa_match else 0,
                 }
             elif algo_key == "ira":
                 # IRA uses different format
                 kappa_match = re.search(r"Multi-Class Kappa:\s*([\d.]+)", section)
-                results[algo_key] = {
-                    "kappa": float(kappa_match.group(1)) if kappa_match else 0
-                }
+                results[algo_key] = {"kappa": float(kappa_match.group(1)) if kappa_match else 0}
 
     return results
+
 
 def main():
     print("=" * 80)
@@ -74,25 +74,27 @@ def main():
         if algo == "ira":
             print(f"{algo.upper()}: Kappa={metrics.get('kappa', 0):.4f}")
         else:
-            print(f"{algo.upper()}: TP={metrics['tp']:.2f}, FP={metrics['fp']:.2f}, FN={metrics['fn']:.2f}, Sens={metrics['sensitivity']:.2f}%, FA/24h={metrics['fa_per_24h']:.2f}")
+            print(
+                f"{algo.upper()}: TP={metrics['tp']:.2f}, FP={metrics['fp']:.2f}, FN={metrics['fn']:.2f}, Sens={metrics['sensitivity']:.2f}%, FA/24h={metrics['fa_per_24h']:.2f}"
+            )
 
     print("\n" + "=" * 80)
     print("BETA IMPLEMENTATION STATUS:")
     print("-" * 40)
 
     # Check which algorithms are implemented
-    from nedc_bench.algorithms.taes import TAESScorer
-    from nedc_bench.algorithms.epoch import EpochScorer
-    from nedc_bench.algorithms.overlap import OverlapScorer
     from nedc_bench.algorithms.dp_alignment import DPAligner
+    from nedc_bench.algorithms.epoch import EpochScorer
     from nedc_bench.algorithms.ira import IRAScorer
+    from nedc_bench.algorithms.overlap import OverlapScorer
+    from nedc_bench.algorithms.taes import TAESScorer
 
     implemented = {
         "TAES": TAESScorer,
         "Epoch": EpochScorer,
         "Overlap": OverlapScorer,
         "DP Alignment": DPAligner,
-        "IRA": IRAScorer
+        "IRA": IRAScorer,
     }
 
     for name, cls in implemented.items():
@@ -125,6 +127,7 @@ def main():
     print("⏳ Need to verify remaining 4 algorithms")
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

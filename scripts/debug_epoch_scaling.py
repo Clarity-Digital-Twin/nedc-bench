@@ -62,7 +62,7 @@ for epoch_duration in [0.25, 1.0, 4.0]:
                 total_fp += result.false_positives["seiz"]
                 total_fn += result.false_negatives["seiz"]
 
-        except Exception as e:
+        except Exception:
             pass
 
     print(f"  TP: {total_tp}")
@@ -75,7 +75,7 @@ for epoch_duration in [0.25, 1.0, 4.0]:
 
     # Check if this matches Alpha ratio
     if epoch_duration == 0.25:
-        print(f"\n  Projected full dataset (x18.32):")
+        print("\n  Projected full dataset (x18.32):")
         print(f"    TP: {total_tp * 18.32:.0f} (target: 33704)")
         print(f"    FP: {total_fp * 18.32:.0f} (target: 18816)")
         print(f"    FN: {total_fn * 18.32:.0f} (target: 250459)")

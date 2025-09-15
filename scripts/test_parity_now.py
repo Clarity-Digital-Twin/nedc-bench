@@ -2,14 +2,13 @@
 """CRITICAL PARITY TEST - Alpha vs Beta pipeline comparison"""
 
 import sys
-import os
 from pathlib import Path
 
 # Add nedc_bench to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
-from nedc_bench.validation.parity import ParityValidator
+
 
 def main():
     print("=" * 80)
@@ -59,6 +58,7 @@ def main():
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 
@@ -66,6 +66,7 @@ def main():
 
     if not result.parity_passed:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

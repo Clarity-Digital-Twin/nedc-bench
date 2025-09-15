@@ -4,8 +4,7 @@ Tests ensure FA/24h calculation matches NEDC v6.0.0 exactly
 """
 
 import pytest
-from pathlib import Path
-from nedc_bench.models.annotations import AnnotationFile, EventAnnotation
+from nedc_bench.models.annotations import EventAnnotation
 
 
 class TestDurationCalculation:
@@ -14,24 +13,9 @@ class TestDurationCalculation:
     def test_single_file_duration_from_events(self):
         """Test duration calc when only events are available"""
         events = [
-            EventAnnotation(
-                start_time=100.0,
-                stop_time=200.0,
-                label="seiz",
-                confidence=1.0
-            ),
-            EventAnnotation(
-                start_time=500.0,
-                stop_time=600.0,
-                label="seiz",
-                confidence=1.0
-            ),
-            EventAnnotation(
-                start_time=1000.0,
-                stop_time=1500.0,
-                label="bckg",
-                confidence=1.0
-            )
+            EventAnnotation(start_time=100.0, stop_time=200.0, label="seiz", confidence=1.0),
+            EventAnnotation(start_time=500.0, stop_time=600.0, label="seiz", confidence=1.0),
+            EventAnnotation(start_time=1000.0, stop_time=1500.0, label="bckg", confidence=1.0),
         ]
 
         # Duration should be last_stop - first_start
@@ -57,7 +41,7 @@ class TestDurationCalculation:
         # Even if last event ends at 1500, file duration is 1800
         events = [
             EventAnnotation(start_time=100.0, stop_time=200.0, label="seiz", confidence=1.0),
-            EventAnnotation(start_time=1400.0, stop_time=1500.0, label="seiz", confidence=1.0)
+            EventAnnotation(start_time=1400.0, stop_time=1500.0, label="seiz", confidence=1.0),
         ]
 
         # Should use file duration, not event span
@@ -71,7 +55,7 @@ class TestDurationCalculation:
             1800.0,  # 30 minutes
             1800.0,  # 30 minutes
             3600.0,  # 60 minutes
-            900.0,   # 15 minutes
+            900.0,  # 15 minutes
         ]
 
         # CORRECT: Sum all durations
@@ -129,11 +113,14 @@ class TestDurationCalculation:
         assert file_metadata_duration > event_span
         # Duration should be 1800, not 1200
 
-    @pytest.mark.parametrize("num_files,file_duration,expected_total", [
-        (10, 1800.0, 18000.0),      # 10 files × 30 min = 5 hours
-        (100, 3600.0, 360000.0),    # 100 files × 1 hour = 100 hours
-        (1832, 856.0, 1568192.0),   # Our test case approximation
-    ])
+    @pytest.mark.parametrize(
+        "num_files,file_duration,expected_total",
+        [
+            (10, 1800.0, 18000.0),  # 10 files × 30 min = 5 hours
+            (100, 3600.0, 360000.0),  # 100 files × 1 hour = 100 hours
+            (1832, 856.0, 1568192.0),  # Our test case approximation
+        ],
+    )
     def test_large_scale_duration_aggregation(self, num_files, file_duration, expected_total):
         """Test duration aggregation at scale"""
         durations = [file_duration] * num_files

@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from nedc_bench.algorithms.epoch import EpochScorer
 from nedc_bench.models.annotations import AnnotationFile
 
+
 def test_single_file():
     """Test Epoch on a single file to verify fix"""
     data_root = Path(__file__).parent.parent / "data" / "csv_bi_parity" / "csv_bi_export_clean"
@@ -51,7 +52,7 @@ def test_single_file():
     print(f"Has false_positives? {hasattr(result, 'false_positives')}")
     print(f"Has false_negatives? {hasattr(result, 'false_negatives')}")
 
-    if hasattr(result, 'true_positives'):
+    if hasattr(result, "true_positives"):
         tp = result.true_positives
         fp = result.false_positives
         fn = result.false_negatives
@@ -62,20 +63,21 @@ def test_single_file():
 
         # Check if seiz exists
         if "seiz" in tp:
-            print(f"\nFor 'seiz' label:")
+            print("\nFor 'seiz' label:")
             print(f"  TP: {tp['seiz']}")
             print(f"  FP: {fp['seiz']}")
             print(f"  FN: {fn['seiz']}")
 
             # Calculate sensitivity
-            if tp['seiz'] + fn['seiz'] > 0:
-                sensitivity = tp['seiz'] / (tp['seiz'] + fn['seiz']) * 100
+            if tp["seiz"] + fn["seiz"] > 0:
+                sensitivity = tp["seiz"] / (tp["seiz"] + fn["seiz"]) * 100
                 print(f"  Sensitivity: {sensitivity:.4f}%")
 
         return True
     else:
         print("\n❌ Properties not found!")
         return False
+
 
 def test_multiple_files():
     """Test on multiple files to accumulate results"""
@@ -117,7 +119,7 @@ def test_multiple_files():
         except Exception as e:
             print(f"  Error in {ref_file.name}: {e}")
 
-    print(f"\nAccumulated results:")
+    print("\nAccumulated results:")
     print(f"  Total TP: {total_tp}")
     print(f"  Total FP: {total_fp}")
     print(f"  Total FN: {total_fn}")
@@ -127,6 +129,7 @@ def test_multiple_files():
         print(f"  Sensitivity: {sensitivity:.4f}%")
 
     return True
+
 
 if __name__ == "__main__":
     print("=" * 60)

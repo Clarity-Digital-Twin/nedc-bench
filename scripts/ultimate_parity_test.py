@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """ULTIMATE PARITY TEST - ALL 5 ALGORITHMS"""
 
-import sys
 import os
-from pathlib import Path
+import sys
 from dataclasses import dataclass
-from typing import Dict, Any
+from pathlib import Path
+from typing import Dict
 
-os.environ['NEDC_NFC'] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")
-os.environ['PYTHONPATH'] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHONPATH', '')}"
+os.environ["NEDC_NFC"] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")
+os.environ["PYTHONPATH"] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHONPATH', '')}"
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
 
 @dataclass
 class AlgorithmResult:
@@ -21,6 +22,7 @@ class AlgorithmResult:
     fa_per_24h: float
     name: str
 
+
 def get_alpha_metrics() -> Dict[str, AlgorithmResult]:
     """Extract Alpha results from the summary file"""
     return {
@@ -30,12 +32,12 @@ def get_alpha_metrics() -> Dict[str, AlgorithmResult]:
         "ovlp": AlgorithmResult(253.00, 536.00, 822.00, 23.5349, 29.5376, "Overlap"),
     }
 
+
 def run_all_beta_algorithms():
     """Run all Beta algorithms and collect results"""
-    from nedc_bench.algorithms.taes import TAESScorer
     from nedc_bench.algorithms.epoch import EpochScorer
     from nedc_bench.algorithms.overlap import OverlapScorer
-    from nedc_bench.algorithms.dp_alignment import DPAligner
+    from nedc_bench.algorithms.taes import TAESScorer
     from nedc_bench.models.annotations import AnnotationFile
 
     data_root = Path(__file__).parent.parent / "data" / "csv_bi_parity" / "csv_bi_export_clean"
@@ -59,7 +61,9 @@ def run_all_beta_algorithms():
     # Initialize scorers (each has different init params)
     scorers = {
         "taes": TAESScorer(target_label="seiz"),
-        "epoch": EpochScorer(epoch_duration=0.25, null_class="bckg"),  # NEDC: 0.25s epochs, bckg as null
+        "epoch": EpochScorer(
+            epoch_duration=0.25, null_class="bckg"
+        ),  # NEDC: 0.25s epochs, bckg as null
         "ovlp": OverlapScorer(),  # No target_label param
         # "dp": DPAligner(),  # Skip DP for now - needs different input format
     }
@@ -131,6 +135,7 @@ def run_all_beta_algorithms():
 
     return results
 
+
 def compare_results(alpha: Dict[str, AlgorithmResult], beta: Dict[str, AlgorithmResult]):
     """Compare Alpha and Beta results"""
     print("\n" + "=" * 80)
@@ -166,13 +171,20 @@ def compare_results(alpha: Dict[str, AlgorithmResult], beta: Dict[str, Algorithm
 
         # Check if within tolerance
         tolerance = 0.01
-        if tp_diff < tolerance and fp_diff < tolerance and fn_diff < tolerance and sens_diff < tolerance and fa_diff < tolerance:
-            print(f"\n  ✅ PERFECT PARITY ACHIEVED!")
+        if (
+            tp_diff < tolerance
+            and fp_diff < tolerance
+            and fn_diff < tolerance
+            and sens_diff < tolerance
+            and fa_diff < tolerance
+        ):
+            print("\n  ✅ PERFECT PARITY ACHIEVED!")
         else:
-            print(f"\n  ❌ PARITY FAILED - Differences exceed tolerance")
+            print("\n  ❌ PARITY FAILED - Differences exceed tolerance")
             all_pass = False
 
     return all_pass
+
 
 def main():
     print("=" * 80)
@@ -205,6 +217,7 @@ def main():
         print("\n⚠️ Some algorithms need adjustment")
         print("Check the differences above for details")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

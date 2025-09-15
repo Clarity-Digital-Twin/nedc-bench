@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """Direct parity test between Alpha and Beta pipelines"""
 
-import sys
 import os
-from pathlib import Path
 import subprocess
+import sys
 import tempfile
+from pathlib import Path
 
 # Set environment
-os.environ['NEDC_NFC'] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")
-os.environ['PYTHONPATH'] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHONPATH', '')}"
+os.environ["NEDC_NFC"] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")
+os.environ["PYTHONPATH"] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHONPATH', '')}"
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
 
 def run_alpha_on_files(ref_list, hyp_list):
     """Run Alpha pipeline directly"""
@@ -25,10 +26,11 @@ def run_alpha_on_files(ref_list, hyp_list):
         f"{os.environ['NEDC_NFC']}/bin/nedc_eeg_eval",
         ref_list,
         hyp_list,
-        "--odir", output_dir
+        "--odir",
+        output_dir,
     ]
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, check=False, capture_output=True, text=True)
 
     if result.returncode != 0:
         print(f"Alpha failed: {result.stderr}")
@@ -40,12 +42,13 @@ def run_alpha_on_files(ref_list, hyp_list):
         with open(taes_file) as f:
             content = f.read()
             # Extract key metrics
-            lines = content.strip().split('\n')
+            lines = content.strip().split("\n")
             for line in lines[-20:]:  # Check last 20 lines for summary
-                if 'sens:' in line.lower() or 'sensitivity' in line.lower():
+                if "sens:" in line.lower() or "sensitivity" in line.lower():
                     print(f"Alpha TAES: {line.strip()}")
 
     return output_dir
+
 
 def run_beta_on_files(ref_list, hyp_list):
     """Run Beta pipeline"""
@@ -82,8 +85,10 @@ def run_beta_on_files(ref_list, hyp_list):
     except Exception as e:
         print(f"Beta failed: {e}")
         import traceback
+
         traceback.print_exc()
         return None
+
 
 def main():
     print("=" * 80)
@@ -105,7 +110,7 @@ def main():
 
     with open(ref_list) as f:
         lines = f.readlines()
-    with open(ref_corrected, 'w') as f:
+    with open(ref_corrected, "w") as f:
         for line in lines:
             if line.strip():
                 filename = Path(line.strip()).name
@@ -114,7 +119,7 @@ def main():
 
     with open(hyp_list) as f:
         lines = f.readlines()
-    with open(hyp_corrected, 'w') as f:
+    with open(hyp_corrected, "w") as f:
         for line in lines:
             if line.strip():
                 filename = Path(line.strip()).name
@@ -139,6 +144,7 @@ def main():
     else:
         print("❌ FAILED: One or both pipelines failed")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

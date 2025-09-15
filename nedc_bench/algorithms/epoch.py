@@ -61,8 +61,7 @@ class EpochResult:
         all_labels = set()
         for ref_label in self.confusion_matrix:
             all_labels.add(ref_label)
-            for hyp_label in self.confusion_matrix[ref_label]:
-                all_labels.add(hyp_label)
+            all_labels.update(self.confusion_matrix[ref_label])
 
         for label in all_labels:
             fp[label] = 0

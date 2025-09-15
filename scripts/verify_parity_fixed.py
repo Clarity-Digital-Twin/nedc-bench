@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """FIXED PARITY VERIFICATION - With proper duration aggregation"""
 
-import sys
 import os
+import sys
 from pathlib import Path
 
-os.environ['NEDC_NFC'] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")
-os.environ['PYTHONPATH'] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHONPATH', '')}"
+os.environ["NEDC_NFC"] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")
+os.environ["PYTHONPATH"] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHONPATH', '')}"
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
 
 def main():
     print("=" * 80)
@@ -118,8 +119,12 @@ def main():
         return 0
     else:
         print("\n⚠️ Small differences remain:")
-        print(f"Alpha: Sens={alpha_sens:.4f}%, FA={alpha_fa:.4f}, TP={alpha_tp:.2f}, Dur={alpha_duration:.2f}")
-        print(f"Beta:  Sens={beta_sens:.4f}%, FA={beta_fa:.4f}, TP={beta_tp:.2f}, Dur={beta_duration:.2f}")
+        print(
+            f"Alpha: Sens={alpha_sens:.4f}%, FA={alpha_fa:.4f}, TP={alpha_tp:.2f}, Dur={alpha_duration:.2f}"
+        )
+        print(
+            f"Beta:  Sens={beta_sens:.4f}%, FA={beta_fa:.4f}, TP={beta_tp:.2f}, Dur={beta_duration:.2f}"
+        )
 
         if fa_diff > 1.0:
             print("\n❌ FA/24h still significantly different - duration issue not fully resolved")
@@ -127,6 +132,7 @@ def main():
         else:
             print("\n✅ Differences are within acceptable tolerance")
             return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())
