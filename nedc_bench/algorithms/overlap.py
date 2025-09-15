@@ -41,15 +41,11 @@ class OverlapScorer:
 
     Implements the overlap scoring algorithm from nedc_eeg_eval_ovlp.py
     using binary ANY overlap detection, not proportional overlap.
+
+    Note: NEDC source does not apply a guard width to boundaries for
+    overlap detection. The exact condition is strict ANY overlap:
+      (event.stop > ref.start) and (event.start < ref.stop)
     """
-
-    def __init__(self, guard_width: float = 0.001):
-        """Initialize with guard width for boundary adjustments.
-
-        Args:
-            guard_width: Guard width for boundary tolerance (default 0.001)
-        """
-        self.guard_width = guard_width
 
     def score(
         self, ref_events: list[EventAnnotation], hyp_events: list[EventAnnotation]
@@ -75,11 +71,11 @@ class OverlapScorer:
             has_overlap = False
 
             for hyp_event in hyp_events:
-                # NEDC overlap condition (line 652): ANY overlap with guard
-                # (event[1] > start - guard) and (event[0] < stop + guard)
+                # NEDC overlap condition (line 652): ANY overlap
+                # (event[1] > start) and (event[0] < stop)
                 if (
-                    hyp_event.stop_time > ref_event.start_time - self.guard_width
-                    and hyp_event.start_time < ref_event.stop_time + self.guard_width
+                    hyp_event.stop_time > ref_event.start_time
+                    and hyp_event.start_time < ref_event.stop_time
                     and hyp_event.label == label
                 ):
                     has_overlap = True
@@ -102,10 +98,10 @@ class OverlapScorer:
             has_overlap = False
 
             for ref_event in ref_events:
-                # Same overlap condition with guard, checking if hyp matches any ref
+                # Same strict overlap condition, checking if hyp matches any ref
                 if (
-                    hyp_event.stop_time > ref_event.start_time - self.guard_width
-                    and hyp_event.start_time < ref_event.stop_time + self.guard_width
+                    hyp_event.stop_time > ref_event.start_time
+                    and hyp_event.start_time < ref_event.stop_time
                     and ref_event.label == label
                 ):
                     has_overlap = True
