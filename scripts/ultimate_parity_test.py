@@ -59,7 +59,7 @@ def run_all_beta_algorithms():
     # Initialize scorers (each has different init params)
     scorers = {
         "taes": TAESScorer(target_label="seiz"),
-        "epoch": EpochScorer(epoch_duration=1.0),  # Uses 1-second epochs
+        "epoch": EpochScorer(epoch_duration=0.25),  # NEDC uses 0.25-second epochs!
         "ovlp": OverlapScorer(),  # No target_label param
         # "dp": DPAligner(),  # Skip DP for now - needs different input format
     }
@@ -81,10 +81,10 @@ def run_all_beta_algorithms():
                 ref_ann = AnnotationFile.from_csv_bi(Path(ref_file))
                 hyp_ann = AnnotationFile.from_csv_bi(Path(hyp_file))
 
-                # Get duration for FA/24h calculation (only once per file)
-                if file_count == 0:
-                    total_duration = 0.0
+                # Get duration for FA/24h calculation (only on first pass)
                 if algo_name == list(scorers.keys())[0]:  # Only count duration once
+                    if file_count == 0:
+                        total_duration = 0.0
                     total_duration += ref_ann.duration
 
                 # Score based on algorithm type
