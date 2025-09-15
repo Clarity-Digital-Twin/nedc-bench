@@ -24,7 +24,7 @@ Research-grade EEG evaluation tools face a critical challenge: they must maintai
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                        NEDC-BENCH Platform                        │
+│                        NEDC-BENCH Platform                       │
 ├──────────────────────────────────────────────────────────────────┤
 │                                                                    │
 │  ┌────────────────────────┐    ┌────────────────────────┐       │
