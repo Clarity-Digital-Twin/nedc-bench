@@ -75,11 +75,11 @@ class OverlapScorer:
             has_overlap = False
 
             for hyp_event in hyp_events:
-                # NEDC overlap condition (line 652): ANY overlap
-                # (event[1] > start) and (event[0] < stop)
+                # NEDC overlap condition (line 652): ANY overlap with guard
+                # (event[1] > start - guard) and (event[0] < stop + guard)
                 if (
-                    hyp_event.stop_time > ref_event.start_time
-                    and hyp_event.start_time < ref_event.stop_time
+                    hyp_event.stop_time > ref_event.start_time - self.guard_width
+                    and hyp_event.start_time < ref_event.stop_time + self.guard_width
                     and hyp_event.label == label
                 ):
                     has_overlap = True
@@ -102,10 +102,10 @@ class OverlapScorer:
             has_overlap = False
 
             for ref_event in ref_events:
-                # Same overlap condition, checking if hyp matches any ref
+                # Same overlap condition with guard, checking if hyp matches any ref
                 if (
-                    hyp_event.stop_time > ref_event.start_time
-                    and hyp_event.start_time < ref_event.stop_time
+                    hyp_event.stop_time > ref_event.start_time - self.guard_width
+                    and hyp_event.start_time < ref_event.stop_time + self.guard_width
                     and ref_event.label == label
                 ):
                     has_overlap = True

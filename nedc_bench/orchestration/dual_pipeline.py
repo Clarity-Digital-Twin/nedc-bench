@@ -78,7 +78,7 @@ class BetaPipeline:
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
         self._map_events(ref_ann.events, params.label_map)
         self._map_events(hyp_ann.events, params.label_map)
-        scorer = OverlapScorer()
+        scorer = OverlapScorer(guard_width=params.guard_width)
         return scorer.score(ref_ann.events, hyp_ann.events)
 
     def evaluate_ira(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
