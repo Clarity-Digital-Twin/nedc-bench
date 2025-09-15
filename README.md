@@ -283,18 +283,56 @@ docker build -f Dockerfile.api -t nedc-bench/api:latest .
 
 ## 📚 Citation
 
-If you use NEDC-BENCH in your research, please cite:
+If you use NEDC-BENCH in your research, please cite both the original NEDC work and this wrapper/reimplementation:
+
+### Original NEDC Evaluation Software
+
+The core algorithms and evaluation metrics are from Temple University's NEDC:
 
 ```bibtex
 @incollection{shah2021objective,
   title={Objective Evaluation Metrics for Automatic Classification of EEG Events},
   author={Shah, V. and Golmohammadi, M. and Obeid, I. and Picone, J.},
-  booktitle={Signal Processing in Medicine and Biology},
+  booktitle={Signal Processing in Medicine and Biology: Emerging Trends in Research and Applications},
+  editor={Obeid, I. and Selesnick, I. and Picone, J.},
   pages={1--26},
   year={2021},
-  publisher={Springer}
+  publisher={Springer},
+  doi={10.1007/978-3-030-36844-9_1}
 }
 ```
+
+### NEDC-BENCH Platform
+
+For the modern wrapper and dual-pipeline implementation:
+
+```bibtex
+@software{nedc_bench2025,
+  title={NEDC-BENCH: A Modern Dual-Pipeline Platform for EEG Evaluation},
+  author={{Clarity Digital Twin}},
+  year={2025},
+  url={https://github.com/Clarity-Digital-Twin/nedc-bench},
+  version={0.1.0},
+  note={A production-ready wrapper and reimplementation of Temple University's
+        NEDC EEG Evaluation v6.0.0, providing REST API, containerization,
+        and 100% algorithmic parity validation}
+}
+```
+
+### When to cite which paper:
+
+- **Cite Shah et al. (2021)** when discussing:
+  - The five evaluation algorithms (TAES, DP, Overlap, Epoch, IRA)
+  - The theoretical foundation of EEG event scoring
+  - Comparison of evaluation metrics for sequential data
+  - The original NEDC v6.0.0 implementation
+
+- **Cite NEDC-BENCH (2025)** when discussing:
+  - The dual-pipeline architecture (Alpha wrapper + Beta reimplementation)
+  - The REST API or WebSocket interfaces
+  - Container/Kubernetes deployment
+  - Parity validation methodology
+  - Modern Python reimplementation of the algorithms
 
 ## 📄 License
 
