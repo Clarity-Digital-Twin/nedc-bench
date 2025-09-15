@@ -177,22 +177,31 @@ class EpochScorer:
         )
 
     def _sample_times(self, file_duration: float) -> list[float]:
-        """Generate midpoint sample times per NEDC."""
+        """Generate midpoint sample times per NEDC.
+
+        NEDC uses inclusive boundary: while curr_time <= stop_time
+        This is critical for exact parity.
+        """
         samples: list[float] = []
         half = self.epoch_duration / 2.0
         i = 0
         while True:
             t = half + i * self.epoch_duration
-            if t > file_duration + 1e-12:
+            # NEDC uses <= for boundary check (inclusive)
+            if t > file_duration:
                 break
             samples.append(t)
             i += 1
         return samples
 
     def _time_to_index(self, val: float, events: list[EventAnnotation]) -> int:
-        """Return index of event covering time val (inclusive), else -1."""
+        """Return index of event covering time val (inclusive), else -1.
+
+        NEDC uses bitwise & operator: (val >= entry[0]) & (val <= entry[1])
+        """
         for idx, ev in enumerate(events):
-            if (val >= ev.start_time) and (val <= ev.stop_time):
+            # Match NEDC exactly with bitwise & (shouldn't matter but for parity...)
+            if (val >= ev.start_time) & (val <= ev.stop_time):  # noqa: PLR2004
                 return idx
         return -1
 
