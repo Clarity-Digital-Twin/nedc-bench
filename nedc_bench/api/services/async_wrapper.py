@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, cast
 
-from monitoring.metrics import (
+from nedc_bench.monitoring.metrics import (
     evaluation_counter,
     evaluation_duration,
     parity_failures,

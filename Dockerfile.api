@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir uv \
 
 # Copy application code
 COPY nedc_bench/ ./nedc_bench/
+COPY monitoring/ ./nedc_bench/monitoring/
 COPY nedc_eeg_eval/ ./nedc_eeg_eval/
 COPY alpha/ ./alpha/
 
