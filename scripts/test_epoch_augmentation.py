@@ -11,7 +11,6 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import List
 
 # Setup paths
 os.environ["NEDC_NFC"] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")
@@ -24,8 +23,8 @@ from nedc_bench.utils.params import load_nedc_params, map_event_label
 
 
 def augment_events_nedc_style(
-    events: List[EventAnnotation], file_duration: float, null_class: str = "bckg"
-) -> List[EventAnnotation]:
+    events: list[EventAnnotation], file_duration: float, null_class: str = "bckg"
+) -> list[EventAnnotation]:
     """Augment events with background like NEDC does.
 
     NEDC fills all gaps with background events so the annotation
@@ -158,9 +157,9 @@ def main():
     print("=" * 80)
 
     # Load SSOT files
-    with open("SSOT_ALPHA.json") as f:
+    with Path("SSOT_ALPHA.json").open(encoding="utf-8") as f:
         alpha = json.load(f)
-    with open("SSOT_BETA.json") as f:
+    with Path("SSOT_BETA.json").open(encoding="utf-8") as f:
         beta = json.load(f)
 
     print("\nAlpha (NEDC v6.0.0):")

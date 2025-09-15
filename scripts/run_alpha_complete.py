@@ -28,7 +28,7 @@ def create_nedc_list_files():
 
     # Create ref list with paths relative to NEDC directory
     ref_list = lists_dir / "ref_complete.list"
-    with open(ref_list, "w") as f:
+    with ref_list.open("w", encoding="utf-8") as f:
         for ref_file in ref_files:
             # Path from NEDC dir back to data
             relative_path = f"../../data/csv_bi_parity/csv_bi_export_clean/ref/{ref_file.name}"
@@ -36,7 +36,7 @@ def create_nedc_list_files():
 
     # Create hyp list
     hyp_list = lists_dir / "hyp_complete.list"
-    with open(hyp_list, "w") as f:
+    with hyp_list.open("w", encoding="utf-8") as f:
         for hyp_file in hyp_files:
             relative_path = f"../../data/csv_bi_parity/csv_bi_export_clean/hyp/{hyp_file.name}"
             f.write(f"{relative_path}\n")
@@ -89,7 +89,7 @@ def parse_alpha_results():
             print(f"WARNING: {summary_file} not found")
             continue
 
-        with open(summary_file) as f:
+        with summary_file.open(encoding="utf-8") as f:
             lines = f.readlines()
 
         # Parse totals from last line
@@ -122,7 +122,7 @@ def parse_alpha_results():
                     print(f"WARNING: Could not parse {algo} summary: {e}")
 
     # Save results
-    with open("SSOT_ALPHA.json", "w") as f:
+    with Path("SSOT_ALPHA.json").open("w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
 
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Saved Alpha results to SSOT_ALPHA.json")

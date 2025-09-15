@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Parse Alpha (NEDC v6.0.0) results from summary.txt and per‑algo files.
+"""Parse Alpha (NEDC v6.0.0) results from summary.txt and per-algo files.
 
-Outputs SSOT_ALPHA.json with per‑algorithm metrics that align with how
+Outputs SSOT_ALPHA.json with per-algorithm metrics that align with how
 our Beta implementation reports totals:
 - TAES/DP/Overlap/Epoch: tp, fp, fn, sensitivity, fa_per_24h
 - IRA: multi_class_kappa, per_label_kappa

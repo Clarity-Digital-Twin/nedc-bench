@@ -197,11 +197,11 @@ def print_confusion(conf):
 
 def compute_kappa(conf, labels):
     """Compute multi-class kappa."""
-    sum_rows = {l: sum(conf[l].values()) for l in labels}
-    sum_cols = {l: sum(conf[r][l] for r in labels) for l in labels}
-    sum_m = sum(conf[l][l] for l in labels)
+    sum_rows = {lbl: sum(conf[lbl].values()) for lbl in labels}
+    sum_cols = {lbl: sum(conf[r][lbl] for r in labels) for lbl in labels}
+    sum_m = sum(conf[lbl][lbl] for lbl in labels)
     sum_n = sum(sum_rows.values())
-    sum_gc = sum(sum_rows[l] * sum_cols[l] for l in labels)
+    sum_gc = sum(sum_rows[lbl] * sum_cols[lbl] for lbl in labels)
 
     num = sum_n * sum_m - sum_gc
     denom = sum_n * sum_n - sum_gc

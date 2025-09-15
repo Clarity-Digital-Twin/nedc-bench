@@ -17,6 +17,7 @@ from nedc_bench.algorithms.epoch import EpochScorer
 from nedc_bench.algorithms.overlap import OverlapScorer
 from nedc_bench.algorithms.taes import TAESScorer
 from nedc_bench.models.annotations import AnnotationFile
+from nedc_bench.utils.metrics import fa_per_24h
 from nedc_bench.utils.params import load_nedc_params, map_event_label
 
 
@@ -82,7 +83,7 @@ def get_alpha_metrics() -> dict[str, AlgorithmResult]:
     }
 
 
-def run_all_beta_algorithms():  # noqa: PLR0914
+def run_all_beta_algorithms():
     """Run all Beta algorithms and collect results"""
 
     data_root = Path(__file__).parent.parent / "data" / "csv_bi_parity" / "csv_bi_export_clean"
@@ -145,18 +146,16 @@ def run_all_beta_algorithms():  # noqa: PLR0914
         # Calculate metrics
         sensitivity = (total_tp / (total_tp + total_fn) * 100) if (total_tp + total_fn) > 0 else 0
         # Compute FA/24h consistent with NEDC definitions (centralized)
-        from nedc_bench.utils.metrics import fa_per_24h as _fa
-
-        fa_per_24h = _fa(
+        fa_per_24h_value = fa_per_24h(
             total_fp, total_duration, params.epoch_duration if algo_name == "epoch" else None
         )
 
         results[algo_name] = AlgorithmResult(
-            total_tp, total_fp, total_fn, sensitivity, fa_per_24h, algo_name.upper()
+            total_tp, total_fp, total_fn, sensitivity, fa_per_24h_value, algo_name.upper()
         )
 
         print(f"  TP={total_tp:.2f}, FP={total_fp:.2f}, FN={total_fn:.2f}")
-        print(f"  Sensitivity={sensitivity:.4f}%, FA/24h={fa_per_24h:.4f}")
+        print(f"  Sensitivity={sensitivity:.4f}%, FA/24h={fa_per_24h_value:.4f}")
 
     return results
 

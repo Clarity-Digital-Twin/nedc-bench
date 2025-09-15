@@ -10,7 +10,7 @@ os.environ["PYTHONPATH"] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHO
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from nedc_bench.algorithms.ira import IRAScorer
-from nedc_bench.models.annotations import AnnotationFile
+from nedc_bench.models.annotations import AnnotationFile, EventAnnotation
 from nedc_bench.utils.params import load_nedc_params, map_event_label
 
 
@@ -66,8 +66,6 @@ def main():
 
         # Handle empty annotations (like run_beta_ira.py does)
         if not ref_ann.events:
-            from nedc_bench.models.annotations import EventAnnotation
-
             ref_ann.events = [
                 EventAnnotation(
                     channel="TERM",
@@ -78,8 +76,6 @@ def main():
                 )
             ]
         if not hyp_ann.events:
-            from nedc_bench.models.annotations import EventAnnotation
-
             hyp_ann.events = [
                 EventAnnotation(
                     channel="TERM",
@@ -170,7 +166,7 @@ def compute_kappa_from_matrix(conf, labels):
     sum_cols = {}
     for label in labels:
         sum_rows[label] = sum(conf.get(label, {}).values())
-        sum_cols[label] = sum(conf.get(l, {}).get(label, 0) for l in labels)
+        sum_cols[label] = sum(conf.get(lbl, {}).get(label, 0) for lbl in labels)
 
     # Diagonal sum
     sum_m = sum(conf.get(label, {}).get(label, 0) for label in labels)

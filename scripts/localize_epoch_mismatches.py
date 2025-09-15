@@ -12,7 +12,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 # Setup paths
 os.environ["NEDC_NFC"] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")
@@ -24,7 +24,7 @@ from nedc_bench.models.annotations import AnnotationFile
 from nedc_bench.utils.params import load_nedc_params, map_event_label
 
 
-def run_beta_epoch_single(ref_file: Path, hyp_file: Path, params) -> Dict[str, float]:
+def run_beta_epoch_single(ref_file: Path, hyp_file: Path, params) -> dict[str, float]:
     """Run Beta Epoch on a single file pair."""
     ref_ann = AnnotationFile.from_csv_bi(ref_file)
     hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
@@ -46,7 +46,7 @@ def run_beta_epoch_single(ref_file: Path, hyp_file: Path, params) -> Dict[str, f
     return {"tp": tp, "fp": fp, "fn": fn}
 
 
-def analyze_boundary_conditions(ref_file: Path, hyp_file: Path, params) -> Dict[str, Any]:
+def analyze_boundary_conditions(ref_file: Path, hyp_file: Path, params) -> dict[str, Any]:
     """Analyze detailed boundary conditions for a file pair."""
     ref_ann = AnnotationFile.from_csv_bi(ref_file)
     hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
@@ -121,9 +121,9 @@ def main():
     ref_list = data_root / "lists" / "ref.list"
     hyp_list = data_root / "lists" / "hyp.list"
 
-    with ref_list.open() as f:
+    with ref_list.open(encoding="utf-8") as f:
         ref_files = [line.strip() for line in f if line.strip()]
-    with hyp_list.open() as f:
+    with hyp_list.open(encoding="utf-8") as f:
         hyp_files = [line.strip() for line in f if line.strip()]
 
     # Convert to full paths
@@ -133,7 +133,6 @@ def main():
     print(f"Analyzing {len(ref_files)} file pairs...")
 
     mismatches = []
-    total_alpha = {"tp": 0, "fp": 0, "fn": 0}
     total_beta = {"tp": 0, "fp": 0, "fn": 0}
 
     # Test on first 10 files for initial investigation
@@ -169,7 +168,7 @@ def main():
 
     # Save mismatches
     if mismatches:
-        with open(output_dir / "boundary_issues.json", "w") as f:
+        with (output_dir / "boundary_issues.json").open("w", encoding="utf-8") as f:
             json.dump(mismatches, f, indent=2, default=str)
 
         print("\nFiles with boundary issues:")
@@ -194,7 +193,6 @@ def main():
     print("=" * 80)
 
     # Check if changing epsilon affects results
-    original_epsilon = 1e-12
     test_epsilons = [0, 1e-15, 1e-12, 1e-10, 1e-8, 1e-6, 1e-4]
 
     print("\nTesting different epsilon values for boundary sampling...")

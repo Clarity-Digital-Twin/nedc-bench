@@ -109,7 +109,7 @@ def main():
 
     # Save as JSON
     output_file = Path("SSOT_BETA.json")
-    with open(output_file, "w", encoding="utf-8") as f:
+    with output_file.open("w", encoding="utf-8") as f:
         json.dump(beta_results, f, indent=2, default=str)
 
     print(f"\n✅ Beta results saved to: {output_file}")
