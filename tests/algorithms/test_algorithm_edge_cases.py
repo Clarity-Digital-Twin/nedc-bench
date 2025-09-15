@@ -139,21 +139,29 @@ class TestEpochScoringEdgeCases:
         # Empty sequences get filled with null epochs
         assert "null" in result.confusion_matrix
         assert result.confusion_matrix["null"]["null"] == 30  # 30 null epochs match
-        assert result.total_hits == 30
-        assert result.total_misses == 0
-        assert result.total_false_alarms == 0
+        assert result.hits.get("null", 0) == 30
+        assert sum(result.misses.values()) == 0
+        assert sum(result.false_alarms.values()) == 0
 
-        # Empty ref with non-empty hyp
-        result = scorer.score([], ["seiz", "bckg"], duration)
+        # Empty ref with non-empty hyp (events, not labels)
+        hyp_events = [
+            {"start": 0.0, "stop": 1.0, "label": "seiz"},
+            {"start": 1.0, "stop": 2.0, "label": "bckg"},
+        ]
+        result = scorer.score([], hyp_events, duration)
         # ref gets 30 nulls, hyp has 2 labels then 28 nulls
-        assert result.total_hits == 28  # 28 null epochs match
-        assert result.total_false_alarms == 2  # seiz and bckg are false alarms
+        assert result.hits.get("null", 0) == 28  # 28 null epochs match
+        assert sum(result.false_alarms.values()) == 2  # seiz and bckg are false alarms
 
         # Empty hyp with non-empty ref
-        result = scorer.score(["seiz", "bckg"], [], duration)
+        ref_events = [
+            {"start": 0.0, "stop": 1.0, "label": "seiz"},
+            {"start": 1.0, "stop": 2.0, "label": "bckg"},
+        ]
+        result = scorer.score(ref_events, [], duration)
         # hyp gets 30 nulls, ref has 2 labels then 28 nulls
-        assert result.total_hits == 28  # 28 null epochs match
-        assert result.total_misses == 2  # seiz and bckg are misses
+        assert result.hits.get("null", 0) == 28  # 28 null epochs match
+        assert sum(result.misses.values()) == 2  # seiz and bckg are misses
 
     def test_epoch_single_label_only(self):
         """Test Epoch when only one label exists"""
