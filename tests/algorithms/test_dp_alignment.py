@@ -5,7 +5,7 @@ from typing import List, Dict
 from nedc_bench.algorithms.dp_alignment import (
     DPAligner, DPAlignmentResult, NULL_CLASS
 )
-from nedc_bench.schemas import EventAnnotation
+from nedc_bench.models.annotations import EventAnnotation
 
 
 class TestDPAlignment:
