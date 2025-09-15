@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-
-from typing import Awaitable, Callable
+from collections.abc import Awaitable, Callable
 
 from fastapi import HTTPException, Request
 from starlette.responses import Response
