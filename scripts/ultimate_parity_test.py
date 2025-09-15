@@ -64,22 +64,9 @@ def _process_file_pair(ref_file, hyp_file, algo_name, scorer, params):  # noqa: 
                 result.misses.get("seiz", 0),
             )
         elif algo_name == "dp":
-            # Convert to epoch sequences inline
-            n_epochs = int(np.ceil(ref_ann.duration / params.epoch_duration))
-            ref_seq = [params.null_class] * n_epochs
-            hyp_seq = [params.null_class] * n_epochs
-
-            for event in ref_ann.events:
-                start_epoch = int(event.start_time / params.epoch_duration)
-                end_epoch = int(np.ceil(event.stop_time / params.epoch_duration))
-                for i in range(start_epoch, min(end_epoch, n_epochs)):
-                    ref_seq[i] = event.label
-
-            for event in hyp_ann.events:
-                start_epoch = int(event.start_time / params.epoch_duration)
-                end_epoch = int(np.ceil(event.stop_time / params.epoch_duration))
-                for i in range(start_epoch, min(end_epoch, n_epochs)):
-                    hyp_seq[i] = event.label
+            # NEDC DP aligns event sequences directly (no epochization)
+            ref_seq = [e.label for e in ref_ann.events]
+            hyp_seq = [e.label for e in hyp_ann.events]
             result = scorer.align(ref_seq, hyp_seq)
             return result.true_positives, result.false_positives, result.false_negatives
     except Exception as e:
@@ -159,16 +146,9 @@ def run_all_beta_algorithms():  # noqa: PLR0914
 
         # Calculate metrics
         sensitivity = (total_tp / (total_tp + total_fn) * 100) if (total_tp + total_fn) > 0 else 0
-        # Compute FA/24h consistent with NEDC definitions
-        if algo_name == "epoch":
-            # NEDC scales epoch-level FP by epoch duration
-            fa_per_24h = (
-                ((total_fp * params.epoch_duration) / total_duration * 86400)
-                if total_duration > 0
-                else 0
-            )
-        else:
-            fa_per_24h = (total_fp / total_duration * 86400) if total_duration > 0 else 0
+        # Compute FA/24h consistent with NEDC definitions (centralized)
+        from nedc_bench.utils.metrics import fa_per_24h as _fa
+        fa_per_24h = _fa(total_fp, total_duration, params.epoch_duration if algo_name == "epoch" else None)
 
         results[algo_name] = AlgorithmResult(
             total_tp, total_fp, total_fn, sensitivity, fa_per_24h, algo_name.upper()
