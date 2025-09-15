@@ -3,7 +3,7 @@
 ## System Requirements
 - Python 3.10+ (3.10 and 3.11 tested in CI)
 - OS: Linux, Windows (CI), macOS (developer-supported)
-- Disk: ~1 GB free for dependencies and data
+- Sufficient disk space for dependencies and sample data
 
 ## Install with UV (recommended)
 UV is a fast Python package manager.

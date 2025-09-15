@@ -17,11 +17,11 @@ uv pip install -e .[dev]
 ### Option A: Use the API
 ```bash
 uv run uvicorn nedc_bench.api.main:app --reload
-# Submit via curl
+# Submit via curl (note: enum values are lowercase)
 curl -s -X POST "http://localhost:8000/api/v1/evaluate" \
   -F reference=@data/csv_bi_parity/csv_bi_export_clean/ref/aaaaaajy_s001_t000.csv_bi \
   -F hypothesis=@data/csv_bi_parity/csv_bi_export_clean/hyp/aaaaaajy_s001_t000.csv_bi \
-  -F algorithms=ALL -F pipeline=DUAL | jq
+  -F algorithms=all -F pipeline=dual | jq
 
 # Watch progress
 wscat -c ws://localhost:8000/ws/<job_id>
