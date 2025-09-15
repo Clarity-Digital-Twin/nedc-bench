@@ -9,7 +9,6 @@ This guide describes how to build, run, and configure the NEDC Bench API in Dock
 
 ## Environment Variables
 
-- `LOG_LEVEL` (default: `INFO`)
 - `NEDC_NFC` (default: `/app/nedc_eeg_eval/v6.0.0`)
 - `REDIS_URL` (default: `redis://redis:6379` in Compose; cluster DNS in K8s)
 

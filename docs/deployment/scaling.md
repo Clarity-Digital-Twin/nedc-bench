@@ -4,7 +4,7 @@
 
 ### Add workers
 ```bash
-uv run uvicorn nedc_bench.api.main:app --workers 4
+uv run uvicorn nedc_bench.api.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
 ### Load balancing
@@ -21,6 +21,7 @@ uv run uvicorn nedc_bench.api.main:app --workers 4
 ### Performance Tuning
 - Cache results via Redis to reduce recomputation.
 - Ensure inputs are prevalidated to avoid retries.
+- The provided Docker image runs with `--workers 1` by default. Increase workers by overriding the container command (see Docker guide) or scaling replicas under an external load balancer.
 
 ## Auto-scaling
 - Kubernetes HPA based on CPU or custom latency metrics.

@@ -17,10 +17,30 @@ docker run --rm -p 8000:8000 \
 curl http://localhost:8000/api/v1/health
 ```
 
+Notes:
+- The image defaults to a single uvicorn worker (`--workers 1`) to keep metrics simple. For higher concurrency, override the command:
+  ```bash
+  docker run --rm -p 8000:8000 \
+    nedc-bench/api:latest \
+    uvicorn nedc_bench.api.main:app --host 0.0.0.0 --port 8000 --workers 4
+  ```
+- On Linux, if `host.docker.internal` is unavailable, connect Redis via bridge network or use the Compose stack.
+
 ## Run with Docker Compose
 ```bash
 docker-compose up -d
 curl http://localhost:8000/api/v1/health
+```
+
+Override workers in Compose by adding a custom `command:` to the `api` service if needed:
+```yaml
+services:
+  api:
+    command: [
+      "uvicorn", "nedc_bench.api.main:app",
+      "--host", "0.0.0.0", "--port", "8000",
+      "--workers", "4"
+    ]
 ```
 
 ## Environment Variables

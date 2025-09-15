@@ -13,5 +13,5 @@
 
 ## Metrics
 - TP/FP/FN: True/False Positives/Negatives. For TAES they may be fractional; others are integers.
-- Sensitivity: `TP / (TP + FN) * 100`.
+- Sensitivity: `TP / (TP + FN)`.
 - FA/24h: False alarms per 24 hours. For Epoch, FP is scaled by `epoch_duration` per NEDC rules.
