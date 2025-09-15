@@ -115,8 +115,8 @@ class TestDurationCalculation:
     @pytest.mark.parametrize(
         "num_files,file_duration,expected_total",
         [
-            (10, 1800.0, 18000.0),  # 10 files × 30 min = 5 hours
-            (100, 3600.0, 360000.0),  # 100 files × 1 hour = 100 hours
+            (10, 1800.0, 18000.0),  # 10 files x 30 min = 5 hours
+            (100, 3600.0, 360000.0),  # 100 files x 1 hour = 100 hours
             (1832, 856.0, 1568192.0),  # Our test case approximation
         ],
     )

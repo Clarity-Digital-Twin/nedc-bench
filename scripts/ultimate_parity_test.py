@@ -13,6 +13,14 @@ os.environ["PYTHONPATH"] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHO
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Import all nedc_bench modules at top level
+from nedc_bench.algorithms.dp_alignment import DPAligner
+from nedc_bench.algorithms.epoch import EpochScorer
+from nedc_bench.algorithms.overlap import OverlapScorer
+from nedc_bench.algorithms.taes import TAESScorer
+from nedc_bench.models.annotations import AnnotationFile
+from nedc_bench.utils.params import load_nedc_params, map_event_label
+
 
 @dataclass
 class AlgorithmResult:
@@ -22,6 +30,61 @@ class AlgorithmResult:
     sensitivity: float
     fa_per_24h: float
     name: str
+
+
+def _process_file_pair(ref_file, hyp_file, algo_name, scorer, params):  # noqa: C901
+    """Process a single file pair and return metrics or None on error."""
+    try:
+        ref_ann = AnnotationFile.from_csv_bi(Path(ref_file))
+        hyp_ann = AnnotationFile.from_csv_bi(Path(hyp_file))
+        # Normalize labels to NEDC classes
+        for ev in ref_ann.events:
+            ev.label = map_event_label(ev.label, params.label_map)
+        for ev in hyp_ann.events:
+            ev.label = map_event_label(ev.label, params.label_map)
+
+        # Score based on algorithm type
+        if algo_name == "taes":
+            result = scorer.score(ref_ann.events, hyp_ann.events)
+            return result.true_positives, result.false_positives, result.false_negatives
+        elif algo_name == "epoch":
+            result = scorer.score(ref_ann.events, hyp_ann.events, ref_ann.duration)
+            if "seiz" in result.true_positives:
+                return (
+                    result.true_positives["seiz"],
+                    result.false_positives["seiz"],
+                    result.false_negatives["seiz"],
+                )
+            return 0, 0, 0
+        elif algo_name == "ovlp":
+            result = scorer.score(ref_ann.events, hyp_ann.events)
+            return (
+                result.hits.get("seiz", 0),
+                result.false_alarms.get("seiz", 0),
+                result.misses.get("seiz", 0),
+            )
+        elif algo_name == "dp":
+            # Convert to epoch sequences inline
+            n_epochs = int(np.ceil(ref_ann.duration / params.epoch_duration))
+            ref_seq = [params.null_class] * n_epochs
+            hyp_seq = [params.null_class] * n_epochs
+
+            for event in ref_ann.events:
+                start_epoch = int(event.start_time / params.epoch_duration)
+                end_epoch = int(np.ceil(event.stop_time / params.epoch_duration))
+                for i in range(start_epoch, min(end_epoch, n_epochs)):
+                    ref_seq[i] = event.label
+
+            for event in hyp_ann.events:
+                start_epoch = int(event.start_time / params.epoch_duration)
+                end_epoch = int(np.ceil(event.stop_time / params.epoch_duration))
+                for i in range(start_epoch, min(end_epoch, n_epochs)):
+                    hyp_seq[i] = event.label
+            result = scorer.align(ref_seq, hyp_seq)
+            return result.true_positives, result.false_positives, result.false_negatives
+    except Exception as e:
+        print(f"  Error in {algo_name} for {Path(ref_file).name}: {e}")
+        return None
 
 
 def get_alpha_metrics() -> dict[str, AlgorithmResult]:
@@ -34,14 +97,8 @@ def get_alpha_metrics() -> dict[str, AlgorithmResult]:
     }
 
 
-def run_all_beta_algorithms():
+def run_all_beta_algorithms():  # noqa: PLR0914
     """Run all Beta algorithms and collect results"""
-    from nedc_bench.algorithms.dp_alignment import DPAligner
-    from nedc_bench.algorithms.epoch import EpochScorer
-    from nedc_bench.algorithms.overlap import OverlapScorer
-    from nedc_bench.algorithms.taes import TAESScorer
-    from nedc_bench.models.annotations import AnnotationFile
-    from nedc_bench.utils.params import load_nedc_params, map_event_label
 
     data_root = Path(__file__).parent.parent / "data" / "csv_bi_parity" / "csv_bi_export_clean"
 
@@ -81,26 +138,6 @@ def run_all_beta_algorithms():
         total_duration += ref_ann.duration
     print(f"Total duration: {total_duration:.2f} seconds")
 
-    # Helper to map labels in-place
-    def _map_labels(events):
-        for ev in events:
-            ev.label = map_event_label(ev.label, params.label_map)
-        return events
-
-    # Helper to convert events to epoch label sequences for DP/IRA
-    def _events_to_epoch_sequence(events, duration: float, epoch_duration: float, null_label: str):
-        """Convert events to epoch label sequence"""
-        n_epochs = int(np.ceil(duration / epoch_duration))
-        labels = [null_label] * n_epochs
-
-        for event in events:
-            start_epoch = int(event.start_time / epoch_duration)
-            end_epoch = int(np.ceil(event.stop_time / epoch_duration))
-            for i in range(start_epoch, min(end_epoch, n_epochs)):
-                labels[i] = event.label
-
-        return labels
-
     # Process each algorithm
     for algo_name, scorer in scorers.items():
         print(f"\nRunning {algo_name.upper()}...")
@@ -111,50 +148,14 @@ def run_all_beta_algorithms():
         file_count = 0
 
         for ref_file, hyp_file in zip(ref_files, hyp_files):
-            try:
-                ref_ann = AnnotationFile.from_csv_bi(Path(ref_file))
-                hyp_ann = AnnotationFile.from_csv_bi(Path(hyp_file))
-                # Normalize labels to NEDC classes
-                _map_labels(ref_ann.events)
-                _map_labels(hyp_ann.events)
-
-                # Score based on algorithm type
-                if algo_name == "taes":
-                    result = scorer.score(ref_ann.events, hyp_ann.events)
-                    total_tp += result.true_positives
-                    total_fp += result.false_positives
-                    total_fn += result.false_negatives
-                elif algo_name == "epoch":
-                    # Epoch scorer needs file duration
-                    result = scorer.score(ref_ann.events, hyp_ann.events, ref_ann.duration)
-                    # Get seiz-specific metrics
-                    if "seiz" in result.true_positives:
-                        total_tp += result.true_positives["seiz"]
-                        total_fp += result.false_positives["seiz"]
-                        total_fn += result.false_negatives["seiz"]
-                elif algo_name == "ovlp":
-                    result = scorer.score(ref_ann.events, hyp_ann.events)
-                    # Overlap uses dict structure - use .get() for safety
-                    total_tp += result.hits.get("seiz", 0)
-                    total_fp += result.false_alarms.get("seiz", 0)
-                    total_fn += result.misses.get("seiz", 0)
-                elif algo_name == "dp":
-                    # Convert events to epoch sequences for DP alignment
-                    ref_seq = _events_to_epoch_sequence(
-                        ref_ann.events, ref_ann.duration, params.epoch_duration, params.null_class
-                    )
-                    hyp_seq = _events_to_epoch_sequence(
-                        hyp_ann.events, hyp_ann.duration, params.epoch_duration, params.null_class
-                    )
-                    result = scorer.align(ref_seq, hyp_seq)
-                    total_tp += result.true_positives
-                    total_fp += result.false_positives
-                    total_fn += result.false_negatives
-
+            # Process file pair - errors are logged but don't stop processing
+            success = _process_file_pair(ref_file, hyp_file, algo_name, scorer, params)
+            if success:
+                tp, fp, fn = success
+                total_tp += tp
+                total_fp += fp
+                total_fn += fn
                 file_count += 1
-
-            except Exception as e:
-                print(f"  Error in {algo_name} for {Path(ref_file).name}: {e}")
 
         # Calculate metrics
         sensitivity = (total_tp / (total_tp + total_fn) * 100) if (total_tp + total_fn) > 0 else 0
