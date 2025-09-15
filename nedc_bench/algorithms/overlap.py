@@ -43,6 +43,14 @@ class OverlapScorer:
     using binary ANY overlap detection, not proportional overlap.
     """
 
+    def __init__(self, guard_width: float = 0.001):
+        """Initialize with guard width for boundary adjustments.
+
+        Args:
+            guard_width: Guard width for boundary tolerance (default 0.001)
+        """
+        self.guard_width = guard_width
+
     def score(
         self, ref_events: list[EventAnnotation], hyp_events: list[EventAnnotation]
     ) -> OverlapResult:
