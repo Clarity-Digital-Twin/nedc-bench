@@ -68,6 +68,7 @@ def main():
         # Handle empty annotations (like run_beta_ira.py does)
         if not ref_ann.events:
             from nedc_bench.models.annotations import EventAnnotation
+
             ref_ann.events = [
                 EventAnnotation(
                     channel="TERM",
@@ -79,6 +80,7 @@ def main():
             ]
         if not hyp_ann.events:
             from nedc_bench.models.annotations import EventAnnotation
+
             hyp_ann.events = [
                 EventAnnotation(
                     channel="TERM",
@@ -112,10 +114,10 @@ def main():
     print("BETA AGGREGATED CONFUSION MATRIX:")
     print("=" * 80)
     print("  Ref/Hyp:         seiz                  bckg")
-    for ref_label in ['seiz', 'bckg']:
+    for ref_label in ["seiz", "bckg"]:
         row_sum = sum(agg_conf.get(ref_label, {}).values())
         print(f"     {ref_label}:", end="")
-        for hyp_label in ['seiz', 'bckg']:
+        for hyp_label in ["seiz", "bckg"]:
             count = agg_conf.get(ref_label, {}).get(hyp_label, 0)
             pct = (count / row_sum * 100) if row_sum > 0 else 0
             print(f"    {count:8.0f} ({pct:6.2f}%)", end="")
@@ -130,16 +132,13 @@ def main():
     print("     bckg:    18816.00 (  0.31%)  5968398.00 ( 99.69%)")
 
     # Calculate differences
-    nedc_conf = {
-        'seiz': {'seiz': 33704, 'bckg': 250459},
-        'bckg': {'seiz': 18816, 'bckg': 5968398}
-    }
+    nedc_conf = {"seiz": {"seiz": 33704, "bckg": 250459}, "bckg": {"seiz": 18816, "bckg": 5968398}}
 
     print("\n" + "=" * 80)
     print("DIFFERENCES (Beta - Alpha):")
     print("=" * 80)
-    for ref_label in ['seiz', 'bckg']:
-        for hyp_label in ['seiz', 'bckg']:
+    for ref_label in ["seiz", "bckg"]:
+        for hyp_label in ["seiz", "bckg"]:
             beta_val = agg_conf.get(ref_label, {}).get(hyp_label, 0)
             alpha_val = nedc_conf.get(ref_label, {}).get(hyp_label, 0)
             diff = beta_val - alpha_val
@@ -153,7 +152,7 @@ def main():
     beta_multi = ira._compute_multi_class_kappa(agg_conf, labels)
 
     # Alpha kappa (from NEDC matrix)
-    alpha_multi = compute_kappa_from_matrix(nedc_conf, ['seiz', 'bckg'])
+    alpha_multi = compute_kappa_from_matrix(nedc_conf, ["seiz", "bckg"])
 
     print("\n" + "=" * 80)
     print("KAPPA VALUES:")

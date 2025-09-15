@@ -553,3 +553,4 @@ class NEDCWrapper:
 2. Complex interdependencies between modules
 3. Risk of introducing subtle algorithmic errors
 4. Original authors not available for consultation
+\n[Archived] For final behaviors, see docs/NEDC_TAES_EXACT_ALGORITHM.md and parity docs.

@@ -5,7 +5,9 @@ from nedc_bench.models.annotations import EventAnnotation
 
 
 def ev(start: float, stop: float, label: str = "seiz") -> EventAnnotation:
-    return EventAnnotation(channel="TERM", start_time=start, stop_time=stop, label=label, confidence=1.0)
+    return EventAnnotation(
+        channel="TERM", start_time=start, stop_time=stop, label=label, confidence=1.0
+    )
 
 
 def test_no_overlap_on_tangent_boundary():
@@ -30,4 +32,3 @@ def test_any_overlap_counts():
     assert res.hits.get("seiz", 0) == 1
     assert res.misses.get("seiz", 0) == 0
     assert res.false_alarms.get("seiz", 0) == 0
-

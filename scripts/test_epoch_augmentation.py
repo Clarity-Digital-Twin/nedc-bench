@@ -24,9 +24,7 @@ from nedc_bench.utils.params import load_nedc_params, map_event_label
 
 
 def augment_events_nedc_style(
-    events: List[EventAnnotation],
-    file_duration: float,
-    null_class: str = "bckg"
+    events: List[EventAnnotation], file_duration: float, null_class: str = "bckg"
 ) -> List[EventAnnotation]:
     """Augment events with background like NEDC does.
 
@@ -35,13 +33,15 @@ def augment_events_nedc_style(
     """
     if not events:
         # Empty annotation - fill entire duration with background
-        return [EventAnnotation(
-            channel="TERM",
-            start_time=0.0,
-            stop_time=file_duration,
-            label=null_class,
-            confidence=1.0
-        )]
+        return [
+            EventAnnotation(
+                channel="TERM",
+                start_time=0.0,
+                stop_time=file_duration,
+                label=null_class,
+                confidence=1.0,
+            )
+        ]
 
     augmented = []
     curr_time = 0.0
@@ -49,13 +49,15 @@ def augment_events_nedc_style(
     for ev in sorted(events, key=lambda x: x.start_time):
         # Fill gap before this event if needed
         if curr_time < ev.start_time:
-            augmented.append(EventAnnotation(
-                channel="TERM",
-                start_time=curr_time,
-                stop_time=ev.start_time,
-                label=null_class,
-                confidence=1.0
-            ))
+            augmented.append(
+                EventAnnotation(
+                    channel="TERM",
+                    start_time=curr_time,
+                    stop_time=ev.start_time,
+                    label=null_class,
+                    confidence=1.0,
+                )
+            )
 
         # Add the actual event
         augmented.append(ev)
@@ -63,13 +65,15 @@ def augment_events_nedc_style(
 
     # Fill gap at end if needed
     if curr_time < file_duration:
-        augmented.append(EventAnnotation(
-            channel="TERM",
-            start_time=curr_time,
-            stop_time=file_duration,
-            label=null_class,
-            confidence=1.0
-        ))
+        augmented.append(
+            EventAnnotation(
+                channel="TERM",
+                start_time=curr_time,
+                stop_time=file_duration,
+                label=null_class,
+                confidence=1.0,
+            )
+        )
 
     return augmented
 
@@ -86,28 +90,13 @@ def run_epoch_with_augmentation(ref_file: Path, hyp_file: Path, params):
         ev.label = map_event_label(ev.label, params.label_map)
 
     # CRITICAL: Augment like NEDC does!
-    ref_augmented = augment_events_nedc_style(
-        ref_ann.events,
-        ref_ann.duration,
-        params.null_class
-    )
-    hyp_augmented = augment_events_nedc_style(
-        hyp_ann.events,
-        hyp_ann.duration,
-        params.null_class
-    )
+    ref_augmented = augment_events_nedc_style(ref_ann.events, ref_ann.duration, params.null_class)
+    hyp_augmented = augment_events_nedc_style(hyp_ann.events, hyp_ann.duration, params.null_class)
 
     # Now run Epoch on augmented events
-    scorer = EpochScorer(
-        epoch_duration=params.epoch_duration,
-        null_class=params.null_class
-    )
+    scorer = EpochScorer(epoch_duration=params.epoch_duration, null_class=params.null_class)
 
-    result = scorer.score(
-        ref_augmented,
-        hyp_augmented,
-        file_duration=ref_ann.duration
-    )
+    result = scorer.score(ref_augmented, hyp_augmented, file_duration=ref_ann.duration)
 
     return result
 
@@ -190,9 +179,9 @@ def main():
     print(f"  FN: {total_fn}")
 
     # Check if we achieved parity
-    alpha_tp = int(alpha['epoch']['tp'])
-    alpha_fp = int(alpha['epoch']['fp'])
-    alpha_fn = int(alpha['epoch']['fn'])
+    alpha_tp = int(alpha["epoch"]["tp"])
+    alpha_fp = int(alpha["epoch"]["fp"])
+    alpha_fn = int(alpha["epoch"]["fn"])
 
     tp_diff = total_tp - alpha_tp
     fp_diff = total_fp - alpha_fp

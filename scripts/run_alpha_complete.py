@@ -7,6 +7,7 @@ from pathlib import Path
 import json
 from datetime import datetime
 
+
 def create_nedc_list_files():
     """Create list files in NEDC directory with correct relative paths."""
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Creating NEDC list files...")
@@ -28,7 +29,7 @@ def create_nedc_list_files():
 
     # Create ref list with paths relative to NEDC directory
     ref_list = lists_dir / "ref_complete.list"
-    with open(ref_list, 'w') as f:
+    with open(ref_list, "w") as f:
         for ref_file in ref_files:
             # Path from NEDC dir back to data
             relative_path = f"../../data/csv_bi_parity/csv_bi_export_clean/ref/{ref_file.name}"
@@ -36,13 +37,14 @@ def create_nedc_list_files():
 
     # Create hyp list
     hyp_list = lists_dir / "hyp_complete.list"
-    with open(hyp_list, 'w') as f:
+    with open(hyp_list, "w") as f:
         for hyp_file in hyp_files:
             relative_path = f"../../data/csv_bi_parity/csv_bi_export_clean/hyp/{hyp_file.name}"
             f.write(f"{relative_path}\n")
 
     print(f"Created lists at: {lists_dir}")
     return "runtime_lists/ref_complete.list", "runtime_lists/hyp_complete.list"
+
 
 def run_alpha():
     """Run NEDC tool with correct paths."""
@@ -66,6 +68,7 @@ def run_alpha():
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Alpha NEDC completed successfully!")
     return True
 
+
 def parse_alpha_results():
     """Parse NEDC output files to extract totals."""
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Parsing Alpha results...")
@@ -77,7 +80,7 @@ def parse_alpha_results():
         "taes": nedc_output / "summary_taes.txt",
         "epoch": nedc_output / "summary_epoch.txt",
         "overlap": nedc_output / "summary_ovlp.txt",
-        "dp": nedc_output / "summary_dpalign.txt"
+        "dp": nedc_output / "summary_dpalign.txt",
     }
 
     results = {}
@@ -112,7 +115,7 @@ def parse_alpha_results():
                         "fp": fp,
                         "fn": fn,
                         "sensitivity": tp / (tp + fn) * 100 if (tp + fn) > 0 else 0,
-                        "fa_per_24h": fp * 24 / 436.53  # Total hours in dataset
+                        "fa_per_24h": fp * 24 / 436.53,  # Total hours in dataset
                     }
                     print(f"  {algo.upper()}: TP={tp}, FP={fp}, FN={fn}")
                     break
@@ -126,10 +129,11 @@ def parse_alpha_results():
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Saved Alpha results to SSOT_ALPHA.json")
     return results
 
+
 if __name__ == "__main__":
-    print("="*60)
+    print("=" * 60)
     print("ALPHA (NEDC v6.0.0) COMPLETE RUN")
-    print("="*60)
+    print("=" * 60)
 
     if run_alpha():
         parse_alpha_results()

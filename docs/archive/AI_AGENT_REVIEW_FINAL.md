@@ -121,3 +121,4 @@ The AI agent's changes were fundamentally sound and addressed the core issues. T
 - **Test coverage adequate** ✅
 
 The codebase is now stable and the core parity issues are resolved.
+\n[Archived] Kept for process review; implementation details in docs/README.md.

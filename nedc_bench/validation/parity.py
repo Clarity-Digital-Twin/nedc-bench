@@ -175,11 +175,23 @@ class ParityValidator:
         # TP/FP/FN in NEDC DP are summarized via 2x2 per-label and can diverge
         # depending on mapping; skip them to avoid false mismatches.
         pairs: list[tuple[str, float, float]] = [
-            ("insertions", float(alpha_result.get("insertions", 0)), float(beta_result.total_insertions)),
-            ("deletions", float(alpha_result.get("deletions", 0)), float(beta_result.total_deletions)),
+            (
+                "insertions",
+                float(alpha_result.get("insertions", 0)),
+                float(beta_result.total_insertions),
+            ),
+            (
+                "deletions",
+                float(alpha_result.get("deletions", 0)),
+                float(beta_result.total_deletions),
+            ),
         ]
         if "substitutions" in alpha_result:
-            pairs.append(("substitutions", float(alpha_result.get("substitutions", 0)), float(beta_result.total_substitutions)))
+            pairs.append((
+                "substitutions",
+                float(alpha_result.get("substitutions", 0)),
+                float(beta_result.total_substitutions),
+            ))
 
         for name, a, b in pairs:
             if abs(a - b) > 0.0:

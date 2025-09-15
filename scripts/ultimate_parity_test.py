@@ -148,7 +148,10 @@ def run_all_beta_algorithms():  # noqa: PLR0914
         sensitivity = (total_tp / (total_tp + total_fn) * 100) if (total_tp + total_fn) > 0 else 0
         # Compute FA/24h consistent with NEDC definitions (centralized)
         from nedc_bench.utils.metrics import fa_per_24h as _fa
-        fa_per_24h = _fa(total_fp, total_duration, params.epoch_duration if algo_name == "epoch" else None)
+
+        fa_per_24h = _fa(
+            total_fp, total_duration, params.epoch_duration if algo_name == "epoch" else None
+        )
 
         results[algo_name] = AlgorithmResult(
             total_tp, total_fp, total_fn, sensitivity, fa_per_24h, algo_name.upper()

@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 import re
 
+
 def parse_alpha_results() -> dict:
     """Parse NEDC output to extract totals for all algorithms.
 
@@ -32,7 +33,7 @@ def parse_alpha_results() -> dict:
         m = re.search(pat, text, re.DOTALL | re.IGNORECASE)
         if not m:
             # Fallback: try non-greedy between title and next separator
-            pat2 = rf"{re.escape(block_title)}.*?\n(.*?)(?:\n={10,}|\Z)"
+            pat2 = rf"{re.escape(block_title)}.*?\n(.*?)(?:\n={(10,)}|\Z)"
             m = re.search(pat2, text, re.DOTALL | re.IGNORECASE)
         return m.group(1) if m else ""
 
@@ -44,7 +45,12 @@ def parse_alpha_results() -> dict:
         lab_pat = rf"^\s*LABEL:\s*{label}\b.*?\n(.*?)(?=\n\s*LABEL:|\n\s*SUMMARY:|\Z)"
         m = re.search(lab_pat, sect, re.DOTALL | re.IGNORECASE | re.M)
         block = m.group(1) if m else ""
-        return {k: v for k, v in (re.findall(r"^\s*([A-Za-z \(\)]+):\s+([0-9\.]+)", block, re.M) if block else [])}
+        return {
+            k: v
+            for k, v in (
+                re.findall(r"^\s*([A-Za-z \(\)]+):\s+([0-9\.]+)", block, re.M) if block else []
+            )
+        }
 
     results: dict[str, dict] = {}
 
@@ -120,6 +126,7 @@ def parse_alpha_results() -> dict:
                 print(f"  {k}: {v}")
 
     return results
+
 
 if __name__ == "__main__":
     parse_alpha_results()

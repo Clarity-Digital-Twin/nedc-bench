@@ -18,13 +18,15 @@ from nedc_bench.utils.params import load_nedc_params, map_event_label
 def augment_events_full(events, file_duration, null_class="bckg"):
     """Augment events with background to fill ALL gaps (like NEDC does)."""
     if not events:
-        return [EventAnnotation(
-            channel="TERM",
-            start_time=0.0,
-            stop_time=file_duration,
-            label=null_class,
-            confidence=1.0
-        )]
+        return [
+            EventAnnotation(
+                channel="TERM",
+                start_time=0.0,
+                stop_time=file_duration,
+                label=null_class,
+                confidence=1.0,
+            )
+        ]
 
     augmented = []
     curr_time = 0.0
@@ -32,25 +34,29 @@ def augment_events_full(events, file_duration, null_class="bckg"):
     for ev in sorted(events, key=lambda x: x.start_time):
         # Fill gap before this event
         if curr_time < ev.start_time:
-            augmented.append(EventAnnotation(
-                channel="TERM",
-                start_time=curr_time,
-                stop_time=ev.start_time,
-                label=null_class,
-                confidence=1.0
-            ))
+            augmented.append(
+                EventAnnotation(
+                    channel="TERM",
+                    start_time=curr_time,
+                    stop_time=ev.start_time,
+                    label=null_class,
+                    confidence=1.0,
+                )
+            )
         augmented.append(ev)
         curr_time = ev.stop_time
 
     # Fill gap at end
     if curr_time < file_duration:
-        augmented.append(EventAnnotation(
-            channel="TERM",
-            start_time=curr_time,
-            stop_time=file_duration,
-            label=null_class,
-            confidence=1.0
-        ))
+        augmented.append(
+            EventAnnotation(
+                channel="TERM",
+                start_time=curr_time,
+                stop_time=file_duration,
+                label=null_class,
+                confidence=1.0,
+            )
+        )
 
     return augmented
 
@@ -77,8 +83,8 @@ def main():
     ira = IRAScorer()
 
     # Test both approaches
-    agg_conf_without = {r: {c: 0 for c in ['seiz', 'bckg']} for r in ['seiz', 'bckg']}
-    agg_conf_with = {r: {c: 0 for c in ['seiz', 'bckg']} for r in ['seiz', 'bckg']}
+    agg_conf_without = {r: {c: 0 for c in ["seiz", "bckg"]} for r in ["seiz", "bckg"]}
+    agg_conf_with = {r: {c: 0 for c in ["seiz", "bckg"]} for r in ["seiz", "bckg"]}
 
     print(f"Processing {len(ref_files)} files...")
     print("\nTesting first 100 files for quick comparison...")
@@ -97,20 +103,39 @@ def main():
             ev.label = map_event_label(ev.label, params.label_map)
 
         # WITHOUT full augmentation (current approach - only empty files)
-        ref_events_without = ref_ann.events if ref_ann.events else [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=ref_ann.duration,
-                          label=params.null_class, confidence=1.0)
-        ]
-        hyp_events_without = hyp_ann.events if hyp_ann.events else [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=hyp_ann.duration,
-                          label=params.null_class, confidence=1.0)
-        ]
+        ref_events_without = (
+            ref_ann.events
+            if ref_ann.events
+            else [
+                EventAnnotation(
+                    channel="TERM",
+                    start_time=0.0,
+                    stop_time=ref_ann.duration,
+                    label=params.null_class,
+                    confidence=1.0,
+                )
+            ]
+        )
+        hyp_events_without = (
+            hyp_ann.events
+            if hyp_ann.events
+            else [
+                EventAnnotation(
+                    channel="TERM",
+                    start_time=0.0,
+                    stop_time=hyp_ann.duration,
+                    label=params.null_class,
+                    confidence=1.0,
+                )
+            ]
+        )
 
         res_without = ira.score(
-            ref_events_without, hyp_events_without,
+            ref_events_without,
+            hyp_events_without,
             epoch_duration=params.epoch_duration,
             file_duration=ref_ann.duration,
-            null_class=params.null_class
+            null_class=params.null_class,
         )
 
         # WITH full augmentation (like NEDC)
@@ -118,10 +143,11 @@ def main():
         hyp_events_with = augment_events_full(hyp_ann.events, hyp_ann.duration, params.null_class)
 
         res_with = ira.score(
-            ref_events_with, hyp_events_with,
+            ref_events_with,
+            hyp_events_with,
             epoch_duration=params.epoch_duration,
             file_duration=ref_ann.duration,
-            null_class=params.null_class
+            null_class=params.null_class,
         )
 
         # Aggregate
@@ -141,19 +167,19 @@ def main():
 
     print("\nWITHOUT full augmentation (current):")
     print_confusion(agg_conf_without)
-    kappa_without = compute_kappa(agg_conf_without, ['seiz', 'bckg'])
+    kappa_without = compute_kappa(agg_conf_without, ["seiz", "bckg"])
     print(f"Kappa: {kappa_without:.6f}")
 
     print("\nWITH full augmentation (like NEDC):")
     print_confusion(agg_conf_with)
-    kappa_with = compute_kappa(agg_conf_with, ['seiz', 'bckg'])
+    kappa_with = compute_kappa(agg_conf_with, ["seiz", "bckg"])
     print(f"Kappa: {kappa_with:.6f}")
 
     print("\n" + "=" * 80)
     print("DIFFERENCES:")
     print("=" * 80)
-    for r in ['seiz', 'bckg']:
-        for c in ['seiz', 'bckg']:
+    for r in ["seiz", "bckg"]:
+        for c in ["seiz", "bckg"]:
             diff = agg_conf_with[r][c] - agg_conf_without[r][c]
             if diff != 0:
                 print(f"  {r} -> {c}: {diff:+d}")
@@ -170,7 +196,7 @@ def main():
 def print_confusion(conf):
     """Print confusion matrix."""
     print("  Ref/Hyp:    seiz        bckg")
-    for r in ['seiz', 'bckg']:
+    for r in ["seiz", "bckg"]:
         print(f"     {r}:  {conf[r]['seiz']:7d}   {conf[r]['bckg']:7d}")
 
 

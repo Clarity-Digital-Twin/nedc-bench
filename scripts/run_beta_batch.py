@@ -41,7 +41,7 @@ def main():
             "fn": result.fn,
             "sensitivity": result.sensitivity,
             "fa_per_24h": result.fa_per_24h,
-            "name": result.name
+            "name": result.name,
         }
 
         print(f"\n{algo_name.upper()}:")

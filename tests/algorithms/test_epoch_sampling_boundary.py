@@ -5,7 +5,9 @@ from nedc_bench.models.annotations import EventAnnotation
 
 
 def ev(start: float, stop: float, label: str = "seiz") -> EventAnnotation:
-    return EventAnnotation(channel="TERM", start_time=start, stop_time=stop, label=label, confidence=1.0)
+    return EventAnnotation(
+        channel="TERM", start_time=start, stop_time=stop, label=label, confidence=1.0
+    )
 
 
 def test_epoch_sampling_two_midpoints():
@@ -19,4 +21,3 @@ def test_epoch_sampling_two_midpoints():
 
     # Confusion on diagonal for seiz should have at least 2 counts (2 midpoints)
     assert res.confusion_matrix["seiz"]["seiz"] >= 2
-

@@ -39,4 +39,3 @@ def test_compare_dp_prefers_summary_totals():
     report = validator.compare_dp(alpha, beta)
     assert report.passed
     assert len(report.discrepancies) == 0
-

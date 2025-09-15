@@ -35,26 +35,15 @@ def run_beta_epoch_single(ref_file: Path, hyp_file: Path, params) -> Dict[str, f
     for ev in hyp_ann.events:
         ev.label = map_event_label(ev.label, params.label_map)
 
-    scorer = EpochScorer(
-        epoch_duration=params.epoch_duration,
-        null_class=params.null_class
-    )
-    result = scorer.score(
-        ref_ann.events,
-        hyp_ann.events,
-        file_duration=ref_ann.duration
-    )
+    scorer = EpochScorer(epoch_duration=params.epoch_duration, null_class=params.null_class)
+    result = scorer.score(ref_ann.events, hyp_ann.events, file_duration=ref_ann.duration)
 
     # Extract SEIZ metrics from properties
     tp = result.true_positives.get("seiz", 0)
     fp = result.false_positives.get("seiz", 0)
     fn = result.false_negatives.get("seiz", 0)
 
-    return {
-        "tp": tp,
-        "fp": fp,
-        "fn": fn
-    }
+    return {"tp": tp, "fp": fp, "fn": fn}
 
 
 def analyze_boundary_conditions(ref_file: Path, hyp_file: Path, params) -> Dict[str, Any]:
@@ -84,10 +73,7 @@ def analyze_boundary_conditions(ref_file: Path, hyp_file: Path, params) -> Dict[
     last_samples = samples[-5:] if len(samples) > 5 else samples
     sample_info = []
 
-    scorer = EpochScorer(
-        epoch_duration=params.epoch_duration,
-        null_class=params.null_class
-    )
+    scorer = EpochScorer(epoch_duration=params.epoch_duration, null_class=params.null_class)
     for t in last_samples:
         ref_idx = scorer._time_to_index(t, ref_ann.events)
         hyp_idx = scorer._time_to_index(t, hyp_ann.events)
@@ -97,7 +83,7 @@ def analyze_boundary_conditions(ref_file: Path, hyp_file: Path, params) -> Dict[
             "time": t,
             "ref_label": ref_label,
             "hyp_label": hyp_label,
-            "at_boundary": abs(t - file_duration) < 1e-6
+            "at_boundary": abs(t - file_duration) < 1e-6,
         })
 
     # Event boundaries
@@ -118,7 +104,8 @@ def analyze_boundary_conditions(ref_file: Path, hyp_file: Path, params) -> Dict[
         "last_hyp_seiz_end": max(hyp_event_ends) if hyp_event_ends else None,
         "last_samples": sample_info,
         "epsilon_at_boundary": 1e-12,
-        "would_include_extra": (samples[-1] - file_duration) > 0 and (samples[-1] - file_duration) < epoch_duration
+        "would_include_extra": (samples[-1] - file_duration) > 0
+        and (samples[-1] - file_duration) < epoch_duration,
     }
 
 
@@ -154,7 +141,7 @@ def main():
     print(f"\nTesting first {test_limit} files for quick analysis...")
 
     for i, (ref_file, hyp_file) in enumerate(zip(ref_files[:test_limit], hyp_files[:test_limit])):
-        print(f"\rProcessing {i+1}/{test_limit}...", end="", flush=True)
+        print(f"\rProcessing {i + 1}/{test_limit}...", end="", flush=True)
 
         # Run Beta (faster, internal)
         beta_result = run_beta_epoch_single(ref_file, hyp_file, params)
@@ -171,7 +158,7 @@ def main():
                 "ref_file": str(ref_file.name),
                 "hyp_file": str(hyp_file.name),
                 "beta_result": beta_result,
-                "boundary_info": boundary_info
+                "boundary_info": boundary_info,
             })
 
     print(f"\n\nFound {len(mismatches)} files with boundary issues")
@@ -188,7 +175,7 @@ def main():
         print("\nFiles with boundary issues:")
         for m in mismatches[:5]:  # Show first 5
             print(f"  - {m['ref_file']}")
-            info = m['boundary_info']
+            info = m["boundary_info"]
             print(f"    Duration: {info['file_duration']:.6f}")
             print(f"    Last sample: {info['last_sample_time']:.6f}")
             print(f"    Exceeds: {info['exceeds_duration']}")

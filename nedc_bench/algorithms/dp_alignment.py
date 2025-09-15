@@ -34,9 +34,9 @@ class DPAlignmentResult:
     total_substitutions: int
 
     # For parity validation
-    true_positives: int                 # Positive-class ("seiz") TP
-    false_positives: int                # Positive-class ("seiz") FP
-    false_negatives: int                # Positive-class ("seiz") FN
+    true_positives: int  # Positive-class ("seiz") TP
+    false_positives: int  # Positive-class ("seiz") FP
+    false_negatives: int  # Positive-class ("seiz") FN
 
     # Summary totals across all labels (NEDC "sum_*" in summary)
     sum_true_positives: int = 0
@@ -233,16 +233,27 @@ class DPAligner:
         true_positives = hits_per_label.get(positive_class, 0)
         false_positives = insertions.get(positive_class, 0)
         pos_deletions = deletions.get(positive_class, 0)
-        pos_substitutions = sum(substitutions.get(positive_class, {}).values()) if positive_class in substitutions else 0
+        pos_substitutions = (
+            sum(substitutions.get(positive_class, {}).values())
+            if positive_class in substitutions
+            else 0
+        )
         false_negatives = pos_deletions + pos_substitutions
 
         # Summary totals across all labels (matches NEDC "sum_*" logic)
         sum_true_positives = sum(hits_per_label.values())
         sum_false_positives = sum(insertions.values())
         # In NEDC, misses per label equal deletions + substitutions (on ref side)
-        sum_false_negatives = sum(misses_per_label.values()) if misses_per_label else (
-            sum(deletions.values()) + sum(
-                count for ref_label in substitutions for count in substitutions[ref_label].values()
+        sum_false_negatives = (
+            sum(misses_per_label.values())
+            if misses_per_label
+            else (
+                sum(deletions.values())
+                + sum(
+                    count
+                    for ref_label in substitutions
+                    for count in substitutions[ref_label].values()
+                )
             )
         )
 

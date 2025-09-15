@@ -4,6 +4,7 @@
 import json
 from pathlib import Path
 
+
 def compare_results():
     """Compare SSOT_ALPHA.json vs SSOT_BETA.json"""
 
@@ -14,16 +15,16 @@ def compare_results():
     with open("SSOT_BETA.json") as f:
         beta = json.load(f)
 
-    print("="*60)
+    print("=" * 60)
     print("ALPHA vs BETA PARITY COMPARISON")
-    print("="*60)
+    print("=" * 60)
 
     # Map algorithm names (alpha key -> beta key)
     algo_map = {"taes": "taes", "epoch": "epoch", "overlap": "ovlp", "dp": "dp"}
 
     for algo_alpha, algo_beta in algo_map.items():
         print(f"\n{algo_alpha.upper()} Algorithm:")
-        print("-"*40)
+        print("-" * 40)
 
         a = alpha[algo_alpha]
         b = beta[algo_beta]
@@ -39,7 +40,9 @@ def compare_results():
         else:
             tp_parity = 100 if b["tp"] == 0 else 0
 
-        print(f"  Alpha TP: {a['tp']:.2f}, Beta TP: {b['tp']:.2f}, Diff: {tp_diff:.2f} ({tp_parity:.2f}% match)")
+        print(
+            f"  Alpha TP: {a['tp']:.2f}, Beta TP: {b['tp']:.2f}, Diff: {tp_diff:.2f} ({tp_parity:.2f}% match)"
+        )
         print(f"  Alpha FP: {a['fp']:.2f}, Beta FP: {b['fp']:.2f}, Diff: {fp_diff:.2f}")
         print(f"  Alpha FN: {a['fn']:.2f}, Beta FN: {b['fn']:.2f}, Diff: {fn_diff:.2f}")
         print(f"  Alpha Sens: {a['sensitivity']:.2f}%, Beta Sens: {b['sensitivity']:.2f}%")
@@ -56,7 +59,7 @@ def compare_results():
     # IRA: compare kappa values
     if "ira" in alpha and "ira" in beta:
         print("\nIRA Algorithm:")
-        print("-"*40)
+        print("-" * 40)
         a = alpha["ira"]
         b = beta["ira"]
         a_multi = float(a.get("multi_class_kappa", a.get("kappa", 0.0)))
@@ -68,6 +71,7 @@ def compare_results():
             print("  ✅ EXACT PARITY ACHIEVED!")
         else:
             print(f"  ❌ Parity mismatch: Δkappa={diff:.6f}")
+
 
 if __name__ == "__main__":
     compare_results()
