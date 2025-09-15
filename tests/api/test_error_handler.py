@@ -24,12 +24,11 @@ class TestErrorHandlerMiddleware:
     @pytest.mark.asyncio
     async def test_nedc_api_error_handling(self, mock_request):
         """Test handling of custom NEDCAPIError"""
+
         # Create a call_next that raises NEDCAPIError
         async def failing_handler(request):
             raise NEDCAPIError(
-                status_code=400,
-                detail="Invalid file format",
-                error_code="INVALID_FORMAT"
+                status_code=400, detail="Invalid file format", error_code="INVALID_FORMAT"
             )
 
         response = await error_handler_middleware(mock_request, failing_handler)
@@ -47,6 +46,7 @@ class TestErrorHandlerMiddleware:
     @pytest.mark.asyncio
     async def test_unexpected_error_handling(self, mock_request):
         """Test handling of unexpected exceptions"""
+
         # Create a call_next that raises unexpected error
         async def crashing_handler(request):
             raise RuntimeError("Unexpected database error")
@@ -105,9 +105,7 @@ class TestErrorHandlerMiddleware:
     async def test_nedc_api_error_properties(self):
         """Test NEDCAPIError exception properties"""
         error = NEDCAPIError(
-            status_code=422,
-            detail="Validation failed",
-            error_code="VALIDATION_ERROR"
+            status_code=422, detail="Validation failed", error_code="VALIDATION_ERROR"
         )
 
         assert error.status_code == 422
@@ -144,11 +142,10 @@ class TestErrorHandlerMiddleware:
     @pytest.mark.asyncio
     async def test_error_with_special_characters(self, mock_request):
         """Test error messages with special characters are handled correctly"""
+
         async def handler(request):
             raise NEDCAPIError(
-                400,
-                'File name contains invalid characters: <>&"',
-                "INVALID_FILENAME"
+                400, 'File name contains invalid characters: <>&"', "INVALID_FILENAME"
             )
 
         response = await error_handler_middleware(mock_request, handler)

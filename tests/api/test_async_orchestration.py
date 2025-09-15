@@ -41,7 +41,7 @@ TERM,3.0,4.0,bckg,1.0
         ref_file, hyp_file = sample_files
 
         # Mock only the Alpha wrapper to avoid NEDC dependency
-        with patch.object(orchestrator.orchestrator.alpha_wrapper, 'evaluate') as mock_eval:
+        with patch.object(orchestrator.orchestrator.alpha_wrapper, "evaluate") as mock_eval:
             mock_eval.return_value = {
                 "taes": {"true_positives": 1.0, "false_positives": 0.0, "false_negatives": 0.0}
             }
@@ -59,9 +59,7 @@ TERM,3.0,4.0,bckg,1.0
         """Test Beta pipeline TAES execution"""
         ref_file, hyp_file = sample_files
 
-        result = await orchestrator.evaluate(
-            ref_file, hyp_file, algorithm="taes", pipeline="beta"
-        )
+        result = await orchestrator.evaluate(ref_file, hyp_file, algorithm="taes", pipeline="beta")
 
         assert "beta_result" in result
         # Result should be TAESResult converted to dict
@@ -86,9 +84,7 @@ TERM,3.0,4.0,bckg,1.0
         ref_file, hyp_file = sample_files
 
         with pytest.raises(ValueError, match="Unsupported pipeline: gamma"):
-            await orchestrator.evaluate(
-                ref_file, hyp_file, algorithm="taes", pipeline="gamma"
-            )
+            await orchestrator.evaluate(ref_file, hyp_file, algorithm="taes", pipeline="gamma")
 
     @pytest.mark.asyncio
     async def test_unsupported_algorithm_error(self, orchestrator, sample_files):
@@ -96,9 +92,7 @@ TERM,3.0,4.0,bckg,1.0
         ref_file, hyp_file = sample_files
 
         with pytest.raises(ValueError, match="Unsupported algorithm: unknown"):
-            await orchestrator.evaluate(
-                ref_file, hyp_file, algorithm="unknown", pipeline="beta"
-            )
+            await orchestrator.evaluate(ref_file, hyp_file, algorithm="unknown", pipeline="beta")
 
     @pytest.mark.asyncio
     async def test_concurrent_evaluations(self, orchestrator, sample_files):
@@ -124,9 +118,7 @@ TERM,3.0,4.0,bckg,1.0
         ref_file, hyp_file = sample_files
         file_pairs = [(ref_file, hyp_file)] * 3
 
-        results = await orchestrator.evaluate_batch(
-            file_pairs, algorithm="taes", pipeline="beta"
-        )
+        results = await orchestrator.evaluate_batch(file_pairs, algorithm="taes", pipeline="beta")
 
         assert len(results) == 3
         for r in results:
@@ -137,9 +129,7 @@ TERM,3.0,4.0,bckg,1.0
         """Test Beta results are properly converted to dict"""
         ref_file, hyp_file = sample_files
 
-        result = await orchestrator.evaluate(
-            ref_file, hyp_file, algorithm="taes", pipeline="beta"
-        )
+        result = await orchestrator.evaluate(ref_file, hyp_file, algorithm="taes", pipeline="beta")
 
         # Should be dict, not TAESResult object
         assert isinstance(result["beta_result"], dict)

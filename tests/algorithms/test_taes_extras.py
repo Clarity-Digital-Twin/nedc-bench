@@ -11,11 +11,11 @@ def test_taes_zero_overlap_events():
     # Events that don't overlap at all
     ref = [
         EventAnnotation(start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
-        EventAnnotation(start_time=5.0, stop_time=6.0, label="seiz", confidence=1.0)
+        EventAnnotation(start_time=5.0, stop_time=6.0, label="seiz", confidence=1.0),
     ]
     hyp = [
         EventAnnotation(start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
-        EventAnnotation(start_time=7.0, stop_time=8.0, label="seiz", confidence=1.0)
+        EventAnnotation(start_time=7.0, stop_time=8.0, label="seiz", confidence=1.0),
     ]
 
     result = scorer.score(ref, hyp)

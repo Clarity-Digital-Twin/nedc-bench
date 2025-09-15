@@ -191,10 +191,7 @@ class TestWebSocketManager:
         websockets = [AsyncMock() for _ in range(10)]
 
         # Connect them concurrently
-        tasks = [
-            manager.connect_after_initial(job_id, ws)
-            for ws in websockets
-        ]
+        tasks = [manager.connect_after_initial(job_id, ws) for ws in websockets]
         await asyncio.gather(*tasks)
 
         # All should be connected

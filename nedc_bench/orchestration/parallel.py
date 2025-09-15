@@ -18,7 +18,9 @@ def _evaluate_pair(
     orch = DualPipelineOrchestrator()
     if pipeline == "dual":
         res = orch.evaluate(ref_file, hyp_file, algorithm)
-        beta_dict = res.beta_result.__dict__ if hasattr(res.beta_result, "__dict__") else res.beta_result
+        beta_dict = (
+            res.beta_result.__dict__ if hasattr(res.beta_result, "__dict__") else res.beta_result
+        )
         return {
             "alpha_result": res.alpha_result,
             "beta_result": beta_dict,

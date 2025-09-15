@@ -27,7 +27,7 @@ class FileValidator:
             # Be permissive on header format: allow optional '#', optional spaces
             # Normalize: remove leading '#', strip spaces, and remove spaces around '='
             header = lines[0]
-            header_norm = header.lstrip('#').strip().replace(' ', '')
+            header_norm = header.lstrip("#").strip().replace(" ", "")
             if not header_norm.startswith("version="):
                 raise FileValidationError("Invalid CSV_BI header")
             return True

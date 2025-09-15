@@ -230,7 +230,9 @@ class TestCompareAllAlgorithms:
                 total_misses=0,
                 total_false_alarms=0,
             ),
-            "ira": IRAResult(confusion_matrix={}, per_label_kappa={}, multi_class_kappa=0.9, labels=[]),
+            "ira": IRAResult(
+                confusion_matrix={}, per_label_kappa={}, multi_class_kappa=0.9, labels=[]
+            ),
         }
 
         reports = validator.compare_all_algorithms(alpha, beta)
@@ -246,20 +248,22 @@ class TestCompareAllAlgorithms:
     def test_algorithm_name_mapping(self, validator):
         """Test DP_ALIGNMENT name mapping in reports"""
         alpha = {"dp": {"true_positives": 5, "false_positives": 0, "false_negatives": 0}}
-        beta = {"dp": DPAlignmentResult(
-            hits=5,
-            substitutions={},
-            insertions={},
-            deletions={},
-            total_insertions=0,
-            total_deletions=0,
-            total_substitutions=0,
-            true_positives=5,
-            false_positives=0,
-            false_negatives=0,
-            aligned_ref=[],
-            aligned_hyp=[],
-        )}
+        beta = {
+            "dp": DPAlignmentResult(
+                hits=5,
+                substitutions={},
+                insertions={},
+                deletions={},
+                total_insertions=0,
+                total_deletions=0,
+                total_substitutions=0,
+                true_positives=5,
+                false_positives=0,
+                false_negatives=0,
+                aligned_ref=[],
+                aligned_hyp=[],
+            )
+        }
 
         reports = validator.compare_all_algorithms(alpha, beta)
 

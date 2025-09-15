@@ -17,12 +17,8 @@ evaluation_duration = Histogram(
     ["algorithm", "pipeline"],
     buckets=[0.1, 0.5, 1.0, 2.5, 5.0, 10.0],
 )
-parity_failures = Counter(
-    "nedc_parity_failures_total", "Total parity failures", ["algorithm"]
-)
-active_evaluations = Gauge(
-    "nedc_active_evaluations", "Currently running evaluations"
-)
+parity_failures = Counter("nedc_parity_failures_total", "Total parity failures", ["algorithm"])
+active_evaluations = Gauge("nedc_active_evaluations", "Currently running evaluations")
 
 F = TypeVar("F", bound=Callable[..., Awaitable[Any]])
 
