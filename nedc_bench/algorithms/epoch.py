@@ -9,6 +9,7 @@ SOLID Principles:
 """
 
 from dataclasses import dataclass
+from typing import Dict, List, Tuple
 
 from nedc_bench.models.annotations import EventAnnotation
 
@@ -20,7 +21,7 @@ class EpochResult:
     All counts are integers per NEDC source lines 690-723.
     """
 
-    # Full NxN confusion matrix (all integers)
+    # Full NxN substitution/confusion matrix at sample resolution (all integers)
     confusion_matrix: dict[str, dict[str, int]]
 
     # Per-label counts (all integers)
@@ -54,35 +55,105 @@ class EpochScorer:
 
     def score(
         self,
-        ref_events: list[EventAnnotation],
-        hyp_events: list[EventAnnotation],
+        ref_events: List[EventAnnotation],
+        hyp_events: List[EventAnnotation],
         file_duration: float,
     ) -> EpochResult:
-        """NEDC epoch scoring with compression
+        """NEDC epoch scoring (sampling midpoints + joint compression).
 
-        Implements NEDC lines 590-730: fixed epochs, compression, confusion matrix.
-
-        Args:
-            ref_events: Reference event annotations
-            hyp_events: Hypothesis event annotations
-            file_duration: Total duration of the file
-
-        Returns:
-            EpochResult with integer confusion matrix and compressed sequences
+        Mirrors nedc_eeg_eval_epoch.py:
+        - Sample at epoch_duration/2, 3/2*epoch_duration, ... <= duration
+        - Build substitution matrix at sample resolution
+        - Add leading/trailing nulls, jointly compress duplicates
+        - Derive per-label hits/misses/false alarms and ins/del from compressed streams
         """
-        # Create fixed-window epochs
-        epochs = self._create_epochs(file_duration)
+        # Generate sample times and initialize confusion matrix labels
+        samples = self._sample_times(file_duration)
+        labels = sorted({ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {self.null_class})
+        confusion: Dict[str, Dict[str, int]] = {r: {c: 0 for c in labels} for r in labels}
 
-        # Classify each epoch
-        ref_labels = self._classify_epochs(epochs, ref_events)
-        hyp_labels = self._classify_epochs(epochs, hyp_events)
+        # Build raw streams with sentinels
+        reft: List[str] = [self.null_class]
+        hypt: List[str] = [self.null_class]
 
-        # CRITICAL: Compress consecutive duplicates (NEDC lines 600-610)
-        ref_compressed = self._compress_epochs(ref_labels)
-        hyp_compressed = self._compress_epochs(hyp_labels)
+        for t in samples:
+            j = self._time_to_index(t, ref_events)
+            k = self._time_to_index(t, hyp_events)
+            rlab = ref_events[j].label if j >= 0 else self.null_class
+            hlab = hyp_events[k].label if k >= 0 else self.null_class
+            confusion[rlab][hlab] += 1
+            reft.append(rlab)
+            hypt.append(hlab)
 
-        # Build confusion matrix and count errors
-        return self._compute_metrics(ref_compressed, hyp_compressed)
+        reft.append(self.null_class)
+        hypt.append(self.null_class)
+
+        # Jointly compress
+        refo, hypo = self._compress_joint(reft, hypt)
+
+        # Per-label counts
+        hits: Dict[str, int] = {l: 0 for l in labels}
+        misses: Dict[str, int] = {l: 0 for l in labels}
+        false_alarms: Dict[str, int] = {l: 0 for l in labels}
+        insertions: Dict[str, int] = {}
+        deletions: Dict[str, int] = {}
+
+        for i in range(1, len(refo) - 1):
+            rlab, hlab = refo[i], hypo[i]
+            if rlab == self.null_class:
+                false_alarms[hlab] = false_alarms.get(hlab, 0) + 1
+                insertions[hlab] = insertions.get(hlab, 0) + 1
+            elif hlab == self.null_class:
+                misses[rlab] = misses.get(rlab, 0) + 1
+                deletions[rlab] = deletions.get(rlab, 0) + 1
+            elif rlab == hlab:
+                hits[rlab] = hits.get(rlab, 0) + 1
+            else:
+                misses[rlab] = misses.get(rlab, 0) + 1
+                false_alarms[hlab] = false_alarms.get(hlab, 0) + 1
+
+        return EpochResult(
+            confusion_matrix=confusion,
+            hits=hits,
+            misses=misses,
+            false_alarms=false_alarms,
+            insertions=insertions,
+            deletions=deletions,
+            compressed_ref=refo,
+            compressed_hyp=hypo,
+        )
+
+    def _sample_times(self, file_duration: float) -> List[float]:
+        """Generate midpoint sample times per NEDC."""
+        samples: List[float] = []
+        half = self.epoch_duration / 2.0
+        i = 0
+        while True:
+            t = half + i * self.epoch_duration
+            if t > file_duration + 1e-12:
+                break
+            samples.append(t)
+            i += 1
+        return samples
+
+    def _time_to_index(self, val: float, events: List[EventAnnotation]) -> int:
+        """Return index of event covering time val (inclusive), else -1."""
+        for idx, ev in enumerate(events):
+            if (val >= ev.start_time) and (val <= ev.stop_time):
+                return idx
+        return -1
+
+    def _compress_joint(self, reft: List[str], hypt: List[str]) -> Tuple[List[str], List[str]]:
+        """Compress duplicate consecutive pairs across ref/hyp jointly."""
+        if not reft or not hypt:
+            return [], []
+        refo = [reft[0]]
+        hypo = [hypt[0]]
+        for i in range(1, len(reft)):
+            if (reft[i] != reft[i - 1]) or (hypt[i] != hypt[i - 1]):
+                refo.append(reft[i])
+                hypo.append(hypt[i])
+        return refo, hypo
 
     def _create_epochs(self, file_duration: float) -> list[tuple[float, float]]:
         """Create fixed-width epoch windows
