@@ -83,7 +83,7 @@ def run_all_beta_algorithms():
     print(f"Total duration: {total_duration:.2f} seconds")
 
     # Helper to map labels in-place
-    def _map_labels(events: List["AnnotationFile".model_fields["events"].annotation.__args__[0]]):
+    def _map_labels(events):
         for ev in events:
             ev.label = map_event_label(ev.label, params.label_map)
         return events
