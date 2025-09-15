@@ -1,72 +1,37 @@
 # Monitoring Guide
 
-> TODO: Extract from nedc_bench/monitoring/ if exists
-
 ## Metrics
 
-### Prometheus Metrics
-<!-- TODO: Available metrics -->
-- Request latency
-- Request count
-- Error rate
-- Algorithm execution time
+### Prometheus
+- Endpoint: `GET /metrics` (text format)
+- Scrape interval: 15–30s typical
+- Useful series:
+  - Request latency histograms (uvicorn/http)
+  - Evaluation duration per algorithm
+  - Active evaluations gauge
 
-### Metrics Endpoint
-<!-- TODO: /metrics endpoint -->
+Example:
 ```bash
 curl http://localhost:8000/metrics
 ```
 
 ## Logging
-
-### Log Configuration
-<!-- TODO: Extract from logging setup -->
-
-### Log Levels
-<!-- TODO: Available log levels -->
-
-### Structured Logging
-<!-- TODO: JSON logging format -->
+- API uses Python `logging` with level INFO by default.
+- Increase verbosity when running uvicorn:
+  ```bash
+  uv run uvicorn nedc_bench.api.main:app --log-level debug
+  ```
 
 ## Health Checks
-
-### Liveness Probe
-<!-- TODO: /health/live endpoint -->
-
-### Readiness Probe
-<!-- TODO: /health/ready endpoint -->
+- Liveness: `GET /api/v1/health` (process up)
+- Readiness: `GET /api/v1/ready` (worker + Redis reachable)
 
 ## Dashboards
-
-### Grafana
-<!-- TODO: Dashboard configuration -->
-
-### Example Queries
-<!-- TODO: Useful Prometheus queries -->
+- Grafana panels: latency P50/P95, throughput, parity failures, active jobs.
+- Prometheus scrape: create a ServiceMonitor targeting the API Service.
 
 ## Alerts
-
-### Alert Rules
-<!-- TODO: Prometheus alert rules -->
-
-### Notification Channels
-<!-- TODO: Alertmanager configuration -->
-
-## Performance Monitoring
-
-### APM Integration
-<!-- TODO: If applicable -->
-
-### Tracing
-<!-- TODO: Distributed tracing -->
-
-## Troubleshooting
-
-### Common Issues
-<!-- TODO: Monitoring troubleshooting -->
-
-### Debug Endpoints
-<!-- TODO: Debug/profiling endpoints -->
+- Alert on high error rate, readiness failures, elevated latency, parity failures.
 
 ## Related
 - [Configuration](configuration.md)

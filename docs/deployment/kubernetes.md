@@ -1,63 +1,37 @@
 # Kubernetes Deployment Guide
 
-> TODO: Extract from k8s/ directory if exists, otherwise create from scratch
-
 ## Prerequisites
-<!-- TODO: kubectl, cluster requirements -->
+- A Kubernetes cluster and `kubectl` configured
+- Optional: Redis, Prometheus, Grafana via official Helm charts
 
-## Deployment Options
-
-### Using kubectl
-<!-- TODO: Direct kubectl apply -->
+## Deploy
 ```bash
-# Apply manifests
+# Apply your manifests (example directory)
+kubectl apply -f k8s/
+
+# Check status
+kubectl get deploy,svc,pod
+kubectl rollout status deploy/nedc-bench-api
+
+# Port-forward for local testing
+kubectl port-forward svc/nedc-bench-api 8000:80
+curl http://localhost:8000/api/v1/health
 ```
 
-### Using Helm
-<!-- TODO: Helm chart if available -->
-```bash
-# Helm install
-```
-
-## Manifests
-
-### Deployment
-<!-- TODO: Deployment YAML -->
-```yaml
-# Deployment manifest
-```
-
-### Service
-<!-- TODO: Service YAML -->
-```yaml
-# Service manifest
-```
-
-### ConfigMap
-<!-- TODO: Configuration -->
-```yaml
-# ConfigMap
-```
-
-### Ingress
-<!-- TODO: Ingress configuration -->
-```yaml
-# Ingress
-```
+## Configuration
+- Set `REDIS_URL` to your cluster DNS (e.g., `redis.default.svc.cluster.local:6379`).
+- NEDC paths are set inside the image (defaults to `/app/nedc_eeg_eval/v6.0.0`).
 
 ## Scaling
-
-### Horizontal Pod Autoscaler
-<!-- TODO: HPA configuration -->
-
-### Resource Limits
-<!-- TODO: CPU/Memory limits -->
+- Increase replicas: `kubectl scale deploy/nedc-bench-api --replicas=4`.
+- Add HPA for CPU or latency-based scaling.
 
 ## Monitoring
-<!-- TODO: Prometheus ServiceMonitor -->
+- Expose `/metrics` and scrape with Prometheus (ServiceMonitor recommended).
 
 ## Troubleshooting
-<!-- TODO: Common K8s issues -->
+- Inspect pod logs: `kubectl logs -f <pod>`.
+- Readiness failing: verify Redis connectivity and worker status.
 
 ## Related
 - [Docker Deployment](docker.md)

@@ -1,42 +1,44 @@
 # Docker Deployment Guide
 
-> TODO: Extract from Dockerfile.api and docker-compose.yml
-
 ## Prerequisites
-<!-- TODO: Docker version requirements -->
+- Docker 24+ and Docker Compose v2
 
-## Building the Image
-<!-- TODO: Extract from Dockerfile.api -->
+## Build the API image
 ```bash
-# Build command
+docker build -f Dockerfile.api -t nedc-bench/api:latest .
 ```
 
-## Running with Docker
-<!-- TODO: Docker run command with all options -->
+## Run with Docker
 ```bash
-# Run command
+docker run --rm -p 8000:8000 \
+  -e REDIS_URL=redis://host.docker.internal:6379 \
+  nedc-bench/api:latest
+
+curl http://localhost:8000/api/v1/health
 ```
 
-## Running with Docker Compose
-<!-- TODO: Extract from docker-compose.yml -->
+## Run with Docker Compose
 ```bash
 docker-compose up -d
+curl http://localhost:8000/api/v1/health
 ```
 
 ## Environment Variables
-<!-- TODO: Extract from docker-compose.yml and code -->
-
-## Volumes and Persistence
-<!-- TODO: Data persistence configuration -->
+- `NEDC_NFC` defaults to `/app/nedc_eeg_eval/v6.0.0` inside the image.
+- `REDIS_URL` defaults to `redis://redis:6379` in Compose.
+- `CACHE_TTL_SECONDS` controls cache TTL (default 86400).
 
 ## Networking
-<!-- TODO: Port configuration -->
+- API listens on port `8000`.
+- WebSocket endpoint is `/ws/{job_id}`.
 
 ## Health Checks
-<!-- TODO: Health check configuration -->
+- Liveness: `GET /api/v1/health` (200 OK when process is up).
+- Readiness: `GET /api/v1/ready` (requires worker running and Redis reachable).
 
 ## Troubleshooting
-<!-- TODO: Common Docker issues -->
+- If readiness is 503, verify Redis connectivity or use `/api/v1/health`.
+- Check logs: `docker logs <container>`.
 
 ## Related
 - [Kubernetes Deployment](kubernetes.md)
