@@ -21,10 +21,10 @@ def create_correct_lists():
     ref_list_path = data_root / "ref_correct.list"
     hyp_list_path = data_root / "hyp_correct.list"
 
-    with open(ref_list_path, "w", encoding="utf-8") as f:
+    with ref_list_path.open("w", encoding="utf-8") as f:
         f.writelines(f"{ref_file.absolute()}\n" for ref_file in ref_files)
 
-    with open(hyp_list_path, "w", encoding="utf-8") as f:
+    with hyp_list_path.open("w", encoding="utf-8") as f:
         f.writelines(f"{hyp_file.absolute()}\n" for hyp_file in hyp_files)
 
     print(f"Created: {ref_list_path}")
@@ -36,10 +36,10 @@ def create_correct_lists():
     ref_list_alt = lists_dir / "ref_correct.list"
     hyp_list_alt = lists_dir / "hyp_correct.list"
 
-    with open(ref_list_alt, "w", encoding="utf-8") as f:
+    with ref_list_alt.open("w", encoding="utf-8") as f:
         f.writelines(f"{ref_file.absolute()}\n" for ref_file in ref_files)
 
-    with open(hyp_list_alt, "w", encoding="utf-8") as f:
+    with hyp_list_alt.open("w", encoding="utf-8") as f:
         f.writelines(f"{hyp_file.absolute()}\n" for hyp_file in hyp_files)
 
     print(f"Also created: {ref_list_alt}")

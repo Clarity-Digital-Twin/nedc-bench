@@ -48,10 +48,10 @@ def create_runtime_lists(data_dir=None):
     ref_list = data_dir / "ref_runtime.list"
     hyp_list = data_dir / "hyp_runtime.list"
 
-    with open(ref_list, "w", encoding="utf-8") as f:
+    with ref_list.open("w", encoding="utf-8") as f:
         f.writelines(f"{ref_file.absolute()}\n" for ref_file in ref_files)
 
-    with open(hyp_list, "w", encoding="utf-8") as f:
+    with hyp_list.open("w", encoding="utf-8") as f:
         f.writelines(f"{hyp_file.absolute()}\n" for hyp_file in hyp_files)
 
     print("Created runtime lists:")

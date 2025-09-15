@@ -2,16 +2,17 @@
 """Compare Alpha vs Beta results for parity."""
 
 import json
+from pathlib import Path
 
 
 def compare_results():
     """Compare SSOT_ALPHA.json vs SSOT_BETA.json"""
 
     # Load results
-    with open("SSOT_ALPHA.json") as f:
+    with Path("SSOT_ALPHA.json").open(encoding="utf-8") as f:
         alpha = json.load(f)
 
-    with open("SSOT_BETA.json") as f:
+    with Path("SSOT_BETA.json").open(encoding="utf-8") as f:
         beta = json.load(f)
 
     print("=" * 60)
@@ -34,10 +35,7 @@ def compare_results():
         fn_diff = b["fn"] - a["fn"]
 
         # Calculate parity percentage
-        if a["tp"] > 0:
-            tp_parity = (b["tp"] / a["tp"]) * 100
-        else:
-            tp_parity = 100 if b["tp"] == 0 else 0
+        tp_parity = b["tp"] / a["tp"] * 100 if a["tp"] > 0 else 100 if b["tp"] == 0 else 0
 
         print(
             f"  Alpha TP: {a['tp']:.2f}, Beta TP: {b['tp']:.2f}, Diff: {tp_diff:.2f} ({tp_parity:.2f}% match)"
