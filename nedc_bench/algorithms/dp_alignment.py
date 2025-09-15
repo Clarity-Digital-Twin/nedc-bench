@@ -231,7 +231,11 @@ class DPAligner:
 
         # False negatives = deletions + substitutions FROM positive class
         pos_deletions = deletions.get(positive_class, 0)
-        pos_substitutions = sum(substitutions.get(positive_class, {}).values()) if positive_class in substitutions else 0
+        pos_substitutions = (
+            sum(substitutions.get(positive_class, {}).values())
+            if positive_class in substitutions
+            else 0
+        )
         false_negatives = pos_deletions + pos_substitutions
 
         return DPAlignmentResult(
