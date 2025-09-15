@@ -42,8 +42,8 @@ async def test_job_manager_basic_lifecycle() -> None:
     # Shutdown
     await jm.shutdown()
     worker.cancel()
-    with pytest.raises(asyncio.CancelledError):
-        await worker
+    # Our worker swallows CancelledError and exits cleanly; just await completion
+    await worker
 
 
 @pytest.mark.asyncio

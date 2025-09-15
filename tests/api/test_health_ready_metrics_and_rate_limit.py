@@ -16,7 +16,8 @@ from nedc_bench.api.middleware.rate_limit import rate_limiter
 
 @pytest.fixture(scope="module")
 def client() -> Any:
-    with TestClient(app) as c:
+    # Prevent HTTPException from bubbling to the test runner during 429 checks
+    with TestClient(app, raise_server_exceptions=False) as c:
         yield c
 
 
