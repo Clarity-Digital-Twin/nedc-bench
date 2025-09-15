@@ -38,9 +38,12 @@ class AsyncOrchestrator:
                 None,
             )
 
+            # Convert dataclasses to dicts
+            beta_dict = result.beta_result.__dict__ if hasattr(result.beta_result, "__dict__") else result.beta_result
+
             return {
                 "alpha_result": result.alpha_result,
-                "beta_result": result.beta_result,
+                "beta_result": beta_dict,
                 "parity_passed": result.parity_passed,
                 "parity_report": result.parity_report.to_dict() if result.parity_report else None,
                 "alpha_time": result.execution_time_alpha,
@@ -73,7 +76,8 @@ class AsyncOrchestrator:
                 raise ValueError(f"Unsupported algorithm: {algorithm}")
 
             beta_res = await loop.run_in_executor(self.executor, _run_beta)
-            return {"beta_result": beta_res}
+            # Convert dataclass to dict
+            return {"beta_result": beta_res.__dict__ if hasattr(beta_res, "__dict__") else beta_res}
 
         raise ValueError(f"Unsupported pipeline: {pipeline}")
 
