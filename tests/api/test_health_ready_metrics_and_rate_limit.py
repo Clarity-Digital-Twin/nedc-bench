@@ -38,7 +38,7 @@ def test_metrics_endpoint_exposes_text(client: Any) -> None:
 @pytest.mark.integration
 def test_readiness_ok_when_worker_and_redis_ok(client: Any, monkeypatch: Any) -> None:
     # Worker is started by app lifespan in TestClient context; patch Redis ping only
-    async def ping_ok() -> bool:  # noqa: D401
+    async def ping_ok() -> bool:
         return True
 
     # Patch the redis_cache.ping function in the readiness endpoint module
@@ -79,7 +79,6 @@ def test_readiness_fails_when_redis_down(client: Any, monkeypatch: Any) -> None:
 def test_rate_limit_returns_429(client: Any, monkeypatch: Any) -> None:
     # Test that rate limiting logic works (even if TestClient doesn't trigger it properly)
     # TestClient doesn't properly set request.client.host, so we test the limiter directly
-    import time
     from nedc_bench.api.middleware.rate_limit import RateLimiter
 
     # Create a fresh limiter for testing

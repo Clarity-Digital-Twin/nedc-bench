@@ -85,7 +85,7 @@ async def test_process_evaluation_success(monkeypatch: Any, tmp_path: Any) -> No
     monkeypatch.setattr(processor_mod.async_orchestrator, "evaluate", fake_eval)
 
     # Stub broadcast_progress to no-op
-    async def no_broadcast(job_id: str, message: dict[str, Any]) -> None:  # noqa: D401
+    async def no_broadcast(job_id: str, message: dict[str, Any]) -> None:
         return None
 
     monkeypatch.setattr(processor_mod, "broadcast_progress", no_broadcast)
@@ -123,12 +123,12 @@ async def test_process_evaluation_failure(monkeypatch: Any, tmp_path: Any) -> No
         "created_at": datetime.utcnow(),
     })
 
-    async def raise_eval(*_args: Any, **_kwargs: Any) -> dict[str, Any]:  # noqa: ANN401
+    async def raise_eval(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
         raise RuntimeError("boom")
 
     monkeypatch.setattr(processor_mod.async_orchestrator, "evaluate", raise_eval)
 
-    async def no_broadcast(job_id: str, message: dict[str, Any]) -> None:  # noqa: D401
+    async def no_broadcast(job_id: str, message: dict[str, Any]) -> None:
         return None
 
     monkeypatch.setattr(processor_mod, "broadcast_progress", no_broadcast)
