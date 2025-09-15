@@ -5,7 +5,7 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 os.environ["NEDC_NFC"] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")
 os.environ["PYTHONPATH"] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHONPATH', '')}"
@@ -35,10 +35,12 @@ def get_alpha_metrics() -> Dict[str, AlgorithmResult]:
 
 def run_all_beta_algorithms():
     """Run all Beta algorithms and collect results"""
-    from nedc_bench.algorithms.epoch import EpochScorer
-    from nedc_bench.algorithms.overlap import OverlapScorer
-    from nedc_bench.algorithms.taes import TAESScorer
-    from nedc_bench.models.annotations import AnnotationFile
+from nedc_bench.algorithms.dp_alignment import DPAligner
+from nedc_bench.algorithms.epoch import EpochScorer
+from nedc_bench.algorithms.overlap import OverlapScorer
+from nedc_bench.algorithms.taes import TAESScorer
+from nedc_bench.models.annotations import AnnotationFile
+from nedc_bench.utils.params import load_nedc_params, map_event_label
 
     data_root = Path(__file__).parent.parent / "data" / "csv_bi_parity" / "csv_bi_export_clean"
 
@@ -59,13 +61,13 @@ def run_all_beta_algorithms():
     print("=" * 60)
 
     # Initialize scorers (each has different init params)
+    params = load_nedc_params()
     scorers = {
         "taes": TAESScorer(target_label="seiz"),
-        "epoch": EpochScorer(
-            epoch_duration=0.25, null_class="bckg"
-        ),  # NEDC: 0.25s epochs, bckg as null
+        # NEDC: 0.25s epochs, bckg as null
+        "epoch": EpochScorer(epoch_duration=params.epoch_duration, null_class=params.null_class),
         "ovlp": OverlapScorer(),  # No target_label param
-        # "dp": DPAligner(),  # Skip DP for now - needs different input format
+        "dp": DPAligner(),
     }
 
     results = {}
@@ -77,6 +79,40 @@ def run_all_beta_algorithms():
         ref_ann = AnnotationFile.from_csv_bi(Path(ref_file))
         total_duration += ref_ann.duration
     print(f"Total duration: {total_duration:.2f} seconds")
+
+    # Helper to map labels in-place
+    def _map_labels(events: List["AnnotationFile".model_fields["events"].annotation.__args__[0]]):
+        for ev in events:
+            ev.label = map_event_label(ev.label, params.label_map)
+        return events
+
+    # Simple helper to expand sparse events with background to cover full duration
+    def _expand_with_null(events, duration: float, null_label: str):
+        if not events:
+            return []
+        evs = sorted(events, key=lambda e: e.start_time)
+        expanded = []
+        cur = 0.0
+        for ev in evs:
+            if ev.start_time > cur:
+                expanded.append(type(ev)(
+                    channel=ev.channel,
+                    start_time=cur,
+                    stop_time=ev.start_time,
+                    label=null_label,
+                    confidence=1.0,
+                ))
+            expanded.append(ev)
+            cur = ev.stop_time
+        if cur < duration:
+            expanded.append(type(evs[0])(
+                channel=evs[0].channel,
+                start_time=cur,
+                stop_time=duration,
+                label=null_label,
+                confidence=1.0,
+            ))
+        return expanded
 
     # Process each algorithm
     for algo_name, scorer in scorers.items():
@@ -91,6 +127,9 @@ def run_all_beta_algorithms():
             try:
                 ref_ann = AnnotationFile.from_csv_bi(Path(ref_file))
                 hyp_ann = AnnotationFile.from_csv_bi(Path(hyp_file))
+                # Normalize labels to NEDC classes
+                _map_labels(ref_ann.events)
+                _map_labels(hyp_ann.events)
 
                 # Score based on algorithm type
                 if algo_name == "taes":
@@ -113,9 +152,15 @@ def run_all_beta_algorithms():
                     total_fp += result.false_alarms.get("seiz", 0)
                     total_fn += result.misses.get("seiz", 0)
                 elif algo_name == "dp":
-                    # DP needs label sequences, not events
-                    # For now, skip DP as it needs different input format
-                    continue
+                    # Build per-epoch label sequences consistent with Beta pipeline
+                    ref_events = _expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
+                    hyp_events = _expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
+                    ref_seq = [e.label for e in ref_events]
+                    hyp_seq = [e.label for e in hyp_events]
+                    result = scorer.align(ref_seq, hyp_seq)
+                    total_tp += result.true_positives
+                    total_fp += result.false_positives
+                    total_fn += result.false_negatives
 
                 file_count += 1
 
@@ -124,7 +169,14 @@ def run_all_beta_algorithms():
 
         # Calculate metrics
         sensitivity = (total_tp / (total_tp + total_fn) * 100) if (total_tp + total_fn) > 0 else 0
-        fa_per_24h = (total_fp / total_duration * 86400) if total_duration > 0 else 0
+        # Compute FA/24h consistent with NEDC definitions
+        if algo_name == "epoch":
+            # NEDC scales epoch-level FP by epoch duration
+            fa_per_24h = (
+                (total_fp * params.epoch_duration) / total_duration * 86400
+            ) if total_duration > 0 else 0
+        else:
+            fa_per_24h = (total_fp / total_duration * 86400) if total_duration > 0 else 0
 
         results[algo_name] = AlgorithmResult(
             total_tp, total_fp, total_fn, sensitivity, fa_per_24h, algo_name.upper()
