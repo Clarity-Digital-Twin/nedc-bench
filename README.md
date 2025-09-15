@@ -207,6 +207,27 @@ make format
 docker build -f Dockerfile.api -t nedc-bench/api:latest .
 ```
 
+## Known Issues & Troubleshooting
+
+### 🚨 NEDC Path Resolution (Common Source of Errors)
+
+The `run_nedc.sh` script **changes directory** to `nedc_eeg_eval/v6.0.0/` before running, causing path confusion:
+
+**Problem:** "File not found" errors even when files exist
+
+**Solution:**
+```bash
+# CORRECT: List files in NEDC directory structure
+mkdir -p nedc_eeg_eval/v6.0.0/my_lists/
+echo '../../data/my_data/ref/file.csv_bi' > nedc_eeg_eval/v6.0.0/my_lists/ref.list
+./run_nedc.sh my_lists/ref.list my_lists/hyp.list
+
+# WRONG: List files in project root
+./run_nedc.sh data/ref.list data/hyp.list  # Will fail!
+```
+
+See `scripts/README.md` for detailed examples and `ALPHA_WRAPPER_P0_BUG.md` for investigation details.
+
 ## Contributing
 
 We welcome contributions! Please see [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
