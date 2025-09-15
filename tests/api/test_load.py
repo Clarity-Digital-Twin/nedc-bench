@@ -16,8 +16,12 @@ async def single_request(session, url, ref_data, hyp_data):
     """Execute single evaluation request"""
 
     data = aiohttp.FormData()
-    data.add_field("reference", ref_data, filename="ref.csv_bi", content_type="application/octet-stream")
-    data.add_field("hypothesis", hyp_data, filename="hyp.csv_bi", content_type="application/octet-stream")
+    data.add_field(
+        "reference", ref_data, filename="ref.csv_bi", content_type="application/octet-stream"
+    )
+    data.add_field(
+        "hypothesis", hyp_data, filename="hyp.csv_bi", content_type="application/octet-stream"
+    )
     data.add_field("algorithms", "taes")
     data.add_field("pipeline", "dual")
 
@@ -63,7 +67,9 @@ async def load_test(
         results = []
         for i in range(0, n_requests, concurrent):
             batch_size = min(concurrent, n_requests - i)
-            batch = [single_request(session, base_url, ref_data, hyp_data) for _ in range(batch_size)]
+            batch = [
+                single_request(session, base_url, ref_data, hyp_data) for _ in range(batch_size)
+            ]
 
             batch_results = await asyncio.gather(*batch, return_exceptions=True)
 
@@ -91,8 +97,10 @@ async def load_test(
 
     if response_times:
         print(f"  Total requests:     {n_requests}")
-        print(f"  Successful:         {len(successful)} ({len(successful)/n_requests*100:.1f}%)")
-        print(f"  Failed:             {len(failed)} ({len(failed)/n_requests*100:.1f}%)")
+        print(
+            f"  Successful:         {len(successful)} ({len(successful) / n_requests * 100:.1f}%)"
+        )
+        print(f"  Failed:             {len(failed)} ({len(failed) / n_requests * 100:.1f}%)")
         print(f"  Total time:         {total_time:.2f} seconds")
         print(f"  Requests/second:    {n_requests / total_time:.2f}")
         print()
@@ -111,7 +119,9 @@ async def load_test(
             print(f"  P50 (median):       {quantiles[9]:.3f}s")
             print(f"  P90:                {quantiles[17]:.3f}s")
             print(f"  P95:                {quantiles[18]:.3f}s")
-            print(f"  P99:                {quantiles[19] if len(quantiles) > 19 else max(response_times):.3f}s")
+            print(
+                f"  P99:                {quantiles[19] if len(quantiles) > 19 else max(response_times):.3f}s"
+            )
     else:
         print("No successful requests!")
 
@@ -134,8 +144,12 @@ async def load_test(
         requests_per_second = n_requests / total_time
 
         print("\nPerformance Checks:")
-        print(f"  ✓ Success rate >= 99%:     {success_rate >= 0.99} (actual: {success_rate*100:.1f}%)")
-        print(f"  ✓ Throughput >= 100 req/s: {requests_per_second >= 100} (actual: {requests_per_second:.1f} req/s)")
+        print(
+            f"  ✓ Success rate >= 99%:     {success_rate >= 0.99} (actual: {success_rate * 100:.1f}%)"
+        )
+        print(
+            f"  ✓ Throughput >= 100 req/s: {requests_per_second >= 100} (actual: {requests_per_second:.1f} req/s)"
+        )
 
         # Return True if all checks pass
         return success_rate >= 0.99 and requests_per_second >= 100

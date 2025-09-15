@@ -65,12 +65,12 @@ class ValidationReport:
                     "beta_value": d.beta_value,
                     "absolute_difference": d.absolute_difference,
                     "relative_difference": d.relative_difference,
-                    "tolerance": d.tolerance
+                    "tolerance": d.tolerance,
                 }
                 for d in self.discrepancies
             ],
             "alpha_metrics": self.alpha_metrics,
-            "beta_metrics": self.beta_metrics
+            "beta_metrics": self.beta_metrics,
         }
 
 
@@ -762,6 +762,7 @@ class DiscrepancyReport:
 
 
 # Duplicate ValidationReport class removed (was at line 744)
+
 
 class ParityValidator:
     """Validate parity between Alpha and Beta pipeline results"""

@@ -39,7 +39,11 @@ class AsyncOrchestrator:
             )
 
             # Convert dataclasses to dicts
-            beta_dict = result.beta_result.__dict__ if hasattr(result.beta_result, "__dict__") else result.beta_result
+            beta_dict = (
+                result.beta_result.__dict__
+                if hasattr(result.beta_result, "__dict__")
+                else result.beta_result
+            )
 
             return {
                 "alpha_result": result.alpha_result,
