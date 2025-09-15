@@ -98,15 +98,7 @@ nedc_bench/algorithms/
 
 ## Validation Status
 
-All algorithms achieve **100% parity** with NEDC v6.0.0:
-
-| Algorithm | Alpha Score | Beta Score | Parity Status |
-|-----------|-------------|------------|---------------|
-| TAES | 133.84 TP | 133.84 TP | ✅ Exact |
-| Epoch | 33704 TP | 33704 TP | ✅ Exact |
-| DP Alignment | 3 hits | 3 hits | ✅ Exact |
-| Overlap | 3 hits | 3 hits | ✅ Exact |
-| IRA | 0.09917 κ | 0.09917 κ | ✅ Exact |
+All algorithms achieve 100% parity with NEDC v6.0.0 on the SSOT parity set. See docs/archive/bugs/FINAL_PARITY_RESULTS.md for details.
 
 ## Related Documentation
 - [TAES Algorithm](taes.md) - Fractional event scoring
