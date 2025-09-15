@@ -8,7 +8,7 @@
 
 **Production-ready wrapper and reimplementation of Temple University's NEDC EEG Evaluation v6.0.0**
 
-> **⚠️ Independent Project**: This is an open-source contribution, not officially maintained by Temple University, NEDC, or affiliates. We vendor and wrap the original NEDC v6.0.0 software unchanged, and provide a modern reimplementation. All algorithmic credit goes to the original authors (Shah et al., 2021).
+> **⚠️ Independent Project**: This is an open-source contribution, not officially maintained by Temple University, NEDC, or affiliates. We wrap the original NEDC v6.0.0 software unchanged, and provide a modern reimplementation. All algorithmic credit goes to the original authors (Shah et al., 2021).
 
 ## 🎯 What is NEDC-BENCH?
 
