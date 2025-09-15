@@ -38,6 +38,51 @@ def main():
     agg_labels = sorted({params.null_class, "seiz", "bckg"})
     agg_conf = {r: {c: 0 for c in agg_labels} for r in agg_labels}
 
+    def augment_events_full(events, file_duration, null_class):
+        """Augment events with background to fill ALL gaps (like NEDC does)."""
+        if not events:
+            return [
+                EventAnnotation(
+                    channel="TERM",
+                    start_time=0.0,
+                    stop_time=file_duration,
+                    label=null_class,
+                    confidence=1.0,
+                )
+            ]
+
+        augmented = []
+        curr_time = 0.0
+
+        for ev in sorted(events, key=lambda x: x.start_time):
+            # Fill gap before this event
+            if curr_time < ev.start_time:
+                augmented.append(
+                    EventAnnotation(
+                        channel="TERM",
+                        start_time=curr_time,
+                        stop_time=ev.start_time,
+                        label=null_class,
+                        confidence=1.0,
+                    )
+                )
+            augmented.append(ev)
+            curr_time = ev.stop_time
+
+        # Fill gap at end
+        if curr_time < file_duration:
+            augmented.append(
+                EventAnnotation(
+                    channel="TERM",
+                    start_time=curr_time,
+                    stop_time=file_duration,
+                    label=null_class,
+                    confidence=1.0,
+                )
+            )
+
+        return augmented
+
     for ref_file, hyp_file in zip(ref_files, hyp_files):
         ref_ann = AnnotationFile.from_csv_bi(Path(ref_file))
         hyp_ann = AnnotationFile.from_csv_bi(Path(hyp_file))
@@ -46,32 +91,16 @@ def main():
             ev.label = map_event_label(ev.label, params.label_map)
         for ev in hyp_ann.events:
             ev.label = map_event_label(ev.label, params.label_map)
-        # Ensure non-empty lists by augmenting a background event if needed
-        if not ref_ann.events:
-            ref_ann.events = [
-                EventAnnotation(
-                    channel="TERM",
-                    start_time=0.0,
-                    stop_time=ref_ann.duration,
-                    label=params.null_class,
-                    confidence=1.0,
-                )
-            ]
-        if not hyp_ann.events:
-            hyp_ann.events = [
-                EventAnnotation(
-                    channel="TERM",
-                    start_time=0.0,
-                    stop_time=hyp_ann.duration,
-                    label=params.null_class,
-                    confidence=1.0,
-                )
-            ]
+
+        # CRITICAL FIX: Augment ALL gaps with background (like NEDC does)
+        # This fixes the 9/13 difference that caused 0.1887 vs 0.1888 kappa
+        ref_augmented = augment_events_full(ref_ann.events, ref_ann.duration, params.null_class)
+        hyp_augmented = augment_events_full(hyp_ann.events, hyp_ann.duration, params.null_class)
+
         # Per-file confusion then add to aggregate
-        # Pass as list of EventAnnotation objects (not strings)
         res = ira.score(
-            ref_ann.events,  # List of EventAnnotation objects
-            hyp_ann.events,  # List of EventAnnotation objects
+            ref_augmented,  # Augmented events
+            hyp_augmented,  # Augmented events
             epoch_duration=params.epoch_duration,
             file_duration=ref_ann.duration,
             null_class=params.null_class,

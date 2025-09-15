@@ -50,14 +50,16 @@ class IRAScorer:
         half = epoch_duration / 2.0
         t = half
         samples: list[float] = []
-        while t <= file_duration + 1e-12:
+        # Match NEDC/Epoch inclusive boundary exactly (no epsilon)
+        while t <= file_duration:
             samples.append(t)
             t += epoch_duration
         return samples
 
     def _time_to_index(self, val: float, events: list[EventAnnotation]) -> int:
         for idx, ev in enumerate(events):
-            if (val >= ev.start_time) and (val <= ev.stop_time):
+            # Match NEDC exact boundary semantics using bitwise &
+            if (val >= ev.start_time) & (val <= ev.stop_time):  # noqa: PLR2004
                 return idx
         return -1
 
@@ -89,6 +91,10 @@ class IRAScorer:
             )
             ref_events = cast(list[EventAnnotation], ref)
             hyp_events = cast(list[EventAnnotation], hyp)
+
+            # Augment events to fill gaps with background, matching NEDC
+            ref_events = self._augment_events(ref_events, file_duration, null_class)
+            hyp_events = self._augment_events(hyp_events, file_duration, null_class)
             labels = sorted(
                 {ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {null_class}
             )
@@ -115,6 +121,54 @@ class IRAScorer:
             multi_class_kappa=multi_kappa,
             labels=labels,
         )
+
+    def _augment_events(
+        self,
+        events: list[EventAnnotation],
+        file_duration: float,
+        null_class: str,
+    ) -> list[EventAnnotation]:
+        """Fill gaps between events with background to cover [0, duration].
+
+        Mirrors NEDC ann augmentation used before IRA/Epoch sampling.
+        """
+        if not events:
+            return [
+                EventAnnotation(
+                    channel="TERM",
+                    start_time=0.0,
+                    stop_time=file_duration,
+                    label=null_class,
+                    confidence=1.0,
+                )
+            ]
+
+        augmented: list[EventAnnotation] = []
+        curr = 0.0
+        for ev in sorted(events, key=lambda e: e.start_time):
+            if curr < ev.start_time:
+                augmented.append(
+                    EventAnnotation(
+                        channel="TERM",
+                        start_time=curr,
+                        stop_time=ev.start_time,
+                        label=null_class,
+                        confidence=1.0,
+                    )
+                )
+            augmented.append(ev)
+            curr = ev.stop_time
+        if curr < file_duration:
+            augmented.append(
+                EventAnnotation(
+                    channel="TERM",
+                    start_time=curr,
+                    stop_time=file_duration,
+                    label=null_class,
+                    confidence=1.0,
+                )
+            )
+        return augmented
 
     def _compute_label_kappa(
         self, confusion: dict[str, dict[str, int]], label: str, labels: list[str]
