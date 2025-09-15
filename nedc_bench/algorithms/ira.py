@@ -11,6 +11,7 @@ SOLID Principles:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import cast
 
 from nedc_bench.models.annotations import EventAnnotation
 
@@ -62,8 +63,8 @@ class IRAScorer:
 
     def score(
         self,
-        ref: list,  # Either labels (List[str]) or events (List[EventAnnotation])
-        hyp: list,
+        ref: list[EventAnnotation] | list[str],
+        hyp: list[EventAnnotation] | list[str],
         epoch_duration: float | None = None,
         file_duration: float | None = None,
         null_class: str = "null",
@@ -84,8 +85,8 @@ class IRAScorer:
             assert epoch_duration is not None and file_duration is not None, (
                 "epoch_duration and file_duration required for event mode"
             )
-            ref_events: list[EventAnnotation] = ref  # type: ignore[assignment]
-            hyp_events: list[EventAnnotation] = hyp  # type: ignore[assignment]
+            ref_events = cast(list[EventAnnotation], ref)
+            hyp_events = cast(list[EventAnnotation], hyp)
             labels = sorted(
                 {ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {null_class}
             )
@@ -98,7 +99,7 @@ class IRAScorer:
                 confusion[rlab][hlab] += 1
 
         # Compute per-label kappa (NEDC lines 499-540)
-        per_label_kappa = {}
+        per_label_kappa: dict[str, float] = {}
         for label in labels:
             kappa = self._compute_label_kappa(confusion, label, labels)
             per_label_kappa[label] = kappa
@@ -188,8 +189,8 @@ class IRAScorer:
             return 0.0
 
         # Row and column sums
-        sum_rows = {}
-        sum_cols = {}
+        sum_rows: dict[str, int] = {}
+        sum_cols: dict[str, int] = {}
 
         for label in labels:
             # Row sum (sum across columns for this row)

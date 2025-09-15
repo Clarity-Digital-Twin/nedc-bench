@@ -14,11 +14,13 @@ logger = logging.getLogger(__name__)
 
 @router.websocket("/{job_id}")
 async def websocket_endpoint(websocket: WebSocket, job_id: str) -> None:
-    await ws_manager.connect(job_id, websocket)
+    # Accept the WebSocket first
+    await websocket.accept()
 
     try:
         job = await job_manager.get_job(job_id)
         if job:
+            # Send initial message first
             await websocket.send_json({
                 "type": "initial",
                 "job": {
@@ -27,6 +29,8 @@ async def websocket_endpoint(websocket: WebSocket, job_id: str) -> None:
                     "created_at": job["created_at"].isoformat(),
                 },
             })
+            # Now register with manager (which may replay last event)
+            await ws_manager.connect_after_initial(job_id, websocket)
         else:
             await websocket.send_json({"type": "error", "message": f"Job {job_id} not found"})
             await websocket.close()
