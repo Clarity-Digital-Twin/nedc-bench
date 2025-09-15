@@ -11,6 +11,8 @@ This guide describes how to build, run, and configure the NEDC Bench API in Dock
 
 - `NEDC_NFC` (default: `/app/nedc_eeg_eval/v6.0.0`)
 - `REDIS_URL` (default: `redis://redis:6379` in Compose; cluster DNS in K8s)
+- `LOG_LEVEL` (default: `info`; controls uvicorn and app logging)
+- `MAX_WORKERS` (default: `1`; entrypoint sets uvicorn `--workers`)
 
 ## Build and Run (Compose)
 

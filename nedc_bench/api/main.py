@@ -17,8 +17,10 @@ from .middleware.rate_limit import rate_limit_middleware
 from .services.job_manager import job_manager
 from .services.processor import process_evaluation
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging (respect LOG_LEVEL if set)
+level_name = os.environ.get("LOG_LEVEL", "INFO").upper()
+level = getattr(logging, level_name, logging.INFO)
+logging.basicConfig(level=level)
 logger = logging.getLogger(__name__)
 
 

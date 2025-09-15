@@ -5,6 +5,7 @@
 ### Core
 - `NEDC_NFC` — Path to the NEDC v6.0.0 root (API sets a default to `nedc_eeg_eval/v6.0.0`).
 - `PYTHONPATH` — API prefixes this with `<NEDC_NFC>/lib` for Alpha imports.
+ - `LOG_LEVEL` — Uvicorn/app log level (`debug|info|warning|error`, default `info`).
 
 ### API
 - Host/port are set by uvicorn: `uvicorn ... --host 0.0.0.0 --port 8000`.
@@ -13,6 +14,9 @@
 ### Redis Cache
 - `REDIS_URL` — Default `redis://redis:6379` (see docker-compose).
 - `CACHE_TTL_SECONDS` — Default `86400`.
+
+### Container Workers
+- `MAX_WORKERS` — Number of uvicorn workers in the container (default `1`). The image entrypoint reads this and starts uvicorn accordingly.
 
 ## Files and Tools
 - `pyproject.toml` — Tooling config (ruff, mypy, pytest, coverage), `requires-python >=3.10`.

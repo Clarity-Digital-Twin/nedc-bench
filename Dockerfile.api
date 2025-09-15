@@ -17,6 +17,10 @@ COPY nedc_bench/ ./nedc_bench/
 COPY nedc_eeg_eval/ ./nedc_eeg_eval/
 COPY alpha/ ./alpha/
 
+# Entrypoint for runtime configurability
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
 # Non-root user
 RUN useradd -u 10001 -m appuser \
     && chown -R appuser:appuser /app
@@ -27,5 +31,5 @@ ENV PYTHONPATH=/app/nedc_eeg_eval/v6.0.0/lib:${PYTHONPATH}
 
 EXPOSE 8000
 
-# Single worker to keep metrics correct without multiprocess mode
-CMD ["uvicorn", "nedc_bench.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# Default entrypoint reads LOG_LEVEL and MAX_WORKERS
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
