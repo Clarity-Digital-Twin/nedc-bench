@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 
 
 def _json_default(obj: Any) -> Any:
-    if is_dataclass(obj):
-        return asdict(obj)
+    if is_dataclass(obj) and not isinstance(obj, type):
+        return asdict(obj)  # type: ignore[arg-type]
     if hasattr(obj, "to_dict"):
-        return obj.to_dict()  # type: ignore[no-any-return]
+        return obj.to_dict()
     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
 
@@ -32,7 +32,8 @@ class RedisCache:
         self.url = url or os.environ.get("REDIS_URL", "redis://redis:6379")
         self.ttl_seconds = ttl_seconds or int(os.environ.get("CACHE_TTL_SECONDS", "86400"))
         try:
-            self._client = aioredis.from_url(self.url, decode_responses=True)
+            # The redis asyncio client is untyped; cast to Any for mypy.
+            self._client = aioredis.from_url(self.url, decode_responses=True)  # type: ignore[no-untyped-call]
         except Exception as exc:  # pragma: no cover - construction should not fail
             logger.warning("Redis client init failed: %s", exc)
             self._client = None

@@ -5,7 +5,7 @@ import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from monitoring.metrics import (
     evaluation_counter,
@@ -63,7 +63,7 @@ class AsyncOrchestrator:
             if cached is not None:
                 evaluation_counter.labels(**labels, status="success").inc()
                 evaluation_duration.labels(**labels).observe(0.0)
-                return cached
+                return cast(dict[str, Any], cached)
 
         async def _run() -> dict[str, Any]:
             if pipeline == "dual":
@@ -142,7 +142,7 @@ class AsyncOrchestrator:
         # Store in cache for dual/beta
         if pipeline in {"dual", "beta"} and key is not None:
             await self.cache.set_json(key, result)
-        return result
+        return cast(dict[str, Any], result)
 
     async def evaluate_batch(
         self,

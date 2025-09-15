@@ -34,7 +34,7 @@ def track_evaluation(algorithm: str, pipeline: str) -> Callable[[F], F]:
     """
 
     def decorator(func: F) -> F:
-        async def wrapper(*args: object, **kwargs: object):  # type: ignore[misc]
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
             active_evaluations.inc()
             start = time.time()
             try:
