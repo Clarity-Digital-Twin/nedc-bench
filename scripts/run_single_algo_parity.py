@@ -33,14 +33,36 @@ def main():
     print(f"Time: {datetime.now()}")
     print(f"{'=' * 60}")
 
-    # Use corrected list files
+    # Create list files at runtime - no hardcoding!
     data_dir = Path(__file__).parent.parent / "data" / "csv_bi_parity" / "csv_bi_export_clean"
-    ref_list = data_dir / "ref_correct.list"
-    hyp_list = data_dir / "hyp_correct.list"
+    ref_dir = data_dir / "ref"
+    hyp_dir = data_dir / "hyp"
 
-    if not ref_list.exists() or not hyp_list.exists():
-        print("ERROR: Run create_correct_lists.py first!")
+    # Get all CSV_BI files
+    ref_files = sorted(ref_dir.glob("*.csv_bi"))
+    hyp_files = sorted(hyp_dir.glob("*.csv_bi"))
+
+    if not ref_files or not hyp_files:
+        print(f"ERROR: No CSV_BI files found in {ref_dir} or {hyp_dir}")
         return 1
+
+    if len(ref_files) != len(hyp_files):
+        print(f"ERROR: Mismatch - {len(ref_files)} ref files vs {len(hyp_files)} hyp files")
+        return 1
+
+    # Create temporary list files with absolute paths
+    ref_list = data_dir / "ref_runtime.list"
+    hyp_list = data_dir / "hyp_runtime.list"
+
+    with open(ref_list, "w", encoding="utf-8") as f:
+        for ref_file in ref_files:
+            f.write(f"{ref_file.absolute()}\n")
+
+    with open(hyp_list, "w", encoding="utf-8") as f:
+        for hyp_file in hyp_files:
+            f.write(f"{hyp_file.absolute()}\n")
+
+    print(f"Created runtime lists with {len(ref_files)} file pairs")
 
     # Count files
     with open(ref_list, encoding="utf-8") as f:
