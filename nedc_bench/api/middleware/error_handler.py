@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import logging
 import traceback
-
-from typing import Awaitable, Callable
+from collections.abc import Awaitable, Callable
 
 from fastapi import Request
 from fastapi.responses import JSONResponse, Response

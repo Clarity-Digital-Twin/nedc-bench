@@ -52,7 +52,7 @@ def load_nedc_params() -> NedcParams:
     if p is None or not p.exists():
         p = _default_param_path()
 
-    with open(p, "rb") as fp:
+    with p.open("rb") as fp:
         data = _tomllib.load(fp)
 
     # Load label map and normalize to lowercase

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from nedc_bench.api.middleware.error_handler import NEDCAPIException
 
 
@@ -16,7 +14,7 @@ class FileValidator:
     MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB
 
     @staticmethod
-    async def validate_csv_bi(file_content: bytes, filename: Optional[str]) -> bool:
+    async def validate_csv_bi(file_content: bytes, filename: str | None) -> bool:
         if len(file_content) > FileValidator.MAX_FILE_SIZE:
             raise FileValidationError(f"File too large: {len(file_content)} bytes")
         if not filename or not filename.endswith(".csv_bi"):
