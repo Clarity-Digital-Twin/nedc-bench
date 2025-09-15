@@ -48,12 +48,15 @@ class AsyncOrchestrator:
         pipeline = pipeline.lower()
         labels = {"algorithm": algorithm, "pipeline": pipeline}
 
-        # Precompute cache key (best-effort)
+        # Precompute cache key (best-effort). Use classmethod to avoid tests mocking
+        # the cache instance and accidentally returning an un-awaited coroutine.
         key: str | None = None
         try:
             ref_bytes = Path(ref_file).read_bytes()
             hyp_bytes = Path(hyp_file).read_bytes()
-            key = self.cache.make_key(ref_bytes, hyp_bytes, algorithm, pipeline, PACKAGE_VERSION)
+            key = RedisCache.make_key(
+                ref_bytes, hyp_bytes, algorithm, pipeline, PACKAGE_VERSION
+            )
         except Exception:  # pragma: no cover - IO issues treated as cache miss
             key = None
 
