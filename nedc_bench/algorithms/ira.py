@@ -19,6 +19,7 @@ class IRAResult:
     - Confusion matrix uses INTEGERS (counts)
     - Kappa values are FLOATS (agreement scores)
     """
+
     # Confusion matrix (INTEGERS)
     confusion_matrix: dict[str, dict[str, int]]
 
@@ -40,8 +41,7 @@ class IRAScorer:
     and float kappa values.
     """
 
-    def score(self, ref_labels: list[str],
-              hyp_labels: list[str]) -> IRAResult:
+    def score(self, ref_labels: list[str], hyp_labels: list[str]) -> IRAResult:
         """NEDC IRA using epoch-based approach
 
         Implements NEDC lines 22-24: uses epoch-based scoring internally.
@@ -57,10 +57,7 @@ class IRAScorer:
         # Handle empty sequences
         if not ref_labels or not hyp_labels:
             return IRAResult(
-                confusion_matrix={},
-                per_label_kappa={},
-                multi_class_kappa=0.0,
-                labels=[]
+                confusion_matrix={}, per_label_kappa={}, multi_class_kappa=0.0, labels=[]
             )
 
         # Build INTEGER confusion matrix
@@ -88,11 +85,12 @@ class IRAScorer:
             confusion_matrix=confusion,
             per_label_kappa=per_label_kappa,
             multi_class_kappa=multi_kappa,
-            labels=labels
+            labels=labels,
         )
 
-    def _compute_label_kappa(self, confusion: dict, label: str,
-                            labels: list[str]) -> float:
+    def _compute_label_kappa(
+        self, confusion: dict[str, dict[str, int]], label: str, labels: list[str]
+    ) -> float:
         """Per-label kappa using 2x2 matrix (lines 499-540)
 
         Computes Cohen's kappa for a single label vs all others.
@@ -110,14 +108,22 @@ class IRAScorer:
         a = float(confusion[label][label]) if label in confusion else 0.0
 
         # b = false positive (ref says label, hyp says other)
-        b = sum(confusion[label].get(l2, 0) for l2 in labels if l2 != label) if label in confusion else 0.0
+        b = (
+            sum(confusion[label].get(l2, 0) for l2 in labels if l2 != label)
+            if label in confusion
+            else 0.0
+        )
 
         # c = false negative (ref says other, hyp says label)
         c = sum(confusion.get(l2, {}).get(label, 0) for l2 in labels if l2 != label)
 
         # d = true negative (both agree it's not this label)
-        d = sum(confusion.get(l2, {}).get(l3, 0) for l2 in labels for l3 in labels
-                if label not in {l2, l3})
+        d = sum(
+            confusion.get(l2, {}).get(l3, 0)
+            for l2 in labels
+            for l3 in labels
+            if label not in {l2, l3}
+        )
 
         # Compute total
         denom = a + b + c + d
@@ -138,8 +144,9 @@ class IRAScorer:
 
         return (p_o - p_e) / (1 - p_e)
 
-    def _compute_multi_class_kappa(self, confusion: dict,
-                                   labels: list[str]) -> float:
+    def _compute_multi_class_kappa(
+        self, confusion: dict[str, dict[str, int]], labels: list[str]
+    ) -> float:
         """Multi-class kappa (lines 548-583)
 
         Computes overall Cohen's kappa for all classes.

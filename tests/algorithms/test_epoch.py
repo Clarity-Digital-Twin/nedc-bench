@@ -1,6 +1,5 @@
 """Test suite for Epoch Scoring algorithm - TDD approach"""
 
-
 import pytest
 
 from nedc_bench.algorithms.epoch import EpochScorer
@@ -15,35 +14,19 @@ class TestEpochScoring:
         """Simple test case with events"""
         ref = [
             EventAnnotation(
-                label="seiz",
-                start_time=0.0,
-                stop_time=2.0,
-                channel="TERM",
-                confidence=1.0
+                label="seiz", start_time=0.0, stop_time=2.0, channel="TERM", confidence=1.0
             ),
             EventAnnotation(
-                label="bckg",
-                start_time=2.0,
-                stop_time=5.0,
-                channel="TERM",
-                confidence=1.0
-            )
+                label="bckg", start_time=2.0, stop_time=5.0, channel="TERM", confidence=1.0
+            ),
         ]
         hyp = [
             EventAnnotation(
-                label="seiz",
-                start_time=0.5,
-                stop_time=2.5,
-                channel="TERM",
-                confidence=1.0
+                label="seiz", start_time=0.5, stop_time=2.5, channel="TERM", confidence=1.0
             ),
             EventAnnotation(
-                label="bckg",
-                start_time=2.5,
-                stop_time=5.0,
-                channel="TERM",
-                confidence=1.0
-            )
+                label="bckg", start_time=2.5, stop_time=5.0, channel="TERM", confidence=1.0
+            ),
         ]
         return ref, hyp
 
@@ -52,42 +35,26 @@ class TestEpochScoring:
         """Test case requiring consecutive duplicate compression"""
         ref = [
             EventAnnotation(
-                label="seiz",
-                start_time=0.0,
-                stop_time=1.0,
-                channel="TERM",
-                confidence=1.0
+                label="seiz", start_time=0.0, stop_time=1.0, channel="TERM", confidence=1.0
             ),
             EventAnnotation(
                 label="seiz",  # Consecutive duplicate
                 start_time=1.0,
                 stop_time=2.0,
                 channel="TERM",
-                confidence=1.0
+                confidence=1.0,
             ),
             EventAnnotation(
-                label="bckg",
-                start_time=2.0,
-                stop_time=3.0,
-                channel="TERM",
-                confidence=1.0
-            )
+                label="bckg", start_time=2.0, stop_time=3.0, channel="TERM", confidence=1.0
+            ),
         ]
         hyp = [
             EventAnnotation(
-                label="seiz",
-                start_time=0.0,
-                stop_time=2.0,
-                channel="TERM",
-                confidence=1.0
+                label="seiz", start_time=0.0, stop_time=2.0, channel="TERM", confidence=1.0
             ),
             EventAnnotation(
-                label="bckg",
-                start_time=2.0,
-                stop_time=3.0,
-                channel="TERM",
-                confidence=1.0
-            )
+                label="bckg", start_time=2.0, stop_time=3.0, channel="TERM", confidence=1.0
+            ),
         ]
         return ref, hyp
 
@@ -137,8 +104,13 @@ class TestEpochScoring:
         result = scorer.score(ref, hyp, file_duration=5.0)
 
         # Check all per-label dictionaries
-        for label_dict in [result.hits, result.misses, result.false_alarms,
-                          result.insertions, result.deletions]:
+        for label_dict in [
+            result.hits,
+            result.misses,
+            result.false_alarms,
+            result.insertions,
+            result.deletions,
+        ]:
             for label, count in label_dict.items():
                 assert isinstance(count, int), f"Count for {label} must be int"
 
@@ -148,28 +120,20 @@ class TestEpochScoring:
 
         ref = [
             EventAnnotation(
-                label="seiz",
-                start_time=0.0,
-                stop_time=2.0,
-                channel="TERM",
-                confidence=1.0
+                label="seiz", start_time=0.0, stop_time=2.0, channel="TERM", confidence=1.0
             )
         ]
         hyp = [
             EventAnnotation(
-                label="seiz",
-                start_time=1.0,
-                stop_time=3.0,
-                channel="TERM",
-                confidence=1.0
+                label="seiz", start_time=1.0, stop_time=3.0, channel="TERM", confidence=1.0
             ),
             EventAnnotation(
                 label="artf",  # False alarm/insertion
                 start_time=3.0,
                 stop_time=4.0,
                 channel="TERM",
-                confidence=1.0
-            )
+                confidence=1.0,
+            ),
         ]
 
         result = scorer.score(ref, hyp, file_duration=5.0)
@@ -184,8 +148,8 @@ class TestEpochScoring:
         result = scorer.score(ref, hyp, file_duration=3.0)
 
         # Compressed sequences should be present
-        assert hasattr(result, 'compressed_ref')
-        assert hasattr(result, 'compressed_hyp')
+        assert hasattr(result, "compressed_ref")
+        assert hasattr(result, "compressed_hyp")
 
         # Check no consecutive duplicates in compressed sequences
         for i in range(1, len(result.compressed_ref)):
@@ -210,11 +174,7 @@ class TestEpochScoring:
 
         events = [
             EventAnnotation(
-                label="seiz",
-                start_time=0.5,
-                stop_time=1.5,
-                channel="TERM",
-                confidence=1.0
+                label="seiz", start_time=0.5, stop_time=1.5, channel="TERM", confidence=1.0
             )
         ]
 

@@ -1,6 +1,5 @@
 """Test suite for IRA (Inter-Rater Agreement) algorithm - TDD approach"""
 
-
 import pytest
 
 from nedc_bench.algorithms.ira import IRAScorer
@@ -101,9 +100,7 @@ class TestIRA:
 
         # Check total count matches input length
         total_count = sum(
-            result.confusion_matrix[r][h]
-            for r in result.labels
-            for h in result.labels
+            result.confusion_matrix[r][h] for r in result.labels for h in result.labels
         )
         assert total_count == len(ref)
 

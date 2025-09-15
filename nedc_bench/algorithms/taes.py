@@ -13,6 +13,7 @@ from nedc_bench.models.annotations import EventAnnotation
 @dataclass
 class TAESResult:
     """TAES scoring results with fractional counts"""
+
     true_positives: float
     false_positives: float
     false_negatives: float
@@ -120,9 +121,13 @@ class TAESScorer:
         )
 
     def _compute_partial(  # noqa: PLR0917
-        self, refs: list[EventAnnotation], hyps: list[EventAnnotation],
-        r_idx: int, h_idx: int,
-        ref_flags: list[bool], hyp_flags: list[bool]
+        self,
+        refs: list[EventAnnotation],
+        hyps: list[EventAnnotation],
+        r_idx: int,
+        h_idx: int,
+        ref_flags: list[bool],
+        hyp_flags: list[bool],
     ) -> tuple[float, float, float]:
         """
         Compute partial scores for overlapping ref-hyp pair
@@ -142,9 +147,13 @@ class TAESScorer:
             return self._ovlp_hyp_seqs(refs, hyps, r_idx, h_idx, ref_flags, hyp_flags)
 
     def _ovlp_ref_seqs(  # noqa: PLR0917, PLR6301
-        self, refs: list[EventAnnotation], hyps: list[EventAnnotation],
-        r_idx: int, h_idx: int,
-        ref_flags: list[bool], hyp_flags: list[bool]
+        self,
+        refs: list[EventAnnotation],
+        hyps: list[EventAnnotation],
+        r_idx: int,
+        h_idx: int,
+        ref_flags: list[bool],
+        hyp_flags: list[bool],
     ) -> tuple[float, float, float]:
         """
         Handle case where hypothesis spans multiple references
@@ -169,9 +178,13 @@ class TAESScorer:
         return hit, miss, fa
 
     def _ovlp_hyp_seqs(  # noqa: PLR0917, PLR6301
-        self, refs: list[EventAnnotation], hyps: list[EventAnnotation],
-        r_idx: int, h_idx: int,
-        ref_flags: list[bool], hyp_flags: list[bool]
+        self,
+        refs: list[EventAnnotation],
+        hyps: list[EventAnnotation],
+        r_idx: int,
+        h_idx: int,
+        ref_flags: list[bool],
+        hyp_flags: list[bool],
     ) -> tuple[float, float, float]:
         """
         Handle case where reference is hit by multiple hypotheses
@@ -242,7 +255,4 @@ class TAESScorer:
     @staticmethod
     def _overlaps(event1: EventAnnotation, event2: EventAnnotation) -> bool:
         """Check if two events overlap temporally"""
-        return (
-            event1.start_time < event2.stop_time and
-            event2.start_time < event1.stop_time
-        )
+        return event1.start_time < event2.stop_time and event2.start_time < event1.stop_time

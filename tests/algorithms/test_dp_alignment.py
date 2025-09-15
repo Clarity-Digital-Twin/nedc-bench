@@ -1,6 +1,5 @@
 """Test suite for DP Alignment algorithm - TDD approach"""
 
-
 import pytest
 
 from nedc_bench.algorithms.dp_alignment import NULL_CLASS, DPAligner

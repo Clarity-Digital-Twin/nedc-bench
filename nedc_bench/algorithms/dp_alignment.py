@@ -21,6 +21,7 @@ class DPAlignmentResult:
 
     All counts are integers per NEDC source lines 685-708.
     """
+
     # Primary counts (all integers per NEDC)
     hits: int
     substitutions: dict[str, dict[str, int]]
@@ -49,10 +50,9 @@ class DPAligner:
     with NULL_CLASS sentinel handling and integer counting.
     """
 
-    def __init__(self,
-                 penalty_del: float = 1.0,
-                 penalty_ins: float = 1.0,
-                 penalty_sub: float = 1.0):
+    def __init__(
+        self, penalty_del: float = 1.0, penalty_ins: float = 1.0, penalty_sub: float = 1.0
+    ):
         """Initialize with alignment penalties
 
         Args:
@@ -179,9 +179,9 @@ class DPAligner:
         All counts are INTEGERS per NEDC.
         """
         hits = 0
-        substitutions = {}
-        insertions = {}
-        deletions = {}
+        substitutions: dict[str, dict[str, int]] = {}
+        insertions: dict[str, int] = {}
+        deletions: dict[str, int] = {}
 
         for ref_label, hyp_label in zip(aligned_ref, aligned_hyp):
             # Skip NULL_CLASS sentinels from counting
@@ -214,9 +214,7 @@ class DPAligner:
         total_insertions = sum(insertions.values())
         total_deletions = sum(deletions.values())
         total_substitutions = sum(
-            count
-            for ref_label in substitutions
-            for count in substitutions[ref_label].values()
+            count for ref_label in substitutions for count in substitutions[ref_label].values()
         )
 
         # NEDC mapping to standard metrics
@@ -236,5 +234,5 @@ class DPAligner:
             false_positives=false_positives,
             false_negatives=false_negatives,
             aligned_ref=aligned_ref,
-            aligned_hyp=aligned_hyp
+            aligned_hyp=aligned_hyp,
         )

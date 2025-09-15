@@ -20,6 +20,7 @@ class OverlapResult:
     Per NEDC line 686: "overlap method does not give us a confusion matrix"
     All counts are integers per NEDC source lines 596-613.
     """
+
     # Direct counts (all integers per NEDC)
     hits: dict[str, int]  # Per-label hits
     misses: dict[str, int]  # Per-label misses
@@ -42,8 +43,9 @@ class OverlapScorer:
     using binary ANY overlap detection, not proportional overlap.
     """
 
-    def score(self, ref_events: list[EventAnnotation],
-              hyp_events: list[EventAnnotation]) -> OverlapResult:
+    def score(
+        self, ref_events: list[EventAnnotation], hyp_events: list[EventAnnotation]
+    ) -> OverlapResult:
         """NEDC overlap: binary ANY overlap detection
 
         Implements NEDC lines 593-613: ANY temporal overlap counts as hit.
@@ -67,9 +69,11 @@ class OverlapScorer:
             for hyp_event in hyp_events:
                 # NEDC overlap condition (line 652): ANY overlap
                 # (event[1] > start) and (event[0] < stop)
-                if (hyp_event.stop_time > ref_event.start_time and
-                    hyp_event.start_time < ref_event.stop_time and
-                    hyp_event.label == label):
+                if (
+                    hyp_event.stop_time > ref_event.start_time
+                    and hyp_event.start_time < ref_event.stop_time
+                    and hyp_event.label == label
+                ):
                     has_overlap = True
                     break
 
@@ -91,9 +95,11 @@ class OverlapScorer:
 
             for ref_event in ref_events:
                 # Same overlap condition, checking if hyp matches any ref
-                if (hyp_event.stop_time > ref_event.start_time and
-                    hyp_event.start_time < ref_event.stop_time and
-                    ref_event.label == label):
+                if (
+                    hyp_event.stop_time > ref_event.start_time
+                    and hyp_event.start_time < ref_event.stop_time
+                    and ref_event.label == label
+                ):
                     has_overlap = True
                     break
 
@@ -114,5 +120,5 @@ class OverlapScorer:
             deletions=per_label_misses.copy(),  # Line 713
             total_hits=sum(per_label_hits.values()),
             total_misses=sum(per_label_misses.values()),
-            total_false_alarms=sum(per_label_false_alarms.values())
+            total_false_alarms=sum(per_label_false_alarms.values()),
         )

@@ -1,6 +1,5 @@
 """Test suite for Overlap Scoring algorithm - TDD approach"""
 
-
 import pytest
 
 from nedc_bench.algorithms.overlap import OverlapScorer
@@ -19,7 +18,7 @@ class TestOverlapScoring:
                 start_time=1.0,
                 stop_time=5.0,  # 4 second event
                 channel="TERM",
-                confidence=1.0
+                confidence=1.0,
             )
         ]
         hyp = [
@@ -28,7 +27,7 @@ class TestOverlapScoring:
                 start_time=4.5,
                 stop_time=5.5,  # Only 0.5s overlap but counts as HIT
                 channel="TERM",
-                confidence=1.0
+                confidence=1.0,
             )
         ]
         return ref, hyp
@@ -38,19 +37,11 @@ class TestOverlapScoring:
         """Test case showing overlap doesn't build confusion matrix"""
         ref = [
             EventAnnotation(
-                label="seiz",
-                start_time=0.0,
-                stop_time=2.0,
-                channel="TERM",
-                confidence=1.0
+                label="seiz", start_time=0.0, stop_time=2.0, channel="TERM", confidence=1.0
             ),
             EventAnnotation(
-                label="bckg",
-                start_time=2.0,
-                stop_time=4.0,
-                channel="TERM",
-                confidence=1.0
-            )
+                label="bckg", start_time=2.0, stop_time=4.0, channel="TERM", confidence=1.0
+            ),
         ]
         hyp = [
             EventAnnotation(
@@ -58,15 +49,15 @@ class TestOverlapScoring:
                 start_time=0.5,
                 stop_time=1.5,
                 channel="TERM",
-                confidence=1.0
+                confidence=1.0,
             ),
             EventAnnotation(
                 label="seiz",  # Wrong position
                 start_time=3.0,
                 stop_time=3.5,
                 channel="TERM",
-                confidence=1.0
-            )
+                confidence=1.0,
+            ),
         ]
         return ref, hyp
 
@@ -75,19 +66,11 @@ class TestOverlapScoring:
         """Perfect overlap case"""
         events = [
             EventAnnotation(
-                label="seiz",
-                start_time=1.0,
-                stop_time=2.0,
-                channel="TERM",
-                confidence=1.0
+                label="seiz", start_time=1.0, stop_time=2.0, channel="TERM", confidence=1.0
             ),
             EventAnnotation(
-                label="bckg",
-                start_time=3.0,
-                stop_time=4.0,
-                channel="TERM",
-                confidence=1.0
-            )
+                label="bckg", start_time=3.0, stop_time=4.0, channel="TERM", confidence=1.0
+            ),
         ]
         return events, events  # Same events for ref and hyp
 
@@ -115,7 +98,7 @@ class TestOverlapScoring:
 
         # NEDC line 686: "overlap method does not give us a confusion matrix"
         # We track hits/misses/false_alarms per label, not cross-label confusion
-        assert not hasattr(result, 'confusion_matrix')
+        assert not hasattr(result, "confusion_matrix")
 
         # Each label tracked independently
         assert "seiz" in result.misses  # seiz ref has no seiz hyp overlap
@@ -175,11 +158,7 @@ class TestOverlapScoring:
 
         # Test various overlap scenarios
         ref = EventAnnotation(
-            label="seiz",
-            start_time=2.0,
-            stop_time=5.0,
-            channel="TERM",
-            confidence=1.0
+            label="seiz", start_time=2.0, stop_time=5.0, channel="TERM", confidence=1.0
         )
 
         # Case 1: Overlap at start
@@ -188,7 +167,7 @@ class TestOverlapScoring:
             start_time=1.0,
             stop_time=3.0,  # Overlaps [2.0, 3.0]
             channel="TERM",
-            confidence=1.0
+            confidence=1.0,
         )
         result1 = scorer.score([ref], [hyp1])
         assert result1.hits["seiz"] == 1
@@ -199,7 +178,7 @@ class TestOverlapScoring:
             start_time=4.0,
             stop_time=6.0,  # Overlaps [4.0, 5.0]
             channel="TERM",
-            confidence=1.0
+            confidence=1.0,
         )
         result2 = scorer.score([ref], [hyp2])
         assert result2.hits["seiz"] == 1
@@ -210,7 +189,7 @@ class TestOverlapScoring:
             start_time=3.0,
             stop_time=4.0,  # Completely inside ref
             channel="TERM",
-            confidence=1.0
+            confidence=1.0,
         )
         result3 = scorer.score([ref], [hyp3])
         assert result3.hits["seiz"] == 1
@@ -221,7 +200,7 @@ class TestOverlapScoring:
             start_time=0.0,
             stop_time=2.0,  # Ends exactly at ref start
             channel="TERM",
-            confidence=1.0
+            confidence=1.0,
         )
         result4 = scorer.score([ref], [hyp4])
         assert result4.hits.get("seiz", 0) == 0
@@ -233,7 +212,7 @@ class TestOverlapScoring:
             start_time=5.0,
             stop_time=7.0,  # Starts exactly at ref end
             channel="TERM",
-            confidence=1.0
+            confidence=1.0,
         )
         result5 = scorer.score([ref], [hyp5])
         assert result5.hits.get("seiz", 0) == 0
@@ -243,26 +222,14 @@ class TestOverlapScoring:
         """Test handling of multiple different labels"""
         ref = [
             EventAnnotation(
-                label="seiz",
-                start_time=0.0,
-                stop_time=2.0,
-                channel="TERM",
-                confidence=1.0
+                label="seiz", start_time=0.0, stop_time=2.0, channel="TERM", confidence=1.0
             ),
             EventAnnotation(
-                label="bckg",
-                start_time=2.0,
-                stop_time=4.0,
-                channel="TERM",
-                confidence=1.0
+                label="bckg", start_time=2.0, stop_time=4.0, channel="TERM", confidence=1.0
             ),
             EventAnnotation(
-                label="artf",
-                start_time=4.0,
-                stop_time=6.0,
-                channel="TERM",
-                confidence=1.0
-            )
+                label="artf", start_time=4.0, stop_time=6.0, channel="TERM", confidence=1.0
+            ),
         ]
         hyp = [
             EventAnnotation(
@@ -270,22 +237,22 @@ class TestOverlapScoring:
                 start_time=0.5,
                 stop_time=1.5,  # Hits seiz
                 channel="TERM",
-                confidence=1.0
+                confidence=1.0,
             ),
             EventAnnotation(
                 label="artf",
                 start_time=4.5,
                 stop_time=5.5,  # Hits artf
                 channel="TERM",
-                confidence=1.0
+                confidence=1.0,
             ),
             EventAnnotation(
                 label="null",
                 start_time=6.0,
                 stop_time=7.0,  # False alarm
                 channel="TERM",
-                confidence=1.0
-            )
+                confidence=1.0,
+            ),
         ]
 
         scorer = OverlapScorer()

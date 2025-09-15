@@ -171,7 +171,9 @@ class ParityValidator:
             beta_metrics=beta_metrics,
         )
 
-    def compare_dp(self, alpha_result: dict[str, Any], beta_result: DPAlignmentResult) -> ValidationReport:
+    def compare_dp(
+        self, alpha_result: dict[str, Any], beta_result: DPAlignmentResult
+    ) -> ValidationReport:
         """
         Compare DP Alignment results - INTEGER counts must match exactly
 
@@ -238,7 +240,9 @@ class ParityValidator:
             },
         )
 
-    def compare_epoch(self, alpha_result: dict[str, Any], beta_result: EpochResult) -> ValidationReport:
+    def compare_epoch(
+        self, alpha_result: dict[str, Any], beta_result: EpochResult
+    ) -> ValidationReport:
         """
         Compare Epoch results - INTEGER confusion matrix
 
@@ -278,7 +282,9 @@ class ParityValidator:
             beta_metrics={"confusion_matrix": beta_result.confusion_matrix},
         )
 
-    def compare_overlap(self, alpha_result: dict[str, Any], beta_result: OverlapResult) -> ValidationReport:
+    def compare_overlap(
+        self, alpha_result: dict[str, Any], beta_result: OverlapResult
+    ) -> ValidationReport:
         """
         Compare Overlap results - INTEGER counts
 
@@ -367,7 +373,8 @@ class ParityValidator:
                     alpha_value=alpha_multi_kappa,
                     beta_value=beta_multi_kappa,
                     absolute_difference=abs(alpha_multi_kappa - beta_multi_kappa),
-                    relative_difference=abs(alpha_multi_kappa - beta_multi_kappa) / max(abs(alpha_multi_kappa), 1e-16),
+                    relative_difference=abs(alpha_multi_kappa - beta_multi_kappa)
+                    / max(abs(alpha_multi_kappa), 1e-16),
                     tolerance=self.tolerance,
                 )
             )
@@ -383,7 +390,8 @@ class ParityValidator:
                         alpha_value=alpha_kappa,
                         beta_value=beta_kappa,
                         absolute_difference=abs(alpha_kappa - beta_kappa),
-                        relative_difference=abs(alpha_kappa - beta_kappa) / max(abs(alpha_kappa), 1e-16),
+                        relative_difference=abs(alpha_kappa - beta_kappa)
+                        / max(abs(alpha_kappa), 1e-16),
                         tolerance=self.tolerance,
                     )
                 )
@@ -425,7 +433,9 @@ class ParityValidator:
 
         # Overlap comparison
         if "overlap" in alpha_results and "overlap" in beta_results:
-            reports["overlap"] = self.compare_overlap(alpha_results["overlap"], beta_results["overlap"])
+            reports["overlap"] = self.compare_overlap(
+                alpha_results["overlap"], beta_results["overlap"]
+            )
 
         # IRA comparison
         if "ira" in alpha_results and "ira" in beta_results:

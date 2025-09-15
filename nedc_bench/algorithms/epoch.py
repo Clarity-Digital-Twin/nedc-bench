@@ -19,6 +19,7 @@ class EpochResult:
 
     All counts are integers per NEDC source lines 690-723.
     """
+
     # Full NxN confusion matrix (all integers)
     confusion_matrix: dict[str, dict[str, int]]
 
@@ -41,9 +42,7 @@ class EpochScorer:
     with consecutive duplicate compression and NULL_CLASS handling.
     """
 
-    def __init__(self,
-                 epoch_duration: float = 1.0,
-                 null_class: str = "null"):
+    def __init__(self, epoch_duration: float = 1.0, null_class: str = "null"):
         """Initialize with epoch parameters
 
         Args:
@@ -53,9 +52,12 @@ class EpochScorer:
         self.epoch_duration = epoch_duration
         self.null_class = null_class
 
-    def score(self, ref_events: list[EventAnnotation],
-              hyp_events: list[EventAnnotation],
-              file_duration: float) -> EpochResult:
+    def score(
+        self,
+        ref_events: list[EventAnnotation],
+        hyp_events: list[EventAnnotation],
+        file_duration: float,
+    ) -> EpochResult:
         """NEDC epoch scoring with compression
 
         Implements NEDC lines 590-730: fixed epochs, compression, confusion matrix.
@@ -101,8 +103,9 @@ class EpochScorer:
 
         return epochs
 
-    def _classify_epochs(self, epochs: list[tuple[float, float]],
-                        events: list[EventAnnotation]) -> list[str]:
+    def _classify_epochs(
+        self, epochs: list[tuple[float, float]], events: list[EventAnnotation]
+    ) -> list[str]:
         """Classify each epoch based on overlapping events
 
         Args:
@@ -150,8 +153,7 @@ class EpochScorer:
 
         return compressed
 
-    def _compute_metrics(self, ref_compressed: list[str],
-                        hyp_compressed: list[str]) -> EpochResult:
+    def _compute_metrics(self, ref_compressed: list[str], hyp_compressed: list[str]) -> EpochResult:
         """Build confusion matrix and compute metrics
 
         Implements NEDC lines 690-723: confusion matrix with NULL_CLASS handling.
@@ -168,8 +170,7 @@ class EpochScorer:
 
         # Initialize confusion matrix (all zeros, integers)
         confusion_matrix = {
-            ref_label: {hyp_label: 0 for hyp_label in all_labels}
-            for ref_label in all_labels
+            ref_label: {hyp_label: 0 for hyp_label in all_labels} for ref_label in all_labels
         }
 
         # Initialize per-label counts
@@ -239,5 +240,5 @@ class EpochScorer:
             insertions=insertions,
             deletions=deletions,
             compressed_ref=ref_compressed,
-            compressed_hyp=hyp_compressed
+            compressed_hyp=hyp_compressed,
         )
