@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .endpoints import evaluation, health, websocket, metrics as metrics_endpoint
+from .endpoints import evaluation, health, metrics as metrics_endpoint, websocket
 from .middleware.error_handler import error_handler_middleware
 from .middleware.rate_limit import rate_limit_middleware
 from .services.job_manager import job_manager

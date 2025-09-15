@@ -24,7 +24,11 @@ class FileValidator:
             lines = text.strip().splitlines()
             if not lines:
                 raise FileValidationError("Empty file")
-            if not (lines[0].startswith("version =") or lines[0].startswith("# version =")):
+            # Be permissive on header format: allow optional '#', optional spaces
+            # Normalize: remove leading '#', strip spaces, and remove spaces around '='
+            header = lines[0]
+            header_norm = header.lstrip('#').strip().replace(' ', '')
+            if not header_norm.startswith("version="):
                 raise FileValidationError("Invalid CSV_BI header")
             return True
         except UnicodeDecodeError as exc:

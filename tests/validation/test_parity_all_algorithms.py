@@ -59,7 +59,7 @@ class TestCompareAllAlgorithms:
 
     @pytest.fixture
     def beta_results(self):
-        """Create matching Beta results objects"""
+        """Create matching Beta results objects with correct dataclass fields"""
         return {
             "taes": TAESResult(
                 true_positives=10.0,
@@ -67,38 +67,50 @@ class TestCompareAllAlgorithms:
                 false_negatives=1.0,
             ),
             "dp": DPAlignmentResult(
-                true_positives=100,
-                false_positives=5,
-                false_negatives=3,
+                hits=100,
+                substitutions={},
+                insertions={"seiz": 2},
+                deletions={"seiz": 1},
                 total_insertions=2,
                 total_deletions=1,
                 total_substitutions=3,
-                per_label_counts={},
-                ref_aligned=[],
-                hyp_aligned=[],
+                true_positives=100,
+                false_positives=5,
+                false_negatives=3,
+                aligned_ref=[],
+                aligned_hyp=[],
             ),
             "epoch": EpochResult(
                 confusion_matrix={
                     "seiz": {"seiz": 50, "bckg": 5},
                     "bckg": {"seiz": 3, "bckg": 100},
                 },
-                per_label_counts={},
-                ref_compressed=[],
-                hyp_compressed=[],
+                hits={"seiz": 50, "bckg": 100},
+                misses={"seiz": 5, "bckg": 3},
+                false_alarms={"seiz": 3, "bckg": 5},
+                insertions={},
+                deletions={},
+                compressed_ref=["null", "seiz", "bckg", "null"],
+                compressed_hyp=["null", "seiz", "bckg", "null"],
             ),
             "overlap": OverlapResult(
+                hits={"seiz": 45},
+                misses={"seiz": 5},
+                false_alarms={"seiz": 3},
+                insertions={"seiz": 3},
+                deletions={"seiz": 5},
                 total_hits=45,
                 total_misses=5,
                 total_false_alarms=3,
-                per_label_counts={},
             ),
             "ira": IRAResult(
-                confusion_matrix={},
-                multi_class_kappa=0.85,
-                per_label_kappa={
-                    "seiz": 0.82,
-                    "bckg": 0.88,
+                confusion_matrix={
+                    "seiz": {"seiz": 50, "bckg": 5},
+                    "bckg": {"seiz": 3, "bckg": 100},
                 },
+                per_label_kappa={"seiz": 0.82, "bckg": 0.88},
+                multi_class_kappa=0.85,
+                labels=["bckg", "seiz"],
             ),
         }
 
@@ -198,9 +210,27 @@ class TestCompareAllAlgorithms:
         beta = {
             "taes": TAESResult(true_positives=5.0, false_positives=0.0, false_negatives=0.0),
             # dp missing
-            "epoch": EpochResult(confusion_matrix={"a": {"a": 1}}, per_label_counts={}, ref_compressed=[], hyp_compressed=[]),
-            "overlap": OverlapResult(total_hits=20, total_misses=0, total_false_alarms=0, per_label_counts={}),
-            "ira": IRAResult(confusion_matrix={}, multi_class_kappa=0.9, per_label_kappa={}),
+            "epoch": EpochResult(
+                confusion_matrix={"a": {"a": 1}},
+                hits={"a": 1},
+                misses={"a": 0},
+                false_alarms={"a": 0},
+                insertions={},
+                deletions={},
+                compressed_ref=["a"],
+                compressed_hyp=["a"],
+            ),
+            "overlap": OverlapResult(
+                hits={"x": 20},
+                misses={"x": 0},
+                false_alarms={"x": 0},
+                insertions={"x": 0},
+                deletions={"x": 0},
+                total_hits=20,
+                total_misses=0,
+                total_false_alarms=0,
+            ),
+            "ira": IRAResult(confusion_matrix={}, per_label_kappa={}, multi_class_kappa=0.9, labels=[]),
         }
 
         reports = validator.compare_all_algorithms(alpha, beta)
@@ -217,9 +247,18 @@ class TestCompareAllAlgorithms:
         """Test DP_ALIGNMENT name mapping in reports"""
         alpha = {"dp": {"true_positives": 5, "false_positives": 0, "false_negatives": 0}}
         beta = {"dp": DPAlignmentResult(
-            true_positives=5, false_positives=0, false_negatives=0,
-            total_insertions=0, total_deletions=0, total_substitutions=0,
-            per_label_counts={}, ref_aligned=[], hyp_aligned=[]
+            hits=5,
+            substitutions={},
+            insertions={},
+            deletions={},
+            total_insertions=0,
+            total_deletions=0,
+            total_substitutions=0,
+            true_positives=5,
+            false_positives=0,
+            false_negatives=0,
+            aligned_ref=[],
+            aligned_hyp=[],
         )}
 
         reports = validator.compare_all_algorithms(alpha, beta)

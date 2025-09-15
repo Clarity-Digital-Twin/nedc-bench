@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Awaitable, Callable, TypeVar
+from collections.abc import Awaitable, Callable
+from typing import Any, TypeVar
 
 from prometheus_client import Counter, Gauge, Histogram
 
@@ -76,4 +77,3 @@ async def track_evaluation_dynamic(
             time.time() - start
         )
         active_evaluations.dec()
-

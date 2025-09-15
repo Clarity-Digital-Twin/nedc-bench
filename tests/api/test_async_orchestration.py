@@ -1,13 +1,10 @@
 """Test async orchestration with real algorithm execution"""
 
 import asyncio
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
-from nedc_bench.algorithms.taes import TAESResult
 from nedc_bench.api.services.async_wrapper import AsyncOrchestrator
-from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
 
 
 class TestAsyncOrchestrator:

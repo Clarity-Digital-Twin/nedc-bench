@@ -161,6 +161,11 @@ unfixable = []
     "PLR0915", # Long test functions allowed
     "PLR0914", # Many locals allowed in tests
     "PLC0415", # Inline imports in tests acceptable
+    "RUF029",  # Async defs in tests may not await
+    "I001",    # Allow relaxed import sorting in tests
+]
+"nedc_bench/api/services/async_wrapper.py" = [
+    "C901",  # Allow higher complexity for orchestrator method
 ]
 "alpha/wrapper/parsers.py" = [
     "PLR6301", # Parser methods inherit from base class

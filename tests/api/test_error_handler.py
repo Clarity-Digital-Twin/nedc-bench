@@ -1,12 +1,14 @@
 """Test error handler middleware with real exception scenarios"""
 
-import logging
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from nedc_bench.api.middleware.error_handler import NEDCAPIError, error_handler_middleware
+from nedc_bench.api.middleware.error_handler import (
+    NEDCAPIError,
+    error_handler_middleware,
+)
 
 
 class TestErrorHandlerMiddleware:
@@ -52,11 +54,12 @@ class TestErrorHandlerMiddleware:
         with patch("nedc_bench.api.middleware.error_handler.logger") as mock_logger:
             response = await error_handler_middleware(mock_request, crashing_handler)
 
-            # Should log the error
+            # Should log the error with format string and exception as arg
             mock_logger.error.assert_called_once()
             call_args = mock_logger.error.call_args[0]
-            assert "Unexpected error" in call_args[0]
-            assert "RuntimeError" in str(call_args[1])
+            assert call_args[0].startswith("Unexpected error")
+            # Second arg is the exception instance
+            assert "Unexpected database error" in str(call_args[1])
 
         # Should return 500 response
         assert isinstance(response, JSONResponse)
@@ -122,7 +125,10 @@ class TestErrorHandlerMiddleware:
 
             await error_handler_middleware(mock_request, api_error_handler)
             mock_logger.warning.assert_called_once()
-            assert "BAD_REQUEST" in mock_logger.warning.call_args[0][0]
+            fmt, code, detail = mock_logger.warning.call_args[0]
+            assert fmt.startswith("API error")
+            assert code == "BAD_REQUEST"
+            assert detail == "Bad request"
 
             # Reset mock
             mock_logger.reset_mock()
@@ -133,7 +139,7 @@ class TestErrorHandlerMiddleware:
 
             await error_handler_middleware(mock_request, unexpected_handler)
             mock_logger.error.assert_called_once()
-            assert "Unexpected error" in mock_logger.error.call_args[0][0]
+            assert mock_logger.error.call_args[0][0].startswith("Unexpected error")
 
     @pytest.mark.asyncio
     async def test_error_with_special_characters(self, mock_request):

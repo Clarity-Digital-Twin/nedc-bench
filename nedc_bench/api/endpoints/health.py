@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
-from nedc_bench.api.services.job_manager import job_manager
 from nedc_bench.api.services.cache import redis_cache
+from nedc_bench.api.services.job_manager import job_manager
 
 router = APIRouter()
 

@@ -1,7 +1,7 @@
 """Test WebSocket manager with real connection scenarios"""
 
 import asyncio
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from nedc_bench.api.services.websocket_manager import WebSocketManager
@@ -226,4 +226,3 @@ class TestWebSocketManager:
 
 
 # Import patch at module level
-from unittest.mock import patch

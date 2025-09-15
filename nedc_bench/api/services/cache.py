@@ -5,7 +5,6 @@ import logging
 import os
 from dataclasses import asdict, is_dataclass
 from hashlib import sha256
-from pathlib import Path
 from typing import Any
 
 from redis import asyncio as aioredis
@@ -90,4 +89,3 @@ class RedisCache:
 
 # Singleton cache instance
 redis_cache = RedisCache()
-

@@ -42,8 +42,7 @@ def _evaluate_pair(
         elif algorithm == "ira":
             beta = orch.beta_pipeline.evaluate_ira(r, h)
         else:
-            raise ValueError(f"Unsupported algorithm: {algorithm}
-")
+            raise ValueError(f"Unsupported algorithm: {algorithm}")
         return {"beta_result": beta.__dict__ if hasattr(beta, "__dict__") else beta}
     if pipeline == "alpha":
         return {"alpha_result": orch.alpha_wrapper.evaluate(ref_file, hyp_file)}
@@ -72,4 +71,3 @@ class ParallelEvaluator:
                 idx = futures[fut]
                 results[idx] = fut.result()
         return results
-

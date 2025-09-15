@@ -11,4 +11,3 @@ async def metrics() -> Response:  # pragma: no cover - trivial I/O endpoint
     """Expose Prometheus metrics in text format."""
     data = generate_latest()
     return Response(content=data, media_type=CONTENT_TYPE_LATEST)
-
