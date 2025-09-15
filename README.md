@@ -208,6 +208,39 @@ make format
 docker build -f Dockerfile.api -t nedc-bench/api:latest .
 ```
 
+## Parity Validation
+
+### Running Parity Tests
+
+Verify exact parity with NEDC v6.0.0:
+
+```bash
+# Run comprehensive parity comparison
+python scripts/compare_parity.py
+
+# Check specific algorithm
+python scripts/compare_parity.py --algo epoch
+
+# Generate detailed report
+python scripts/compare_parity.py --verbose > parity_report.txt
+```
+
+### Expected Results
+
+All algorithms should show **exact** match:
+- TAES: TP=133.84, FP=552.77, Sensitivity=12.45%
+- Epoch: TP=33704, FP=18816, Sensitivity=11.86%
+- Overlap: TP=253, FP=536, Sensitivity=23.53%
+- DP: TP=328, FP=966, Sensitivity=30.51%
+- IRA: Kappa=0.1887
+
+### Validating FA/24h Computation
+
+FA/24h is centrally computed in `nedc_bench/utils/metrics.py`:
+- Epoch-based algorithms: FP scaled by 0.25s epoch duration
+- Event-based algorithms: FP count directly used
+- All values match NEDC formatting to 4 decimal places
+
 ## Known Issues & Troubleshooting
 
 ### 🚨 NEDC Path Resolution (Common Source of Errors)
