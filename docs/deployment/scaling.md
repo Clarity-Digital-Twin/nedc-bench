@@ -1,82 +1,35 @@
 # Scaling Guide
 
-> TODO: Extract from performance testing and deployment experience
-
 ## Horizontal Scaling
 
-### Adding Workers
-<!-- TODO: Worker configuration -->
+### Add workers
 ```bash
-# Scale workers
-uvicorn --workers 4
+uv run uvicorn nedc_bench.api.main:app --workers 4
 ```
 
-### Load Balancing
-<!-- TODO: Load balancer configuration -->
-
-### Session Affinity
-<!-- TODO: If needed -->
+### Load balancing
+- Behind Nginx/Envoy/ALB, route to multiple API pods/containers.
 
 ## Vertical Scaling
 
-### Resource Requirements
-<!-- TODO: CPU/Memory requirements -->
-
+### Resource Guidelines
 | Component | CPU | Memory | Notes |
 |-----------|-----|--------|-------|
-| API | 2 cores | 4GB | Per worker |
-| Redis | 1 core | 2GB | Cache size dependent |
+| API       | 2 cores | 4 GB | Per worker |
+| Redis     | 1 core | 2 GB | Cache size dependent |
 
 ### Performance Tuning
-<!-- TODO: Optimization settings -->
-
-## Caching Strategy
-
-### Redis Scaling
-<!-- TODO: Redis cluster/sentinel -->
-
-### Cache Warm-up
-<!-- TODO: Pre-loading cache -->
-
-## Database Scaling
-<!-- TODO: If applicable -->
-
-## Queue Scaling
-<!-- TODO: If using task queues -->
+- Cache results via Redis to reduce recomputation.
+- Ensure inputs are prevalidated to avoid retries.
 
 ## Auto-scaling
-
-### Kubernetes HPA
-<!-- TODO: HPA configuration -->
-```yaml
-# HPA example
-```
-
-### AWS Auto-scaling
-<!-- TODO: If applicable -->
+- Kubernetes HPA based on CPU or custom latency metrics.
 
 ## Performance Testing
+- Use k6/Locust for HTTP load; verify latency targets and error rates.
 
-### Load Testing
-<!-- TODO: How to load test -->
-```bash
-# Example with locust/k6
-```
-
-### Benchmarks
-<!-- TODO: Performance benchmarks -->
-
-## Monitoring Scale
-
-### Metrics to Watch
-<!-- TODO: Key scaling metrics -->
-- Request latency p95/p99
-- CPU utilization
-- Memory usage
-- Cache hit rate
-
-## Cost Optimization
-<!-- TODO: Cost-effective scaling -->
+## Metrics to Watch
+- p95/p99 latency, error rate, CPU/memory, cache hit rate.
 
 ## Related
 - [Monitoring](monitoring.md)
