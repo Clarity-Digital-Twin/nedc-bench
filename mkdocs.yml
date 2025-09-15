@@ -1,0 +1,71 @@
+site_name: NEDC-BENCH Documentation
+site_description: Dual-pipeline EEG evaluation platform with exact NEDC v6.0.0 parity
+repo_url: https://github.com/Clarity-Digital-Twin/nedc-bench
+repo_name: clarity-digital-twin/nedc-bench
+docs_dir: docs
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.sections
+    - content.code.copy
+    - content.action.edit
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+
+nav:
+  - Home: README.md
+  - Getting Started:
+      - Installation: installation.md
+      - Quickstart: quickstart.md
+  - User Guide:
+      - Overview: user-guide/overview.md
+  - API:
+      - Endpoints: api/endpoints.md
+      - Examples: api/examples.md
+      - WebSocket: api/websocket.md
+      - Python Client: api/python-client.md
+      - OpenAPI Access: api/openapi.md
+  - Algorithms:
+      - Overview: algorithms/overview.md
+      - TAES: algorithms/taes.md
+      - Epoch: algorithms/epoch.md
+      - Overlap: algorithms/overlap.md
+      - DP Alignment: algorithms/dp-alignment.md
+      - IRA: algorithms/ira.md
+      - Metrics: algorithms/metrics.md
+  - Deployment:
+      - Overview: deployment/overview.md
+      - Docker: deployment/docker.md
+      - Kubernetes: deployment/kubernetes.md
+      - Configuration: deployment/configuration.md
+      - Monitoring: deployment/monitoring.md
+      - Scaling: deployment/scaling.md
+      - Troubleshooting: deployment/troubleshooting.md
+      - Runbook: deployment/runbook.md
+  - Reference:
+      - Configuration (Env Vars): reference/configuration.md
+      - API Reference: reference/api.md
+      - CLI: reference/cli.md
+      - FAQ: reference/faq.md
+      - Glossary: reference/glossary.md
+  - Migration:
+      - From NEDC: migration/from-nedc.md
+      - Upgrade Guide: migration/upgrade-guide.md
+      - Data Formats: migration/data-formats.md
+  - Archive:
+      - Current Status: archive/status/CURRENT_STATUS.md
+      - Final Parity Results: archive/bugs/FINAL_PARITY_RESULTS.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.emoji
+

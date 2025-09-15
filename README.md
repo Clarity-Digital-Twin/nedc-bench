@@ -121,8 +121,8 @@ async def monitor_job(job_id):
 ### Command Line Interface
 ```bash
 # Original NEDC wrapper (preserves exact v6.0.0 behavior)
-./run_nedc.sh nedc_eeg_eval/v6.0.0/lists/ref.list \
-              nedc_eeg_eval/v6.0.0/lists/hyp.list
+./run_nedc.sh nedc_eeg_eval/v6.0.0/data/lists/ref.list \
+              nedc_eeg_eval/v6.0.0/data/lists/hyp.list
 
 # Python scripts for batch processing
 python scripts/run_alpha_complete.py  # Full Alpha pipeline
@@ -202,9 +202,9 @@ See `docs/archive/bugs/` for detailed documentation.
 
 - 📖 [Installation Guide](docs/installation.md) — Detailed setup instructions
 - 🚀 [Quick Start Tutorial](docs/quickstart.md) — Get running in 5 minutes
-- 🔬 [Algorithm Details](docs/algorithms/) — Deep dive into each metric
-- 🔌 [API Reference](docs/api/) — OpenAPI specification
-- 🐳 [Deployment Guide](docs/deployment/) — Production deployment
+- 🔬 [Algorithm Details](docs/algorithms/overview.md) — Deep dive into each metric
+- 🔌 [API Reference](docs/api/endpoints.md) — Endpoints, examples, OpenAPI access
+- 🐳 [Deployment Guide](docs/deployment/overview.md) — Production deployment
 - 🔄 [Migration Guide](docs/migration/from-nedc.md) — Moving from vanilla NEDC
 - 🐛 [Bug Reports](docs/archive/bugs/) — Fixed issues documentation
 

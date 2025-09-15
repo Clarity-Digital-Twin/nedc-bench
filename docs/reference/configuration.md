@@ -5,6 +5,9 @@
 - `PYTHONPATH` — Automatically prefixed by the API with `<NEDC_NFC>/lib` so the Alpha code can import.
 - `REDIS_URL` — Redis connection string for caching (default: `redis://redis:6379`).
 - `CACHE_TTL_SECONDS` — Default TTL for cached results (default: `86400`).
+- `LOG_LEVEL` — Uvicorn/app log level (`debug|info|warning|error`; default `info`).
+- `MAX_WORKERS` — Number of Uvicorn workers (container entrypoint honors this; default `1`).
+- `PROMETHEUS_MULTIPROC_DIR` — Enables Prometheus multiprocess metrics when set; the container entrypoint prepares/cleans this directory on start.
 
 ## API Settings
 - CORS is permissive by default in development (`*`). Adjust in production.
