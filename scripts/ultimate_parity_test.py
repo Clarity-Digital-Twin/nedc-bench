@@ -59,7 +59,7 @@ def run_all_beta_algorithms():
     # Initialize scorers (each has different init params)
     scorers = {
         "taes": TAESScorer(target_label="seiz"),
-        "epoch": EpochScorer(epoch_duration=0.25),  # NEDC uses 0.25-second epochs!
+        "epoch": EpochScorer(epoch_duration=0.25, null_class="bckg"),  # NEDC: 0.25s epochs, bckg as null
         "ovlp": OverlapScorer(),  # No target_label param
         # "dp": DPAligner(),  # Skip DP for now - needs different input format
     }
