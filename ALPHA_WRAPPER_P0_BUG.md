@@ -83,13 +83,25 @@ This is our wrapper - is it broken?
 Location: Project root
 This shell wrapper - what's it actually doing?
 
-## HYPOTHESIS
+## ROOT CAUSE FOUND! 🔍
 
-The NEDC tool might:
-1. Not handle absolute paths correctly
-2. Expect to be run from a specific directory
-3. Have hardcoded path assumptions
-4. Need paths relative to $NEDC_NFC
+The `run_nedc.sh` script:
+1. Changes directory to `nedc_eeg_eval/v6.0.0/`
+2. THEN tries to find the list files
+
+This means:
+- List file paths given to run_nedc.sh need to be relative to PROJECT ROOT
+- But CONTENTS of list files need paths relative to NEDC directory!
+
+Example:
+```bash
+# From project root:
+./run_nedc.sh data/lists/ref.list data/lists/hyp.list
+
+# run_nedc.sh does: cd nedc_eeg_eval/v6.0.0
+# Now it looks for: data/lists/ref.list FROM THAT DIRECTORY
+# Which would be: nedc_eeg_eval/v6.0.0/data/lists/ref.list
+```
 
 ## IMMEDIATE ACTIONS NEEDED
 
