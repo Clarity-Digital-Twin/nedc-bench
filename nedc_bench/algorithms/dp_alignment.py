@@ -177,6 +177,7 @@ class DPAligner:
         All counts are INTEGERS per NEDC.
         """
         hits = 0
+        hits_per_label: dict[str, int] = {}
         substitutions: dict[str, dict[str, int]] = {}
         insertions: dict[str, int] = {}
         deletions: dict[str, int] = {}
@@ -205,6 +206,8 @@ class DPAligner:
                 pass
             elif ref_label == hyp_label:
                 hits += 1
+                # Track hits per label for NEDC-style TP calculation
+                hits_per_label[ref_label] = hits_per_label.get(ref_label, 0) + 1
             else:
                 # miss
                 pass
@@ -217,9 +220,19 @@ class DPAligner:
         )
 
         # NEDC mapping to standard metrics
-        true_positives = hits
-        false_positives = total_insertions
-        false_negatives = total_deletions + total_substitutions
+        # In NEDC convention for EEG, "seiz" is the positive class
+        # True Positives = hits for positive class (seiz) only
+        # False Negatives = deletions + substitutions for positive class
+        positive_class = "seiz"
+        true_positives = hits_per_label.get(positive_class, 0)
+
+        # False positives = insertions of positive class
+        false_positives = insertions.get(positive_class, 0)
+
+        # False negatives = deletions + substitutions FROM positive class
+        pos_deletions = deletions.get(positive_class, 0)
+        pos_substitutions = sum(substitutions.get(positive_class, {}).values()) if positive_class in substitutions else 0
+        false_negatives = pos_deletions + pos_substitutions
 
         return DPAlignmentResult(
             hits=hits,
