@@ -1,57 +1,43 @@
 # Deployment Troubleshooting Guide
 
-> TODO: Extract from archived bug reports and deployment experience
-
 ## Common Issues
 
-### Docker Issues
+### Docker
 
-#### Container Won't Start
-<!-- TODO: Startup issues -->
+#### Container won’t start
 ```bash
-# Debug commands
 docker logs <container>
 docker inspect <container>
 ```
+Check that the image was built, required env vars are set, and port 8000 is free.
 
-#### Permission Errors
-<!-- TODO: File permission issues -->
+#### Permission errors
+Run containers without mounting unwritable directories, or adjust volume permissions.
 
-#### Network Issues
-<!-- TODO: Port conflicts, connectivity -->
+#### Network issues
+Verify `-p 8000:8000` mapping and that no firewall is blocking localhost.
 
-### Kubernetes Issues
+### Kubernetes
 
-#### Pod CrashLoopBackOff
-<!-- TODO: Common causes -->
+#### CrashLoopBackOff
+Inspect logs for missing env vars or startup exceptions. Ensure Redis is reachable if readiness is enabled.
 
 #### ImagePullBackOff
-<!-- TODO: Registry issues -->
+Check registry credentials and image tag names.
 
-#### Resource Limits
-<!-- TODO: OOMKilled, CPU throttling -->
+#### OOMKilled / throttling
+Increase memory/CPU limits; reduce workers; verify workload.
 
-### API Issues
+### API
+
+#### 503 on `/api/v1/ready`
+Background worker not running or Redis unreachable. Use `/api/v1/health` for a simple check.
 
 #### 500 Internal Server Error
-<!-- TODO: Common causes -->
+Validate input CSV_BI files; confirm algorithms/pipeline parameters; check server logs for stack traces.
 
-#### Timeout Errors
-<!-- TODO: Slow requests -->
-
-#### Connection Refused
-<!-- TODO: Service not running -->
-
-### Performance Issues
-
-#### Slow Response Times
-<!-- TODO: Debugging steps -->
-
-#### High Memory Usage
-<!-- TODO: Memory leaks -->
-
-#### Cache Issues
-<!-- TODO: Redis problems -->
+#### Timeouts
+Increase client timeout; check CPU contention and worker count; ensure Redis connectivity for caching.
 
 ## Debugging Tools
 
@@ -75,41 +61,28 @@ kubectl exec -it <pod> -- bash
 
 ### Health Checks
 ```bash
-# Check health
-curl http://localhost:8000/health
+curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/api/v1/ready
 ```
 
-## Known Issues
+## Known Pitfalls
 
-### NEDC Path Resolution
-<!-- TODO: Extract from ALPHA_WRAPPER_P0_BUG.md -->
+### NEDC path resolution
+Set `NEDC_NFC` and `PYTHONPATH` when running scripts manually. The API sets these automatically on startup.
 
-### Algorithm Specific Issues
-<!-- TODO: Extract from bug reports -->
+### Parity mismatches
+Use `uv run python scripts/compare_parity.py` to validate Beta vs Alpha.
 
 ## FAQ
 
 ### Q: Container exits immediately
-<!-- TODO: Solution -->
+A: Check entrypoint/command; ensure uvicorn is launched and no port conflict.
 
-### Q: Can't connect to Redis
-<!-- TODO: Solution -->
+### Q: Can’t connect to Redis
+A: Verify `REDIS_URL`, DNS, and service reachability. Fall back to health endpoint if readiness depends on Redis.
 
-### Q: API returns wrong results
-<!-- TODO: Parity checking -->
-
-## Getting Help
-
-### Logs to Collect
-1. Container/pod logs
-2. System metrics
-3. Configuration files
-4. Error messages
-
-### Support Channels
-- GitHub Issues
-- Documentation
-- Community
+### Q: API returns unexpected metrics
+A: Confirm algorithm selection and that inputs are proper CSV_BI files with matching durations.
 
 ## Related
 - [Docker Deployment](docker.md)

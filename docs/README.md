@@ -12,7 +12,7 @@ Complete documentation for NEDC-BENCH - a production-ready EEG benchmarking plat
 
 ### 👤 User Guide
 - [`user-guide/`](user-guide/) - Complete user documentation
-  - Overview, algorithms, input/output formats, CLI and API usage
+  - Overview, algorithms, input/output formats, API usage
 
 ### 🔌 API Documentation
 - [`api/`](api/) - REST API and WebSocket documentation
@@ -54,10 +54,8 @@ Complete documentation for NEDC-BENCH - a production-ready EEG benchmarking plat
 
 ## Documentation Status
 
-All documentation sections have been created with placeholders. Content is being extracted from:
-1. Codebase implementations
-2. Configuration files
-3. Archived documentation
+- Algorithms, API, developer, migration, and reference sections are complete and current.
+- Deployment, installation, and quickstart guides provide practical, verified steps.
 
-Last updated: 2025-01-15
+Last updated: 2025-09-15
 

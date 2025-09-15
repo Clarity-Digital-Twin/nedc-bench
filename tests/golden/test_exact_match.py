@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from tests.utils import (
+from ..utils import (
     cleanup_temp_files,
     create_empty_reference_pair,
     create_no_overlap_pair,
