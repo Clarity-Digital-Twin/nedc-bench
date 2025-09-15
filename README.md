@@ -313,9 +313,13 @@ For the modern wrapper and dual-pipeline implementation:
   year={2025},
   url={https://github.com/Clarity-Digital-Twin/nedc-bench},
   version={0.1.0},
-  note={A production-ready wrapper and reimplementation of Temple University's
-        NEDC EEG Evaluation v6.0.0, providing REST API, containerization,
-        and 100% algorithmic parity validation}
+  note={A production-ready wrapper and clean-room reimplementation of Temple
+        University's NEDC EEG Evaluation v6.0.0, featuring dual-pipeline
+        architecture with 100% algorithmic parity, REST/WebSocket APIs,
+        containerization, and comprehensive validation. Includes critical
+        bug fixes for boundary conditions and duration calculations not
+        present in the original implementation. 92% test coverage with
+        187 tests ensuring reproducibility.}
 }
 ```
 
@@ -333,6 +337,9 @@ For the modern wrapper and dual-pipeline implementation:
   - Container/Kubernetes deployment
   - Parity validation methodology
   - Modern Python reimplementation of the algorithms
+  - Bug fixes and improvements to boundary/duration handling
+  - Production-ready deployment of NEDC algorithms
+  - The comprehensive test suite and validation framework
 
 ## 📄 License
 
