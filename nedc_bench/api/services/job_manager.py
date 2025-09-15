@@ -1,0 +1,54 @@
+from __future__ import annotations
+
+import asyncio
+import logging
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
+
+
+class JobManager:
+    """In-memory job manager with a simple async queue."""
+
+    def __init__(self):
+        self.jobs: Dict[str, Dict[str, Any]] = {}
+        self.queue: asyncio.Queue[str] = asyncio.Queue()
+        self.lock = asyncio.Lock()
+
+    async def add_job(self, job: Dict[str, Any]) -> None:
+        async with self.lock:
+            self.jobs[job["id"]] = job
+            await self.queue.put(job["id"])
+            logger.info("Job %s added to queue", job["id"])
+
+    async def get_job(self, job_id: str) -> Optional[Dict[str, Any]]:
+        return self.jobs.get(job_id)
+
+    async def update_job(self, job_id: str, updates: Dict[str, Any]) -> None:
+        async with self.lock:
+            if job_id in self.jobs:
+                self.jobs[job_id].update(updates)
+                logger.info("Job %s updated: %s", job_id, updates.get("status"))
+
+    async def list_jobs(
+        self, limit: int = 10, offset: int = 0, status: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        jobs = list(self.jobs.values())
+
+        if status:
+            jobs = [j for j in jobs if j.get("status") == status]
+
+        jobs.sort(key=lambda x: x.get("created_at", datetime.min), reverse=True)
+        return jobs[offset : offset + limit]
+
+    async def get_next_job(self) -> Optional[str]:
+        try:
+            return await asyncio.wait_for(self.queue.get(), timeout=1.0)
+        except asyncio.TimeoutError:
+            return None
+
+
+# Singleton instance
+job_manager = JobManager()
+

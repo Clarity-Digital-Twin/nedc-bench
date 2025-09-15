@@ -59,6 +59,15 @@ docs = [
     "mkdocstrings[python]>=0.25.0",
 ]
 
+api = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-multipart>=0.0.18",
+    "websockets>=14.1",
+    "httpx>=0.28.0",
+    "aiofiles>=24.1.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/clarity-digital-twin/nedc-bench"
 Documentation = "https://clarity-digital-twin.github.io/nedc-bench"
