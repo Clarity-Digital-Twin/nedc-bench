@@ -77,4 +77,3 @@ try:
     app.openapi = lambda: custom_openapi(app)  # type: ignore[assignment]
 except Exception:  # pragma: no cover - docs customization optional in tests
     pass
-

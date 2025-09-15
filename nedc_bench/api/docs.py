@@ -26,4 +26,3 @@ def custom_openapi(app: FastAPI):
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema
-

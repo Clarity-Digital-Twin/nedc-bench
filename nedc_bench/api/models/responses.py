@@ -41,4 +41,3 @@ class EvaluationResult(BaseModel):
 
     # Error if failed
     error: Optional[str] = None
-

@@ -58,7 +58,10 @@ async def submit_evaluation(
     background_tasks.add_task(process_evaluation, job_id)
 
     return EvaluationResponse(
-        job_id=job_id, status="queued", created_at=job["created_at"], message="Evaluation job submitted successfully",
+        job_id=job_id,
+        status="queued",
+        created_at=job["created_at"],
+        message="Evaluation job submitted successfully",
     )
 
 
@@ -82,17 +85,15 @@ async def get_evaluation_result(job_id: str):
     results = job.get("results")
     if isinstance(results, dict) and len(results) == 1:
         _, res = next(iter(results.items()))
-        base.update(
-            {
-                "alpha_result": res.get("alpha_result"),
-                "beta_result": res.get("beta_result"),
-                "parity_passed": res.get("parity_passed"),
-                "parity_report": res.get("parity_report"),
-                "alpha_time": res.get("alpha_time"),
-                "beta_time": res.get("beta_time"),
-                "speedup": res.get("speedup"),
-            }
-        )
+        base.update({
+            "alpha_result": res.get("alpha_result"),
+            "beta_result": res.get("beta_result"),
+            "parity_passed": res.get("parity_passed"),
+            "parity_report": res.get("parity_report"),
+            "alpha_time": res.get("alpha_time"),
+            "beta_time": res.get("beta_time"),
+            "speedup": res.get("speedup"),
+        })
     else:
         base["results"] = results
 
@@ -116,4 +117,3 @@ async def list_evaluations(limit: int = 10, offset: int = 0, status: Optional[st
             )
         )
     return out
-

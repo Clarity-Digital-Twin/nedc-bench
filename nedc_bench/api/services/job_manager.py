@@ -32,7 +32,10 @@ class JobManager:
                 logger.info("Job %s updated: %s", job_id, updates.get("status"))
 
     async def list_jobs(
-        self, limit: int = 10, offset: int = 0, status: Optional[str] = None,
+        self,
+        limit: int = 10,
+        offset: int = 0,
+        status: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         jobs = list(self.jobs.values())
 
@@ -51,4 +54,3 @@ class JobManager:
 
 # Singleton instance
 job_manager = JobManager()
-

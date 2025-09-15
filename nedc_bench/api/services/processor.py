@@ -22,7 +22,9 @@ async def process_evaluation(job_id: str) -> None:
         return
 
     await job_manager.update_job(job_id, {"status": "processing", "started_at": datetime.utcnow()})
-    await broadcast_progress(job_id, {"type": "status", "status": "processing", "message": "Starting evaluation"})
+    await broadcast_progress(
+        job_id, {"type": "status", "status": "processing", "message": "Starting evaluation"}
+    )
 
     algorithms = job["algorithms"]
     if any(a == "all" for a in algorithms):
@@ -33,31 +35,49 @@ async def process_evaluation(job_id: str) -> None:
     results: dict[str, dict] = {}
     for algo in algorithms:
         await progress_tracker.update_algorithm(job_id, algo, job["pipeline"], "started")
-        await broadcast_progress(job_id, {"type": "algorithm", "algorithm": algo, "status": "running"})
+        await broadcast_progress(
+            job_id, {"type": "algorithm", "algorithm": algo, "status": "running"}
+        )
 
         try:
             res = await async_orchestrator.evaluate(
-                job["ref_path"], job["hyp_path"], algo, job["pipeline"],
+                job["ref_path"],
+                job["hyp_path"],
+                algo,
+                job["pipeline"],
             )
             results[algo] = res
-            await broadcast_progress(job_id, {"type": "algorithm", "algorithm": algo, "status": "completed", "result": res})
+            await broadcast_progress(
+                job_id,
+                {"type": "algorithm", "algorithm": algo, "status": "completed", "result": res},
+            )
         except Exception as exc:
             logger.exception("Algorithm %s failed on job %s: %s", algo, job_id, exc)
-            await job_manager.update_job(job_id, {
-                "status": "failed",
-                "completed_at": datetime.utcnow(),
-                "error": str(exc),
-            })
-            await broadcast_progress(job_id, {"type": "status", "status": "failed", "error": str(exc)})
+            await job_manager.update_job(
+                job_id,
+                {
+                    "status": "failed",
+                    "completed_at": datetime.utcnow(),
+                    "error": str(exc),
+                },
+            )
+            await broadcast_progress(
+                job_id, {"type": "status", "status": "failed", "error": str(exc)}
+            )
             return
         finally:
             await progress_tracker.update_algorithm(job_id, algo, job["pipeline"], "completed")
 
     # Update and broadcast completion
-    await job_manager.update_job(job_id, {
-        "status": "completed",
-        "completed_at": datetime.utcnow(),
-        "results": results,
-    })
-    await broadcast_progress(job_id, {"type": "status", "status": "completed", "message": "Evaluation completed successfully"})
-
+    await job_manager.update_job(
+        job_id,
+        {
+            "status": "completed",
+            "completed_at": datetime.utcnow(),
+            "results": results,
+        },
+    )
+    await broadcast_progress(
+        job_id,
+        {"type": "status", "status": "completed", "message": "Evaluation completed successfully"},
+    )

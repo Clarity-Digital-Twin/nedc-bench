@@ -25,15 +25,12 @@ class EvaluationRequest(BaseModel):
     """Request model for evaluation submission."""
 
     algorithms: List[AlgorithmType] = Field(
-        default=[AlgorithmType.ALL], description="Algorithms to run",
+        default=[AlgorithmType.ALL],
+        description="Algorithms to run",
     )
     pipeline: PipelineType = Field(
-        default=PipelineType.DUAL, description="Pipeline selection",
+        default=PipelineType.DUAL,
+        description="Pipeline selection",
     )
 
-    model_config = {
-        "json_schema_extra": {
-            "example": {"algorithms": ["taes"], "pipeline": "dual"}
-        }
-    }
-
+    model_config = {"json_schema_extra": {"example": {"algorithms": ["taes"], "pipeline": "dual"}}}

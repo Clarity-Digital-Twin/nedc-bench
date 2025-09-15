@@ -20,16 +20,14 @@ async def websocket_endpoint(websocket: WebSocket, job_id: str) -> None:
     try:
         job = await job_manager.get_job(job_id)
         if job:
-            await websocket.send_json(
-                {
-                    "type": "initial",
-                    "job": {
-                        "id": job["id"],
-                        "status": job["status"],
-                        "created_at": job["created_at"].isoformat(),
-                    },
-                }
-            )
+            await websocket.send_json({
+                "type": "initial",
+                "job": {
+                    "id": job["id"],
+                    "status": job["status"],
+                    "created_at": job["created_at"].isoformat(),
+                },
+            })
         else:
             await websocket.send_json({"type": "error", "message": f"Job {job_id} not found"})
             await websocket.close()
@@ -46,4 +44,3 @@ async def websocket_endpoint(websocket: WebSocket, job_id: str) -> None:
     except WebSocketDisconnect:
         ws_manager.disconnect(job_id, websocket)
         logger.info("WebSocket disconnected for job %s", job_id)
-

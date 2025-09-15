@@ -35,6 +35,7 @@ async def rate_limit_middleware(request: Request, call_next):
     client_id = request.client.host if request.client else "anonymous"
     allowed = await rate_limiter.check_rate_limit(client_id)
     if not allowed:
-        raise HTTPException(status_code=429, detail="Rate limit exceeded", headers={"Retry-After": "60"})
+        raise HTTPException(
+            status_code=429, detail="Rate limit exceeded", headers={"Retry-After": "60"}
+        )
     return await call_next(request)
-

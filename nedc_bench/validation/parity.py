@@ -43,7 +43,10 @@ class ValidationReport:
     def __str__(self) -> str:
         if self.passed:
             return f"✅ {self.algorithm} Parity PASSED"
-        lines = [f"❌ {self.algorithm} Parity FAILED", f"Found {len(self.discrepancies)} discrepancies:"]
+        lines = [
+            f"❌ {self.algorithm} Parity FAILED",
+            f"Found {len(self.discrepancies)} discrepancies:",
+        ]
         lines.extend(
             f"  - {d.metric}: Alpha={d.alpha_value:.6f}, Beta={d.beta_value:.6f}, Diff={d.absolute_difference:.2e}"
             for d in self.discrepancies
@@ -58,7 +61,9 @@ class ParityValidator:
         self.tolerance = tolerance
 
     # ---------------------- TAES (fractional floats) ----------------------
-    def compare_taes(self, alpha_result: dict[str, Any], beta_result: TAESResult) -> ValidationReport:
+    def compare_taes(
+        self, alpha_result: dict[str, Any], beta_result: TAESResult
+    ) -> ValidationReport:
         discrepancies: list[DiscrepancyReport] = []
 
         # Round counts to NEDC aggregation precision (summary typically prints 2 decimals)
@@ -138,16 +143,38 @@ class ParityValidator:
         )
 
     # ---------------------- DP Alignment (integers) ----------------------
-    def compare_dp(self, alpha_result: dict[str, Any], beta_result: DPAlignmentResult) -> ValidationReport:
+    def compare_dp(
+        self, alpha_result: dict[str, Any], beta_result: DPAlignmentResult
+    ) -> ValidationReport:
         discrepancies: list[DiscrepancyReport] = []
 
         # Primary integer counts from Alpha (parser provides totals)
         pairs: list[tuple[str, float, float]] = [
-            ("true_positives", float(alpha_result.get("true_positives", 0)), float(beta_result.true_positives)),
-            ("false_positives", float(alpha_result.get("false_positives", 0)), float(beta_result.false_positives)),
-            ("false_negatives", float(alpha_result.get("false_negatives", 0)), float(beta_result.false_negatives)),
-            ("insertions", float(alpha_result.get("insertions", 0)), float(beta_result.total_insertions)),
-            ("deletions", float(alpha_result.get("deletions", 0)), float(beta_result.total_deletions)),
+            (
+                "true_positives",
+                float(alpha_result.get("true_positives", 0)),
+                float(beta_result.true_positives),
+            ),
+            (
+                "false_positives",
+                float(alpha_result.get("false_positives", 0)),
+                float(beta_result.false_positives),
+            ),
+            (
+                "false_negatives",
+                float(alpha_result.get("false_negatives", 0)),
+                float(beta_result.false_negatives),
+            ),
+            (
+                "insertions",
+                float(alpha_result.get("insertions", 0)),
+                float(beta_result.total_insertions),
+            ),
+            (
+                "deletions",
+                float(alpha_result.get("deletions", 0)),
+                float(beta_result.total_deletions),
+            ),
         ]
 
         # Include substitutions if Alpha exposed them (from summary_dpalign.txt)
@@ -187,7 +214,9 @@ class ParityValidator:
         )
 
     # ---------------------- Epoch (integers) ----------------------
-    def compare_epoch(self, alpha_result: dict[str, Any], beta_result: EpochResult) -> ValidationReport:
+    def compare_epoch(
+        self, alpha_result: dict[str, Any], beta_result: EpochResult
+    ) -> ValidationReport:
         discrepancies: list[DiscrepancyReport] = []
 
         alpha_cm = alpha_result.get("confusion") or {}
@@ -202,7 +231,8 @@ class ParityValidator:
                                 alpha_value=acount,
                                 beta_value=float(bcount),
                                 absolute_difference=abs(acount - float(bcount)),
-                                relative_difference=abs(acount - float(bcount)) / max(abs(acount), 1e-16),
+                                relative_difference=abs(acount - float(bcount))
+                                / max(abs(acount), 1e-16),
                                 tolerance=0.0,
                             )
                         )
@@ -212,8 +242,18 @@ class ParityValidator:
             labels = list(beta_result.confusion_matrix.keys())
             pos_labels = [l for l in labels if l != "null"] or labels
             tp = float(sum(beta_result.confusion_matrix[l][l] for l in pos_labels))
-            fn = float(sum(sum(beta_result.confusion_matrix[l][j] for j in labels if j != l) for l in pos_labels))
-            fp = float(sum(sum(beta_result.confusion_matrix[i][l] for i in labels if i != l) for l in pos_labels))
+            fn = float(
+                sum(
+                    sum(beta_result.confusion_matrix[l][j] for j in labels if j != l)
+                    for l in pos_labels
+                )
+            )
+            fp = float(
+                sum(
+                    sum(beta_result.confusion_matrix[i][l] for i in labels if i != l)
+                    for l in pos_labels
+                )
+            )
 
             for name, a, b in (
                 ("true_positives", float(alpha_result.get("true_positives", 0)), tp),
@@ -241,21 +281,43 @@ class ParityValidator:
         )
 
     # ---------------------- Overlap (integers) ----------------------
-    def compare_overlap(self, alpha_result: dict[str, Any], beta_result: OverlapResult) -> ValidationReport:
+    def compare_overlap(
+        self, alpha_result: dict[str, Any], beta_result: OverlapResult
+    ) -> ValidationReport:
         discrepancies: list[DiscrepancyReport] = []
 
         # Prefer direct totals if Alpha exposed them; else map to TP/FP/FN
         if {"hits", "misses", "false_alarms"}.issubset(alpha_result.keys()):
             pairs = [
                 ("total_hits", float(alpha_result.get("hits", 0)), float(beta_result.total_hits)),
-                ("total_misses", float(alpha_result.get("misses", 0)), float(beta_result.total_misses)),
-                ("total_false_alarms", float(alpha_result.get("false_alarms", 0)), float(beta_result.total_false_alarms)),
+                (
+                    "total_misses",
+                    float(alpha_result.get("misses", 0)),
+                    float(beta_result.total_misses),
+                ),
+                (
+                    "total_false_alarms",
+                    float(alpha_result.get("false_alarms", 0)),
+                    float(beta_result.total_false_alarms),
+                ),
             ]
         else:
             pairs = [
-                ("true_positives", float(alpha_result.get("true_positives", 0)), float(beta_result.total_hits)),
-                ("false_negatives", float(alpha_result.get("false_negatives", 0)), float(beta_result.total_misses)),
-                ("false_positives", float(alpha_result.get("false_positives", 0)), float(beta_result.total_false_alarms)),
+                (
+                    "true_positives",
+                    float(alpha_result.get("true_positives", 0)),
+                    float(beta_result.total_hits),
+                ),
+                (
+                    "false_negatives",
+                    float(alpha_result.get("false_negatives", 0)),
+                    float(beta_result.total_misses),
+                ),
+                (
+                    "false_positives",
+                    float(alpha_result.get("false_positives", 0)),
+                    float(beta_result.total_false_alarms),
+                ),
             ]
 
         for name, a, b in pairs:
@@ -297,7 +359,8 @@ class ParityValidator:
                     alpha_value=alpha_multi,
                     beta_value=beta_multi,
                     absolute_difference=abs(alpha_multi - beta_multi),
-                    relative_difference=abs(alpha_multi - beta_multi) / max(abs(alpha_multi), 1e-16),
+                    relative_difference=abs(alpha_multi - beta_multi)
+                    / max(abs(alpha_multi), 1e-16),
                     tolerance=1e-4,
                 )
             )

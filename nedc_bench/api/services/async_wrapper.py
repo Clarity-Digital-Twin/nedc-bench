@@ -18,7 +18,11 @@ class AsyncOrchestrator:
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
 
     async def evaluate(
-        self, ref_file: str, hyp_file: str, algorithm: str = "taes", pipeline: str = "dual",
+        self,
+        ref_file: str,
+        hyp_file: str,
+        algorithm: str = "taes",
+        pipeline: str = "dual",
     ) -> Dict[str, Any]:
         """Run a single evaluation asynchronously."""
 
@@ -74,10 +78,12 @@ class AsyncOrchestrator:
         raise ValueError(f"Unsupported pipeline: {pipeline}")
 
     async def evaluate_batch(
-        self, file_pairs: List[tuple[str, str]], algorithm: str = "taes", pipeline: str = "dual",
+        self,
+        file_pairs: List[tuple[str, str]],
+        algorithm: str = "taes",
+        pipeline: str = "dual",
     ) -> List[Dict[str, Any]]:
         """Process multiple file pairs concurrently."""
 
         tasks = [self.evaluate(ref, hyp, algorithm, pipeline) for ref, hyp in file_pairs]
         return await asyncio.gather(*tasks)
-

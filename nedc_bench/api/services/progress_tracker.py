@@ -20,7 +20,9 @@ class ProgressTracker:
             "algorithm_times": {},
         }
 
-    async def update_algorithm(self, job_id: str, algorithm: str, pipeline: str, status: str) -> None:
+    async def update_algorithm(
+        self, job_id: str, algorithm: str, pipeline: str, status: str
+    ) -> None:
         if job_id not in self.progress:
             return
         p = self.progress[job_id]
@@ -43,7 +45,11 @@ class ProgressTracker:
         if not p:
             return {}
         elapsed = (datetime.utcnow() - p["start_time"]).total_seconds()
-        percent = (p["completed_algorithms"] / p["total_algorithms"]) * 100 if p["total_algorithms"] else 0.0
+        percent = (
+            (p["completed_algorithms"] / p["total_algorithms"]) * 100
+            if p["total_algorithms"]
+            else 0.0
+        )
         return {
             "percent_complete": percent,
             "current_algorithm": p["current_algorithm"],
@@ -55,4 +61,3 @@ class ProgressTracker:
 
 
 progress_tracker = ProgressTracker()
-

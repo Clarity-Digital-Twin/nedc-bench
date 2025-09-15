@@ -24,12 +24,19 @@ async def error_handler_middleware(request: Request, call_next):
         logger.warning("API error: %s - %s", exc.error_code, exc.detail)
         return JSONResponse(
             status_code=exc.status_code,
-            content={"error": exc.error_code, "detail": exc.detail, "request_id": request.headers.get("X-Request-ID")},
+            content={
+                "error": exc.error_code,
+                "detail": exc.detail,
+                "request_id": request.headers.get("X-Request-ID"),
+            },
         )
     except Exception as exc:  # pragma: no cover - unexpected
         logger.error("Unexpected error: %s\n%s", exc, traceback.format_exc())
         return JSONResponse(
             status_code=500,
-            content={"error": "INTERNAL_SERVER_ERROR", "detail": "An unexpected error occurred", "request_id": request.headers.get("X-Request-ID")},
+            content={
+                "error": "INTERNAL_SERVER_ERROR",
+                "detail": "An unexpected error occurred",
+                "request_id": request.headers.get("X-Request-ID"),
+            },
         )
-
