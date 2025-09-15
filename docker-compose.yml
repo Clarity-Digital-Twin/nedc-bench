@@ -5,18 +5,46 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - MAX_WORKERS=${MAX_WORKERS:-4}
+      - NEDC_NFC=/app/nedc_eeg_eval/v6.0.0
+      - REDIS_URL=redis://redis:6379
     ports:
       - "8000:8000"
-    environment:
-      - LOG_LEVEL=INFO
-      - MAX_WORKERS=4
-      - NEDC_NFC=/app/nedc_eeg_eval/v6.0.0
-    volumes:
-      - ./data:/app/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+    depends_on:
+      - redis
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     restart: unless-stopped
 
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  grafana_data:

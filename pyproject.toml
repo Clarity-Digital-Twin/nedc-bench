@@ -66,6 +66,8 @@ api = [
     "websockets>=14.1",
     "httpx>=0.28.0",
     "aiofiles>=24.1.0",
+    "redis>=5.0.0",
+    "prometheus_client>=0.20.0",
 ]
 
 [project.urls]
@@ -244,6 +246,13 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = [
     "aiofiles.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "redis.*",
+    "prometheus_client.*",
 ]
 ignore_missing_imports = true
 

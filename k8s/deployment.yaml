@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nedc-bench-api
+  labels:
+    app: nedc-bench
+    component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nedc-bench
+      component: api
+  template:
+    metadata:
+      labels:
+        app: nedc-bench
+        component: api
+    spec:
+      containers:
+        - name: api
+          image: nedc-bench/api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: NEDC_NFC
+              value: "/app/nedc_eeg_eval/v6.0.0"
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: REDIS_URL
+              value: "redis://redis:6379"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5

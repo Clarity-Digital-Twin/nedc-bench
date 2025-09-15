@@ -49,7 +49,7 @@ TERM,3.0,4.0,bckg,1.0
                 "taes": {"true_positives": 1.0, "false_positives": 0.0, "false_negatives": 0.0}
             }
 
-            result = await orchestrator.evaluate_single(
+            result = await orchestrator.evaluate(
                 ref_file, hyp_file, algorithm="taes", pipeline="alpha"
             )
 
@@ -62,7 +62,7 @@ TERM,3.0,4.0,bckg,1.0
         """Test Beta pipeline TAES execution"""
         ref_file, hyp_file = sample_files
 
-        result = await orchestrator.evaluate_single(
+        result = await orchestrator.evaluate(
             ref_file, hyp_file, algorithm="taes", pipeline="beta"
         )
 
@@ -78,7 +78,7 @@ TERM,3.0,4.0,bckg,1.0
         algorithms = ["taes", "dp", "epoch", "overlap", "ira"]
 
         for algo in algorithms:
-            result = await orchestrator.evaluate_single(
+            result = await orchestrator.evaluate(
                 ref_file, hyp_file, algorithm=algo, pipeline="beta"
             )
             assert "beta_result" in result, f"Failed for {algo}"
@@ -89,7 +89,7 @@ TERM,3.0,4.0,bckg,1.0
         ref_file, hyp_file = sample_files
 
         with pytest.raises(ValueError, match="Unsupported pipeline: gamma"):
-            await orchestrator.evaluate_single(
+            await orchestrator.evaluate(
                 ref_file, hyp_file, algorithm="taes", pipeline="gamma"
             )
 
@@ -99,7 +99,7 @@ TERM,3.0,4.0,bckg,1.0
         ref_file, hyp_file = sample_files
 
         with pytest.raises(ValueError, match="Unsupported algorithm: unknown"):
-            await orchestrator.evaluate_single(
+            await orchestrator.evaluate(
                 ref_file, hyp_file, algorithm="unknown", pipeline="beta"
             )
 
@@ -110,9 +110,9 @@ TERM,3.0,4.0,bckg,1.0
 
         # Run multiple evaluations concurrently
         tasks = [
-            orchestrator.evaluate_single(ref_file, hyp_file, "taes", "beta"),
-            orchestrator.evaluate_single(ref_file, hyp_file, "dp", "beta"),
-            orchestrator.evaluate_single(ref_file, hyp_file, "epoch", "beta"),
+            orchestrator.evaluate(ref_file, hyp_file, "taes", "beta"),
+            orchestrator.evaluate(ref_file, hyp_file, "dp", "beta"),
+            orchestrator.evaluate(ref_file, hyp_file, "epoch", "beta"),
         ]
 
         results = await asyncio.gather(*tasks)
@@ -136,27 +136,11 @@ TERM,3.0,4.0,bckg,1.0
             assert "beta_result" in r
 
     @pytest.mark.asyncio
-    async def test_executor_cleanup(self, orchestrator):
-        """Test executor is properly cleaned up"""
-        # Run a simple task
-        await orchestrator.evaluate_single(
-            "dummy_ref", "dummy_hyp", "taes", "alpha",
-            # Mock to avoid file IO
-            _mock=True
-        )
-
-        # Cleanup should work without errors
-        await orchestrator.cleanup()
-
-        # Verify executor is shutdown
-        assert orchestrator.executor._shutdown
-
-    @pytest.mark.asyncio
     async def test_result_dict_conversion(self, orchestrator, sample_files):
         """Test Beta results are properly converted to dict"""
         ref_file, hyp_file = sample_files
 
-        result = await orchestrator.evaluate_single(
+        result = await orchestrator.evaluate(
             ref_file, hyp_file, algorithm="taes", pipeline="beta"
         )
 

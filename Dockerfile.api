@@ -2,20 +2,30 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y gcc curl && rm -rf /var/lib/apt/lists/*
+# Minimal OS deps: curl for healthcheck
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml .
-COPY README.md .
+# Install dependencies
+COPY pyproject.toml README.md ./
+RUN pip install --no-cache-dir uv \
+    && uv pip install --system --no-cache -e ".[api]"
 
-RUN pip install uv && uv pip install --system -e ".[api]"
-
+# Copy application code
 COPY nedc_bench/ ./nedc_bench/
 COPY nedc_eeg_eval/ ./nedc_eeg_eval/
 COPY alpha/ ./alpha/
+
+# Non-root user
+RUN useradd -u 10001 -m appuser \
+    && chown -R appuser:appuser /app
+USER appuser
 
 ENV NEDC_NFC=/app/nedc_eeg_eval/v6.0.0
 ENV PYTHONPATH=/app/nedc_eeg_eval/v6.0.0/lib:${PYTHONPATH}
 
 EXPOSE 8000
 
-CMD ["uvicorn", "nedc_bench.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+# Single worker to keep metrics correct without multiprocess mode
+CMD ["uvicorn", "nedc_bench.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

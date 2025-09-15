@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .endpoints import evaluation, health, websocket
+from .endpoints import evaluation, health, websocket, metrics as metrics_endpoint
 from .middleware.error_handler import error_handler_middleware
 from .middleware.rate_limit import rate_limit_middleware
 from .services.job_manager import job_manager
@@ -78,6 +78,7 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
 app.include_router(evaluation.router, prefix="/api/v1", tags=["evaluation"])
 app.include_router(websocket.router, prefix="/ws", tags=["websocket"])
+app.include_router(metrics_endpoint.router, tags=["metrics"])  # /metrics
 
 
 # Optional: OpenAPI customization hook

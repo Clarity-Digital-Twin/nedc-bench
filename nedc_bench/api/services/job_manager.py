@@ -74,6 +74,10 @@ class JobManager:
         """Shutdown the worker gracefully."""
         self._running = False
 
+    def is_running(self) -> bool:
+        """Return True if the background worker loop is active."""
+        return self._running
+
 
 # Singleton instance
 job_manager = JobManager()

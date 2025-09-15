@@ -8,6 +8,15 @@ from pathlib import Path
 from typing import Any
 
 from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+from monitoring.metrics import (
+    active_evaluations,
+    evaluation_counter,
+    evaluation_duration,
+    parity_failures,
+    track_evaluation_dynamic,
+)
+from nedc_bench.api.services.cache import RedisCache, redis_cache
+from nedc_bench import PACKAGE_VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +31,9 @@ class AsyncOrchestrator:
             os.environ["NEDC_NFC"] = str(default_root)
             os.environ.setdefault("PYTHONPATH", str(default_root / "lib"))
         self.orchestrator = DualPipelineOrchestrator()
-        self.executor = ThreadPoolExecutor(max_workers=max_workers)
+        env_workers = int(os.environ.get("MAX_WORKERS", str(max_workers)))
+        self.executor = ThreadPoolExecutor(max_workers=env_workers)
+        self.cache: RedisCache = redis_cache
 
     async def evaluate(
         self,
@@ -31,68 +42,108 @@ class AsyncOrchestrator:
         algorithm: str = "taes",
         pipeline: str = "dual",
     ) -> dict[str, Any]:
-        """Run a single evaluation asynchronously."""
+        """Run a single evaluation asynchronously with caching and metrics."""
 
         loop = asyncio.get_event_loop()
+        algorithm = algorithm.lower()
+        pipeline = pipeline.lower()
+        labels = {"algorithm": algorithm, "pipeline": pipeline}
 
-        if pipeline == "dual":
-            result = await loop.run_in_executor(
-                self.executor,
-                self.orchestrator.evaluate,
-                ref_file,
-                hyp_file,
-                algorithm,
-                None,
-            )
+        # Precompute cache key (best-effort)
+        key: str | None = None
+        try:
+            ref_bytes = Path(ref_file).read_bytes()
+            hyp_bytes = Path(hyp_file).read_bytes()
+            key = self.cache.make_key(ref_bytes, hyp_bytes, algorithm, pipeline, PACKAGE_VERSION)
+        except Exception:  # pragma: no cover - IO issues treated as cache miss
+            key = None
 
-            # Convert dataclasses to dicts
-            beta_dict = (
-                result.beta_result.__dict__
-                if hasattr(result.beta_result, "__dict__")
-                else result.beta_result
-            )
+        # Cache lookup for dual/beta pipelines
+        if pipeline in {"dual", "beta"} and key is not None:
+            cached = await self.cache.get_json(key)
+            if cached is not None:
+                evaluation_counter.labels(**labels, status="success").inc()
+                evaluation_duration.labels(**labels).observe(0.0)
+                return cached
 
-            return {
-                "alpha_result": result.alpha_result,
-                "beta_result": beta_dict,
-                "parity_passed": result.parity_passed,
-                "parity_report": result.parity_report.to_dict() if result.parity_report else None,
-                "alpha_time": result.execution_time_alpha,
-                "beta_time": result.execution_time_beta,
-                "speedup": result.speedup,
-            }
+        async def _run() -> dict[str, Any]:
+            if pipeline == "dual":
+                result = await loop.run_in_executor(
+                    self.executor,
+                    self.orchestrator.evaluate,
+                    ref_file,
+                    hyp_file,
+                    algorithm,
+                    None,
+                )
 
-        if pipeline == "alpha":
-            alpha_res = await loop.run_in_executor(
-                self.executor,
-                self.orchestrator.alpha_wrapper.evaluate,
-                ref_file,
-                hyp_file,
-            )
-            return {"alpha_result": alpha_res}
+                # Convert dataclasses to dicts
+                beta_dict = (
+                    result.beta_result.__dict__
+                    if hasattr(result.beta_result, "__dict__")
+                    else result.beta_result
+                )
 
-        if pipeline == "beta":
-            # Dispatch to specific Beta algorithm
-            def _run_beta() -> Any:
-                r = Path(ref_file)
-                h = Path(hyp_file)
-                if algorithm == "taes":
-                    return self.orchestrator.beta_pipeline.evaluate_taes(r, h)
-                if algorithm == "dp":
-                    return self.orchestrator.beta_pipeline.evaluate_dp(r, h)
-                if algorithm == "epoch":
-                    return self.orchestrator.beta_pipeline.evaluate_epoch(r, h)
-                if algorithm == "overlap":
-                    return self.orchestrator.beta_pipeline.evaluate_overlap(r, h)
-                if algorithm == "ira":
-                    return self.orchestrator.beta_pipeline.evaluate_ira(r, h)
-                raise ValueError(f"Unsupported algorithm: {algorithm}")
+                out = {
+                    "alpha_result": result.alpha_result,
+                    "beta_result": beta_dict,
+                    "parity_passed": result.parity_passed,
+                    "parity_report": result.parity_report.to_dict()
+                    if result.parity_report
+                    else None,
+                    "alpha_time": result.execution_time_alpha,
+                    "beta_time": result.execution_time_beta,
+                    "speedup": result.speedup,
+                }
+                if not result.parity_passed:
+                    parity_failures.labels(algorithm=algorithm).inc()
+                return out
 
-            beta_res = await loop.run_in_executor(self.executor, _run_beta)
-            # Convert dataclass to dict
-            return {"beta_result": beta_res.__dict__ if hasattr(beta_res, "__dict__") else beta_res}
+            if pipeline == "alpha":
+                alpha_res = await loop.run_in_executor(
+                    self.executor,
+                    self.orchestrator.alpha_wrapper.evaluate,
+                    ref_file,
+                    hyp_file,
+                )
+                return {"alpha_result": alpha_res}
 
-        raise ValueError(f"Unsupported pipeline: {pipeline}")
+            if pipeline == "beta":
+                # Dispatch to specific Beta algorithm
+                def _run_beta() -> Any:
+                    r = Path(ref_file)
+                    h = Path(hyp_file)
+                    if algorithm == "taes":
+                        return self.orchestrator.beta_pipeline.evaluate_taes(r, h)
+                    if algorithm == "dp":
+                        return self.orchestrator.beta_pipeline.evaluate_dp(r, h)
+                    if algorithm == "epoch":
+                        return self.orchestrator.beta_pipeline.evaluate_epoch(r, h)
+                    if algorithm == "overlap":
+                        return self.orchestrator.beta_pipeline.evaluate_overlap(r, h)
+                    if algorithm == "ira":
+                        return self.orchestrator.beta_pipeline.evaluate_ira(r, h)
+                    raise ValueError(f"Unsupported algorithm: {algorithm}")
+
+                beta_res = await loop.run_in_executor(self.executor, _run_beta)
+                # Convert dataclass to dict
+                return {
+                    "beta_result": beta_res.__dict__ if hasattr(beta_res, "__dict__") else beta_res
+                }
+
+            raise ValueError(f"Unsupported pipeline: {pipeline}")
+
+        # Wrap with metrics
+        result = await track_evaluation_dynamic(
+            algorithm,
+            pipeline,
+            _run,
+        )
+
+        # Store in cache for dual/beta
+        if pipeline in {"dual", "beta"} and key is not None:
+            await self.cache.set_json(key, result)
+        return result
 
     async def evaluate_batch(
         self,
