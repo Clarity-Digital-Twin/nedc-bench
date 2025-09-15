@@ -34,6 +34,59 @@ class EpochResult:
     compressed_ref: list[str]
     compressed_hyp: list[str]
 
+    @property
+    def true_positives(self) -> dict[str, int]:
+        """Calculate TP for each label from confusion matrix
+
+        TP(label) = confusion_matrix[label][label]
+        i.e., reference label correctly classified as same label
+        """
+        tp = {}
+        for label in self.confusion_matrix:
+            if label in self.confusion_matrix.get(label, {}):
+                tp[label] = self.confusion_matrix[label][label]
+            else:
+                tp[label] = 0
+        return tp
+
+    @property
+    def false_positives(self) -> dict[str, int]:
+        """Calculate FP for each label from confusion matrix
+
+        FP(label) = sum of all confusion_matrix[other_label][label]
+        i.e., other labels incorrectly classified as this label
+        """
+        fp = {}
+        # Get all unique labels from matrix
+        all_labels = set()
+        for ref_label in self.confusion_matrix:
+            all_labels.add(ref_label)
+            for hyp_label in self.confusion_matrix[ref_label]:
+                all_labels.add(hyp_label)
+
+        for label in all_labels:
+            fp[label] = 0
+            for ref_label in self.confusion_matrix:
+                if ref_label != label:
+                    fp[label] += self.confusion_matrix.get(ref_label, {}).get(label, 0)
+        return fp
+
+    @property
+    def false_negatives(self) -> dict[str, int]:
+        """Calculate FN for each label from confusion matrix
+
+        FN(label) = sum of all confusion_matrix[label][other_label]
+        i.e., this label incorrectly classified as other labels
+        """
+        fn = {}
+        for label in self.confusion_matrix:
+            fn[label] = 0
+            if label in self.confusion_matrix:
+                for hyp_label in self.confusion_matrix[label]:
+                    if hyp_label != label:
+                        fn[label] += self.confusion_matrix[label][hyp_label]
+        return fn
+
 
 class EpochScorer:
     """NEDC-exact epoch-based scoring
