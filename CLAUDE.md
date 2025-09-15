@@ -16,7 +16,7 @@ NEDC-BENCH is a dual-architecture EEG benchmarking platform that wraps the origi
 ### Original NEDC Tool (`nedc_eeg_eval/v6.0.0/`)
 - Research-grade software from Temple University, no explicit license
 - Requires environment variables: `NEDC_NFC` (root dir) and `PYTHONPATH` (includes lib/)
-- Python 3.9+ with numpy 2.0.2, scipy 1.14.1, lxml 5.3.0, tomli (for Python <3.11)
+- Python 3.10+ with numpy 2.0.2, scipy 1.14.1, lxml 5.3.0, tomli (for Python <3.11)
 - 5 scoring algorithms: DP Alignment, Epoch-based, Overlap, TAES, IRA
 - Input: CSV_BI annotation files (anonymized test data safe for public repo)
 - Output: Text-based scoring reports in `output/` directory
@@ -27,7 +27,7 @@ NEDC-BENCH is a dual-architecture EEG benchmarking platform that wraps the origi
 - **MyPy** for strict type checking
 - **Pytest** with parallel execution and 80% coverage requirement
 - **Pre-commit** hooks for code quality
-- Python 3.11 default, supports 3.9+
+- Python 3.11 default, supports 3.10+
 
 ## Essential Commands
 

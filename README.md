@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/Clarity-Digital-Twin/nedc-bench/actions/workflows/api.yml/badge.svg)](https://github.com/Clarity-Digital-Twin/nedc-bench/actions/workflows/api.yml)
 [![Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen.svg)](https://github.com/Clarity-Digital-Twin/nedc-bench)
-[![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Parity](https://img.shields.io/badge/parity-100%25-success.svg)](docs/archive/bugs/FINAL_PARITY_RESULTS.md)
 
@@ -71,7 +71,7 @@ curl http://localhost:8000/api/v1/health
 # http://localhost:8000/redoc (ReDoc)
 ```
 
-### From Source (Python 3.9+)
+### From Source (Python 3.10+)
 ```bash
 # Using uv (10-100x faster than pip)
 curl -LsSf https://astral.sh/uv/install.sh | sh

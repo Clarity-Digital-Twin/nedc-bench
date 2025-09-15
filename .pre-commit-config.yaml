@@ -1,7 +1,7 @@
 # Pre-commit hooks for NEDC-BENCH
 # See https://pre-commit.com for more information
 default_language_version:
-  python: python3.9
+  python: python3.10
 
 repos:
   # Basic file checks
