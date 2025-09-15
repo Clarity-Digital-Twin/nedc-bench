@@ -124,13 +124,10 @@ async def monitor_job(job_id):
 ./run_nedc.sh nedc_eeg_eval/v6.0.0/lists/ref.list \
               nedc_eeg_eval/v6.0.0/lists/hyp.list
 
-# Modern CLI (when package installed)
-nedc-bench evaluate \
-  --ref data/ref/*.csv_bi \
-  --hyp data/hyp/*.csv_bi \
-  --algorithm all \
-  --pipeline dual \
-  --output results.json
+# Python scripts for batch processing
+python scripts/run_alpha_complete.py  # Full Alpha pipeline
+python scripts/run_beta_batch.py      # All Beta algorithms
+python scripts/compare_parity.py      # Compare Alpha vs Beta
 ```
 
 ## 📊 Performance & Validation
