@@ -136,6 +136,10 @@ site/
 *.sqlite
 *.sqlite3
 
+# Parity testing data (transformer outputs)
+data/csv_bi_parity/
+!data/csv_bi_parity/.gitkeep
+
 # IMPORTANT: Files we EXPLICITLY KEEP:
 # - nedc_eeg_eval/v6.0.0/data/**/*.csv_bi (test annotations)
 # - nedc_eeg_eval/v6.0.0/test/results/*.txt (golden outputs)
