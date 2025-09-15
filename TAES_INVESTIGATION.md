@@ -19,33 +19,31 @@ IRA        | 0.0000%    | ✅ PERFECT MATCH
 
 ## TAES Metrics Comparison
 
-### Alpha (NEDC v6.0.0)
-```json
-{
-  "tp": 133.84137545872733,
-  "fp": 552.7689020231412,
-  "fn": 941.1586245412731,
-  "sensitivity": 12.450360507788584,
-  "fa_per_24h": 30.461710971183077
-}
+### Actual Test Output
+```
+TAES:
+  Alpha: TP=133.84, FP=552.77, FN=941.16
+  Beta:  TP=133.84, FP=552.77, FN=941.16
+  Diff:  TP=0.0014, FP=0.0011, FN=0.0014  <-- REAL DIFFERENCES!
+
+  Alpha: Sensitivity=12.4504%, FA/24h=30.4617
+  Beta:  Sensitivity=12.4504%, FA/24h=30.4617
+  Diff:  Sens=0.000039%, FA=0.000011
 ```
 
-### Beta (Our Implementation)
-```json
-{
-  "tp": 133.84137545872733,  // Exact match
-  "fp": 552.7689020231412,   // Exact match
-  "fn": 941.1586245412731,   // Exact match
-  "sensitivity": 12.450360507788584,  // Exact match
-  "fa_per_24h": 30.461710971183077   // Exact match
-}
-```
+### Key Finding: ACTUAL NUMERICAL DIFFERENCES EXIST
+- **TP difference: 0.0014** (small but non-zero!)
+- **FP difference: 0.0011** (small but non-zero!)
+- **FN difference: 0.0014** (small but non-zero!)
+- **Sensitivity difference: 0.000039%**
+- **FA/24h difference: 0.000011**
 
-### Observation
-Looking at the actual values, they appear to be **exactly identical**! The 0.000039% difference might be:
-1. A display/rounding artifact in the comparison script
-2. Coming from intermediate calculations not shown in final output
-3. Related to how we're computing the percentage difference
+### This is NOT acceptable!
+Since NEDC is pure Python (no compiled code, no BLAS/LAPACK variations), we should achieve **EXACT** numerical match. Any difference indicates:
+1. Different mathematical operations
+2. Different order of operations
+3. Bug in our implementation
+4. Different handling of edge cases
 
 ## Investigation Plan
 
