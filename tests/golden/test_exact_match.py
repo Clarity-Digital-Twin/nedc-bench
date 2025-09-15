@@ -24,7 +24,7 @@ def test_golden_exact_match():
         print("Skipping: NEDC environment not configured")
         return
 
-    from alpha.wrapper.nedc_wrapper import NEDCAlphaWrapper  # noqa: PLC0415
+    from alpha.wrapper.nedc_wrapper import NEDCAlphaWrapper
 
     ref_file, hyp_file = create_perfect_match_pair()
 
@@ -55,7 +55,7 @@ def test_no_overlap():
         print("Skipping: NEDC environment not configured")
         return
 
-    from alpha.wrapper.nedc_wrapper import NEDCAlphaWrapper  # noqa: PLC0415
+    from alpha.wrapper.nedc_wrapper import NEDCAlphaWrapper
 
     ref_file, hyp_file = create_no_overlap_pair()
 
@@ -78,7 +78,7 @@ def test_empty_reference():
         print("Skipping: NEDC environment not configured")
         return
 
-    from alpha.wrapper.nedc_wrapper import NEDCAlphaWrapper  # noqa: PLC0415
+    from alpha.wrapper.nedc_wrapper import NEDCAlphaWrapper
 
     ref_file, hyp_file = create_empty_reference_pair()
 
@@ -101,7 +101,7 @@ def test_partial_overlap():
         print("Skipping: NEDC environment not configured")
         return
 
-    from alpha.wrapper.nedc_wrapper import NEDCAlphaWrapper  # noqa: PLC0415
+    from alpha.wrapper.nedc_wrapper import NEDCAlphaWrapper
 
     ref_file, hyp_file = create_partial_overlap_pair()
 

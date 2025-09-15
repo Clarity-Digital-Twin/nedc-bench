@@ -146,7 +146,7 @@ class TAESScorer:
             # Reference extends beyond hypothesis
             return self._ovlp_hyp_seqs(refs, hyps, r_idx, h_idx, ref_flags, hyp_flags)
 
-    def _ovlp_ref_seqs(  # noqa: PLR0917, PLR6301
+    def _ovlp_ref_seqs(  # noqa: PLR0917
         self,
         refs: list[EventAnnotation],
         hyps: list[EventAnnotation],
@@ -177,7 +177,7 @@ class TAESScorer:
 
         return hit, miss, fa
 
-    def _ovlp_hyp_seqs(  # noqa: PLR0917, PLR6301
+    def _ovlp_hyp_seqs(  # noqa: PLR0917
         self,
         refs: list[EventAnnotation],
         hyps: list[EventAnnotation],

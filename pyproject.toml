@@ -154,6 +154,11 @@ unfixable = []
     "PLR6301", # Pytest fixtures appear as methods that could be static
     "PLR2004", # Magic numbers fine in tests
     "SIM117",  # Allow multiple with statements
+    "PTH123",  # Allow built-in open in tests
+    "PLR0912", # Complex test flows allowed
+    "PLR0915", # Long test functions allowed
+    "PLR0914", # Many locals allowed in tests
+    "PLC0415", # Inline imports in tests acceptable
 ]
 "alpha/wrapper/parsers.py" = [
     "PLR6301", # Parser methods inherit from base class
@@ -161,6 +166,28 @@ unfixable = []
 "benchmarks/*" = [
     "T201",    # print() allowed in benchmarks
     "PLR2004", # Magic numbers fine in benchmarks
+]
+"nedc_bench/algorithms/*.py" = [
+    "C901",    # Algorithmic complexity
+    "PLR0912", # Branches
+    "PLR0915", # Statements
+    "PLR0914", # Locals
+    "PLR6301", # Staticmethod suggestions
+]
+"nedc_bench/validation/parity.py" = [
+    "PLR6301", # Staticmethod suggestions
+]
+"nedc_bench/api/endpoints/evaluation.py" = [
+    "B008",    # FastAPI dependency injection uses call in defaults
+]
+"nedc_bench/api/services/websocket_manager.py" = [
+    "PERF203", # try/except inside loop acceptable to drop dead connections
+]
+"nedc_bench/api/services/job_manager.py" = [
+    "PERF203", # try/except inside loop acceptable for worker
+]
+"nedc_bench/api/endpoints/websocket.py" = [
+    "PERF203", # heartbeat try/except timeout pattern acceptable
 ]
 
 [tool.ruff.lint.isort]

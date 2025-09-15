@@ -43,8 +43,8 @@ def test_nedc_installation_local():
 def test_wrapper_imports():
     """Test that wrapper modules can be imported"""
     try:
-        from alpha.wrapper import NEDCAlphaWrapper  # noqa: PLC0415
-        from alpha.wrapper.parsers import TAESParser, UnifiedOutputParser  # noqa: PLC0415
+        from alpha.wrapper import NEDCAlphaWrapper
+        from alpha.wrapper.parsers import TAESParser, UnifiedOutputParser
 
         assert NEDCAlphaWrapper is not None
         assert UnifiedOutputParser is not None
