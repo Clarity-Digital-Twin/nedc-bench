@@ -1,7 +1,6 @@
 """Simplified edge case tests focused on increasing coverage for core algorithms"""
 
-import pytest
-from nedc_bench.algorithms.dp_alignment import DPAligner, NULL_CLASS
+from nedc_bench.algorithms.dp_alignment import DPAligner
 from nedc_bench.algorithms.epoch import EpochScorer
 from nedc_bench.models.annotations import EventAnnotation
 
@@ -90,12 +89,18 @@ class TestEpochCoverage:
 
         # Create events that result in different compressed lengths
         ref_events = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=5.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=5.0, stop_time=10.0, label="bckg", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=5.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=5.0, stop_time=10.0, label="bckg", confidence=1.0
+            ),
         ]
 
         hyp_events = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=2.0, label="seiz", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=2.0, label="seiz", confidence=1.0
+            ),
         ]
 
         result = scorer.score(ref_events, hyp_events, 10.0)
@@ -111,7 +116,9 @@ class TestEpochCoverage:
         # Event that doesn't cover whole file - creates nulls
         ref_events = []  # All nulls
         hyp_events = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
+            ),
         ]
 
         result = scorer.score(ref_events, hyp_events, 5.0)
@@ -122,7 +129,9 @@ class TestEpochCoverage:
 
         # Reverse: something -> null is deletion
         ref_events = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="bckg", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="bckg", confidence=1.0
+            ),
         ]
         hyp_events = []  # All nulls
 
@@ -137,15 +146,27 @@ class TestEpochCoverage:
         scorer = EpochScorer()
 
         ref_events = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="artf", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="artf", confidence=1.0
+            ),
         ]
 
         hyp_events = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="artf", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="artf", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0
+            ),
         ]
 
         result = scorer.score(ref_events, hyp_events, 3.0)
@@ -162,10 +183,14 @@ class TestEpochCoverage:
 
         # Single event in a very long file
         ref_events = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
+            ),
         ]
         hyp_events = [
-            EventAnnotation(channel="TERM", start_time=999.0, stop_time=1000.0, label="seiz", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=999.0, stop_time=1000.0, label="seiz", confidence=1.0
+            ),
         ]
 
         result = scorer.score(ref_events, hyp_events, 1000.0)
