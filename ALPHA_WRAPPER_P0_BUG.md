@@ -3,7 +3,7 @@
 
 **Created:** September 15, 2025
 **Severity:** P0 - CRITICAL BLOCKER
-**Status:** 🔴 INVESTIGATING
+**Status:** ✅ FIXED!
 
 ## THE PROBLEM
 
@@ -127,13 +127,34 @@ This WORKED in our tests before! Check:
 
 Something changed or our test data was different.
 
-## NEXT STEPS
+## THE FIX 🎉
 
-1. Run NEDC with its original demo data to confirm it works
-2. Trace through the file loading code
-3. Fix the path issue
-4. Document the solution so this never happens again
+The solution is simple but non-obvious:
 
----
+1. **List files must be placed relative to where run_nedc.sh WILL LOOK**
+   - run_nedc.sh changes to `nedc_eeg_eval/v6.0.0/`
+   - So list files must be findable from THAT directory
 
-**THIS MUST BE FIXED IMMEDIATELY!**
+2. **Contents of list files must have paths relative to NEDC directory**
+   - Use `../../data/csv_bi_parity/...` to go back up from NEDC dir
+
+3. **Working example:**
+```bash
+# Create lists in NEDC directory
+mkdir -p nedc_eeg_eval/v6.0.0/test_lists
+
+# Contents use relative paths FROM NEDC dir
+echo '../../data/csv_bi_parity/csv_bi_export_clean/ref/file.csv_bi' > nedc_eeg_eval/v6.0.0/test_lists/ref.list
+
+# Run with paths relative to project root
+./run_nedc.sh test_lists/ref.list test_lists/hyp.list
+```
+
+## LESSON LEARNED
+
+The Alpha wrapper was NEVER broken! It was just a confusing path resolution issue because:
+- run_nedc.sh changes directory before running
+- Paths are resolved from different directories at different times
+- Error messages were misleading
+
+**Status:** ✅ FIXED AND WORKING!
