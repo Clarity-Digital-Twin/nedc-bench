@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class JobManager:
     """In-memory job manager with a simple async queue."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.jobs: dict[str, dict[str, Any]] = {}
         self.queue: asyncio.Queue[str] = asyncio.Queue()
         self.lock = asyncio.Lock()
