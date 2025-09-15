@@ -99,12 +99,9 @@ class BetaPipeline:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
-        # Expand both annotations to include background segments
-        ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
-        hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
-        # Apply label mapping
-        self._map_events(ref_events, params.label_map)
-        self._map_events(hyp_events, params.label_map)
+        # NEDC DP aligns event sequences directly (no background expansion)
+        ref_events = self._map_events(ref_ann.events, params.label_map)
+        hyp_events = self._map_events(hyp_ann.events, params.label_map)
         ref = [e.label for e in ref_events]
         hyp = [e.label for e in hyp_events]
         return DPAligner().align(ref, hyp)
@@ -113,10 +110,9 @@ class BetaPipeline:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
-        ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
-        hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
-        self._map_events(ref_events, params.label_map)
-        self._map_events(hyp_events, params.label_map)
+        # Epoch scoring uses midpoint sampling; no need to synthesize background events
+        ref_events = self._map_events(ref_ann.events, params.label_map)
+        hyp_events = self._map_events(hyp_ann.events, params.label_map)
         scorer = EpochScorer(epoch_duration=params.epoch_duration, null_class=params.null_class)
         return scorer.score(ref_events, hyp_events, ref_ann.duration)
 
@@ -124,10 +120,9 @@ class BetaPipeline:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
-        ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
-        hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
-        self._map_events(ref_events, params.label_map)
-        self._map_events(hyp_events, params.label_map)
+        # Overlap uses any-overlap on original events; do not expand background
+        ref_events = self._map_events(ref_ann.events, params.label_map)
+        hyp_events = self._map_events(hyp_ann.events, params.label_map)
         scorer = OverlapScorer()
         return scorer.score(ref_events, hyp_events)
 
