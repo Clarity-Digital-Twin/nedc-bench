@@ -175,7 +175,7 @@ class TestCacheIntegration:
             orchestrator.cache.make_key.return_value = "test_key"
 
             # Call evaluate
-            await orchestrator.evaluate(ref_file, hyp_file, "taes", "dual")
+            result = await orchestrator.evaluate(ref_file, hyp_file, "taes", "dual")
 
             # Verify cache was checked
             orchestrator.cache.get_json.assert_called_once()
@@ -231,6 +231,9 @@ class TestCacheIntegration:
             call_args = orchestrator.cache.set_json.call_args
             assert call_args[0][0] == "test_key"  # key
             assert "alpha_result" in call_args[0][1]  # stored data
+            # Also verify the evaluation returned shape
+            assert isinstance(result, dict)
+            assert "alpha_result" in result
 
     async def test_alpha_pipeline_no_caching(self, sample_files):
         """Verify alpha pipeline does not use caching."""
