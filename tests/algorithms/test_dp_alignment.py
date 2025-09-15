@@ -47,7 +47,9 @@ class TestDPAlignment:
         assert result.total_insertions == 0
         assert result.total_deletions == 0
         assert result.total_substitutions == 0
-        assert result.true_positives == 3
+        # In NEDC convention, true_positives only counts positive class ("seiz")
+        # There are 2 "seiz" matches in ['seiz', 'bckg', 'seiz']
+        assert result.true_positives == 2  # Only seiz hits count as TP
         assert result.false_positives == 0
         assert result.false_negatives == 0
 
