@@ -141,7 +141,7 @@ class IRAScorer:
                     channel="TERM",
                     start_time=0.0,
                     stop_time=file_duration,
-                    label= null_class,
+                    label=null_class,
                     confidence=1.0,
                 )
             ]
