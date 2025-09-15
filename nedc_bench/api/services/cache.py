@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def _json_default(obj: Any) -> Any:
     if is_dataclass(obj) and not isinstance(obj, type):
-        return asdict(obj)  # type: ignore[arg-type]
+        return asdict(obj)
     if hasattr(obj, "to_dict"):
         return obj.to_dict()
     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
