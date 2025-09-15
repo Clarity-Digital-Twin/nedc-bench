@@ -16,6 +16,6 @@
 - CI uploads coverage to Codecov from Ubuntu/Python 3.11.
 
 ## CI/CD
-- GitHub Actions matrix (Linux + Windows; Python 3.9, 3.10, 3.11) runs lint, typecheck, and tests.
+- GitHub Actions matrix (Linux + Windows; Python 3.10, 3.11) runs lint, typecheck, and tests.
 - Parity job runs after tests and validates Alpha vs Beta outputs (IRA kappa tolerance 1e-4).
 - API CI verifies importability and Docker build.

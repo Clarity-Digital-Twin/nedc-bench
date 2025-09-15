@@ -3,7 +3,7 @@
 We welcome contributions that improve correctness, performance, and developer experience.
 
 ## Getting Started
-- Ensure Python 3.9–3.11 is available (CI runs across these versions).
+- Ensure Python 3.10+ is available (CI runs 3.10 and 3.11).
 - Install dev deps and hooks: `make dev`.
 - Verify setup: `make test` and `make lint`.
 
