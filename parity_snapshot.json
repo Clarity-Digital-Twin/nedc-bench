@@ -2,7 +2,7 @@
   "metadata": {
     "nedc_version": "6.0.0",
     "python_version": "3.11",
-    "snapshot_date": "2025-01-15",
+    "snapshot_date": "2025-09-15",
     "dataset": "csv_bi_parity/csv_bi_export_clean"
   },
   "algorithms": {
