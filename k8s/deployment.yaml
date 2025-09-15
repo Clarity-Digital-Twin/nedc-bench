@@ -28,8 +28,15 @@ spec:
               value: "/app/nedc_eeg_eval/v6.0.0"
             - name: LOG_LEVEL
               value: "INFO"
+            - name: MAX_WORKERS
+              value: "1"
             - name: REDIS_URL
               value: "redis://redis:6379"
+            - name: PROMETHEUS_MULTIPROC_DIR
+              value: "/var/run/prometheus"
+          volumeMounts:
+            - name: prom-multiproc
+              mountPath: /var/run/prometheus
           resources:
             requests:
               cpu: "250m"
@@ -49,3 +56,6 @@ spec:
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5
+      volumes:
+        - name: prom-multiproc
+          emptyDir: {}

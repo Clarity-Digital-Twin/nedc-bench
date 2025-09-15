@@ -9,6 +9,7 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - MAX_WORKERS=${MAX_WORKERS:-4}
       - NEDC_NFC=/app/nedc_eeg_eval/v6.0.0
+      - PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus_multiproc
       - REDIS_URL=redis://redis:6379
     ports:
       - "8000:8000"
