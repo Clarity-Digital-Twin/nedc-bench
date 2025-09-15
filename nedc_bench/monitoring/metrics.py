@@ -4,7 +4,28 @@ import time
 from collections.abc import Awaitable, Callable
 from typing import Any, TypeVar
 
-from prometheus_client import Counter, Gauge, Histogram
+try:  # pragma: no cover - import guard for test envs without dependency
+    from prometheus_client import Counter, Gauge, Histogram
+except Exception:  # pragma: no cover - provide no-op fallback
+    class _NoopMetric:
+        def labels(self, **_: Any) -> _NoopMetric:
+            return self
+
+        def inc(self, *args: Any, **kwargs: Any) -> None:  # noqa: ARG002
+            return None
+
+        def observe(self, *args: Any, **kwargs: Any) -> None:  # noqa: ARG002
+            return None
+
+    def Counter(*_args: Any, **_kwargs: Any) -> _NoopMetric:  # type: ignore[misc]
+        return _NoopMetric()
+
+    def Gauge(*_args: Any, **_kwargs: Any) -> _NoopMetric:  # type: ignore[misc]
+        return _NoopMetric()
+
+    def Histogram(*_args: Any, **_kwargs: Any) -> _NoopMetric:  # type: ignore[misc]
+        return _NoopMetric()
+
 
 evaluation_counter = Counter(
     "nedc_evaluations_total",
@@ -17,8 +38,12 @@ evaluation_duration = Histogram(
     ["algorithm", "pipeline"],
     buckets=[0.1, 0.5, 1.0, 2.5, 5.0, 10.0],
 )
-parity_failures = Counter("nedc_parity_failures_total", "Total parity failures", ["algorithm"])
-active_evaluations = Gauge("nedc_active_evaluations", "Currently running evaluations")
+parity_failures = Counter(
+    "nedc_parity_failures_total", "Total parity failures", ["algorithm"]
+)
+active_evaluations = Gauge(
+    "nedc_active_evaluations", "Currently running evaluations"
+)
 
 F = TypeVar("F", bound=Callable[..., Awaitable[Any]])
 

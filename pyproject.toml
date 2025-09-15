@@ -184,6 +184,11 @@ unfixable = []
 "nedc_bench/validation/parity.py" = [
     "PLR6301", # Staticmethod suggestions
 ]
+"nedc_bench/monitoring/metrics.py" = [
+    "N802",    # Fallback function names mimic prometheus objects
+    "PLR6301", # No-op metric methods
+    "W391",    # Allow trailing newline leniency here
+]
 "nedc_bench/api/endpoints/evaluation.py" = [
     "B008",    # FastAPI dependency injection uses call in defaults
 ]

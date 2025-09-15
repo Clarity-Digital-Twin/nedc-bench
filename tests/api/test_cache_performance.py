@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import time
-from pathlib import Path
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -177,7 +175,7 @@ class TestCacheIntegration:
             orchestrator.cache.make_key.return_value = "test_key"
 
             # Call evaluate
-            result = await orchestrator.evaluate(ref_file, hyp_file, "taes", "dual")
+            await orchestrator.evaluate(ref_file, hyp_file, "taes", "dual")
 
             # Verify cache was checked
             orchestrator.cache.get_json.assert_called_once()
@@ -251,6 +249,7 @@ class TestCacheIntegration:
 
             # Patch run_in_executor
             loop = asyncio.get_event_loop()
+
             async def mock_run_in_executor(executor, func, *args):
                 return func(*args)
 
@@ -315,7 +314,7 @@ class TestCachePerformance:
             orchestrator.orchestrator.evaluate.return_value = mock_result
 
             with patch.object(loop, "run_in_executor", mock_run_in_executor_slow):
-                result1 = await orchestrator.evaluate(ref_file, hyp_file, "taes", "dual")
+                await orchestrator.evaluate(ref_file, hyp_file, "taes", "dual")
 
             uncached_time = time.time() - start
 

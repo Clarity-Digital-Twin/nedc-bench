@@ -7,7 +7,10 @@ from dataclasses import asdict, is_dataclass
 from hashlib import sha256
 from typing import Any
 
-from redis import asyncio as aioredis
+try:  # pragma: no cover - allow running without redis installed
+    from redis import asyncio as aioredis  # type: ignore
+except Exception:  # pragma: no cover
+    aioredis = None  # type: ignore[assignment]
 
 from nedc_bench import PACKAGE_VERSION
 
@@ -32,8 +35,11 @@ class RedisCache:
         self.url = url or os.environ.get("REDIS_URL", "redis://redis:6379")
         self.ttl_seconds = ttl_seconds or int(os.environ.get("CACHE_TTL_SECONDS", "86400"))
         try:
-            # The redis asyncio client is untyped; cast to Any for mypy.
-            self._client = aioredis.from_url(self.url, decode_responses=True)  # type: ignore[no-untyped-call]
+            if aioredis is not None:
+                # The redis asyncio client is untyped; allow in runtime but not enforced by mypy.
+                self._client = aioredis.from_url(self.url, decode_responses=True)  # type: ignore[attr-defined]
+            else:
+                self._client = None
         except Exception as exc:  # pragma: no cover - construction should not fail
             logger.warning("Redis client init failed: %s", exc)
             self._client = None

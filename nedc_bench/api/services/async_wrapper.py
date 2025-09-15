@@ -7,14 +7,14 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, cast
 
+from nedc_bench import PACKAGE_VERSION
+from nedc_bench.api.services.cache import RedisCache, redis_cache
 from nedc_bench.monitoring.metrics import (
     evaluation_counter,
     evaluation_duration,
     parity_failures,
     track_evaluation_dynamic,
 )
-from nedc_bench import PACKAGE_VERSION
-from nedc_bench.api.services.cache import RedisCache, redis_cache
 from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
 
 logger = logging.getLogger(__name__)
