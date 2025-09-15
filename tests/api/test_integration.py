@@ -2,9 +2,13 @@ import time
 from pathlib import Path
 
 import pytest
-from fastapi.testclient import TestClient
 
-from nedc_bench.api.main import app
+# Skip API tests if FastAPI/aiofiles are not installed in the environment
+pytest.importorskip("fastapi")
+pytest.importorskip("aiofiles")
+
+from fastapi.testclient import TestClient  # type: ignore  # noqa: E402
+from nedc_bench.api.main import app  # type: ignore  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -82,4 +86,3 @@ def test_websocket_progress(client, sample_files):
             if msg.get("type") == "status" and msg.get("status") == "completed":
                 break
         assert got_update
-
