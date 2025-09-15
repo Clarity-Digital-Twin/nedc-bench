@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 
 class ProgressTracker:
     """Track high-level progress for evaluation jobs."""
 
     def __init__(self):
-        self.progress: Dict[str, Dict[str, Any]] = {}
+        self.progress: dict[str, dict[str, Any]] = {}
 
     async def init_job(self, job_id: str, total_algorithms: int) -> None:
         self.progress[job_id] = {
@@ -40,7 +40,7 @@ class ProgressTracker:
             p["current_algorithm"] = None
             p["current_pipeline"] = None
 
-    async def get_progress(self, job_id: str) -> Dict[str, Any]:
+    async def get_progress(self, job_id: str) -> dict[str, Any]:
         p = self.progress.get(job_id)
         if not p:
             return {}

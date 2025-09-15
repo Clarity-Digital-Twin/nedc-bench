@@ -32,9 +32,13 @@ async def lifespan(app: FastAPI):
     if not nedc_root:
         # Default to repo path for tests/dev
         default_root = pathlib.Path("nedc_eeg_eval/v6.0.0").resolve()
-        os.environ["NEDC_NFC"] = default_root
+        os.environ["NEDC_NFC"] = str(default_root)
         # Ensure Alpha PYTHONPATH for imports
-        os.environ.setdefault("PYTHONPATH", os.path.join(default_root, "lib"))
+        lib_path = str(default_root / "lib")
+        if os.environ.get("PYTHONPATH"):
+            os.environ["PYTHONPATH"] = f"{lib_path}:{os.environ['PYTHONPATH']}"
+        else:
+            os.environ["PYTHONPATH"] = lib_path
 
     logger.info("Starting NEDC-BENCH API")
     orchestrator = DualPipelineOrchestrator()

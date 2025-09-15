@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import List, Optional
 
 import aiofiles
 from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
@@ -12,6 +11,7 @@ from nedc_bench.api.models.responses import EvaluationResponse, EvaluationResult
 from nedc_bench.api.services.file_validator import FileValidator
 from nedc_bench.api.services.job_manager import job_manager
 from nedc_bench.api.services.processor import process_evaluation
+from nedc_bench.api.services.websocket_manager import broadcast_progress
 
 router = APIRouter()
 
@@ -21,7 +21,7 @@ async def submit_evaluation(
     background_tasks: BackgroundTasks,
     reference: UploadFile = File(..., description="Reference CSV_BI file"),
     hypothesis: UploadFile = File(..., description="Hypothesis CSV_BI file"),
-    algorithms: List[AlgorithmType] = Form(default=[AlgorithmType.ALL]),
+    algorithms: list[AlgorithmType] = Form(default=[AlgorithmType.ALL]),
     pipeline: PipelineType = Form(default=PipelineType.DUAL),
 ):
     # Read file bytes
@@ -59,6 +59,18 @@ async def submit_evaluation(
 
     await job_manager.add_job(job)
     background_tasks.add_task(process_evaluation, job_id)
+
+    # Immediately broadcast queued state so late WS subscribers can catch up
+    await broadcast_progress(
+        job_id,
+        {
+            "type": "status",
+            "status": "queued",
+            "message": "Job queued",
+            "job_id": job_id,
+            "created_at": job["created_at"].isoformat(),
+        },
+    )
 
     return EvaluationResponse(
         job_id=job_id,
@@ -103,13 +115,10 @@ async def get_evaluation_result(job_id: str):
     return EvaluationResult(**base)
 
 
-@router.get("/evaluate", response_model=List[EvaluationResult])
-async def list_evaluations(limit: int = 10, offset: int = 0, status: Optional[str] = None):
+@router.get("/evaluate", response_model=list[EvaluationResult])
+async def list_evaluations(limit: int = 10, offset: int = 0, status: str | None = None):
     jobs = await job_manager.list_jobs(limit, offset, status)
-    out: list[EvaluationResult] = []
-    for job in jobs:
-        out.append(
-            EvaluationResult(
+    out: list[EvaluationResult] = [EvaluationResult(
                 job_id=job["id"],
                 status=job.get("status", "queued"),
                 created_at=job.get("created_at", datetime.utcnow()),
@@ -117,6 +126,5 @@ async def list_evaluations(limit: int = 10, offset: int = 0, status: Optional[st
                 pipeline=job.get("pipeline", PipelineType.DUAL),
                 results=job.get("results"),
                 error=job.get("error"),
-            )
-        )
+            ) for job in jobs]
     return out

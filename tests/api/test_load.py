@@ -1,7 +1,9 @@
 """Load testing for NEDC-BENCH API"""
 
 import asyncio
+import operator
 import statistics
+import sys
 import time
 from pathlib import Path
 
@@ -9,7 +11,7 @@ try:
     import aiohttp
 except ImportError:
     print("Please install aiohttp: pip install aiohttp")
-    exit(1)
+    sys.exit(1)
 
 
 async def single_request(session, url, ref_data, hyp_data):
@@ -133,7 +135,7 @@ async def load_test(
             error = f.get("error", f"HTTP {f.get('status_code', 'unknown')}")
             error_counts[error] = error_counts.get(error, 0) + 1
 
-        for error, count in sorted(error_counts.items(), key=lambda x: x[1], reverse=True)[:5]:
+        for error, count in sorted(error_counts.items(), key=operator.itemgetter(1), reverse=True)[:5]:
             print(f"  {error}: {count} times")
 
     print("=" * 60)
@@ -176,7 +178,7 @@ async def main():
         success = await load_test(args.url, n_requests=args.requests, concurrent=args.concurrent)
 
     # Exit with appropriate code for CI
-    exit(0 if success else 1)
+    sys.exit(0 if success else 1)
 
 
 if __name__ == "__main__":

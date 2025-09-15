@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import List
 
 from pydantic import BaseModel, Field
 
@@ -24,7 +23,7 @@ class PipelineType(str, Enum):
 class EvaluationRequest(BaseModel):
     """Request model for evaluation submission."""
 
-    algorithms: List[AlgorithmType] = Field(
+    algorithms: list[AlgorithmType] = Field(
         default=[AlgorithmType.ALL],
         description="Algorithms to run",
     )

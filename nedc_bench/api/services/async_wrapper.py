@@ -5,7 +5,7 @@ import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
 
@@ -30,7 +30,7 @@ class AsyncOrchestrator:
         hyp_file: str,
         algorithm: str = "taes",
         pipeline: str = "dual",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run a single evaluation asynchronously."""
 
         loop = asyncio.get_event_loop()
@@ -94,10 +94,10 @@ class AsyncOrchestrator:
 
     async def evaluate_batch(
         self,
-        file_pairs: List[tuple[str, str]],
+        file_pairs: list[tuple[str, str]],
         algorithm: str = "taes",
         pipeline: str = "dual",
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Process multiple file pairs concurrently."""
 
         tasks = [self.evaluate(ref, hyp, algorithm, pipeline) for ref, hyp in file_pairs]
