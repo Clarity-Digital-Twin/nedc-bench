@@ -108,7 +108,7 @@ class DualPipelineOrchestrator:
         self.beta_pipeline = BetaPipeline()
         self.validator = ParityValidator(tolerance=tolerance)
 
-    def evaluate(self, ref_file: str, hyp_file: str, algorithm: str = "taes") -> DualPipelineResult:
+    def evaluate(self, ref_file: str, hyp_file: str, algorithm: str = "taes", alpha_result: dict[str, Any] | None = None) -> DualPipelineResult:
         """
         Run both pipelines on single file pair
 
@@ -116,14 +116,18 @@ class DualPipelineOrchestrator:
             ref_file: Path to reference CSV_BI file
             hyp_file: Path to hypothesis CSV_BI file
             algorithm: Algorithm to run (currently only 'taes')
+            alpha_result: Pre-computed Alpha results (optional, for testing)
 
         Returns:
             DualPipelineResult with comparison
         """
-        # Run Alpha pipeline
-        start_alpha = time.perf_counter()
-        alpha_result = self.alpha_wrapper.evaluate(ref_file, hyp_file)
-        time_alpha = time.perf_counter() - start_alpha
+        # Run Alpha pipeline if not provided
+        if alpha_result is None:
+            start_alpha = time.perf_counter()
+            alpha_result = self.alpha_wrapper.evaluate(ref_file, hyp_file)
+            time_alpha = time.perf_counter() - start_alpha
+        else:
+            time_alpha = 0.0
 
         # Run Beta pipeline
         start_beta = time.perf_counter()

@@ -179,27 +179,29 @@ class ParityValidator:
         """Compare DP results: integer counts must match exactly."""
         discrepancies: list[DiscrepancyReport] = []
 
-        # Counts available from Alpha parser
-        for name, a, b in (
-            ("true_positives", float(alpha_result.get("true_positives", 0))),
-            ("false_positives", float(alpha_result.get("false_positives", 0))),
-            ("false_negatives", float(alpha_result.get("false_negatives", 0))),
-            ("insertions", float(alpha_result.get("insertions", 0))),
-            ("deletions", float(alpha_result.get("deletions", 0))),
-        ):
-            beta_val = {
-                "true_positives": float(beta_result.true_positives),
-                "false_positives": float(beta_result.false_positives),
-                "false_negatives": float(beta_result.false_negatives),
-                "insertions": float(beta_result.total_insertions),
-                "deletions": float(beta_result.total_deletions),
-            }[name]
-            abs_diff = abs(a - beta_val)
+        # Primary DP counts from Alpha parser
+        # Alpha TP/FP/FN may differ due to different counting
+        # Compare raw counts instead
+        alpha_tp = float(alpha_result.get("true_positives", 0))
+        alpha_fp = float(alpha_result.get("false_positives", 0))
+        alpha_fn = float(alpha_result.get("false_negatives", 0))
+        alpha_ins = float(alpha_result.get("insertions", 0))
+        alpha_del = float(alpha_result.get("deletions", 0))
+
+        # Beta maps: TP=hits, FP=insertions, FN=deletions+substitutions
+        for name, alpha_val, beta_val in [
+            ("true_positives", alpha_tp, float(beta_result.true_positives)),
+            ("false_positives", alpha_fp, float(beta_result.false_positives)),
+            ("false_negatives", alpha_fn, float(beta_result.false_negatives)),
+            ("insertions", alpha_ins, float(beta_result.total_insertions)),
+            ("deletions", alpha_del, float(beta_result.total_deletions)),
+        ]:
+            abs_diff = abs(alpha_val - beta_val)
             if abs_diff > 0.0:  # ints must match exactly
                 discrepancies.append(
                     DiscrepancyReport(
                         metric=name,
-                        alpha_value=a,
+                        alpha_value=alpha_val,
                         beta_value=beta_val,
                         absolute_difference=abs_diff,
                         relative_difference=abs_diff / max(abs(a), 1e-16),
