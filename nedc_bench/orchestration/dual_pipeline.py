@@ -11,8 +11,13 @@ from typing import Any
 
 from alpha.wrapper import NEDCAlphaWrapper
 from nedc_bench.algorithms.taes import TAESScorer
+from nedc_bench.algorithms.dp_alignment import DPAligner
+from nedc_bench.algorithms.epoch import EpochScorer
+from nedc_bench.algorithms.overlap import OverlapScorer
+from nedc_bench.algorithms.ira import IRAScorer
 from nedc_bench.models.annotations import AnnotationFile
 from nedc_bench.validation.parity import ParityValidator, ValidationReport
+from nedc_bench.utils.params import load_nedc_params, map_event_label
 
 
 @dataclass
@@ -44,6 +49,49 @@ class BetaPipeline:
 
         scorer = TAESScorer()
         return scorer.score(ref_annotations.events, hyp_annotations.events)
+
+    def _map_events(self, events: list, label_map: dict[str, str]) -> list:
+        for ev in events:
+            ev.label = map_event_label(ev.label, label_map)
+        return events
+
+    def evaluate_dp(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
+        params = load_nedc_params()
+        ref_ann = AnnotationFile.from_csv_bi(ref_file)
+        hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
+        ref = [map_event_label(e.label, params.label_map) for e in ref_ann.events]
+        hyp = [map_event_label(e.label, params.label_map) for e in hyp_ann.events]
+        return DPAligner().align(ref, hyp)
+
+    def evaluate_epoch(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
+        params = load_nedc_params()
+        ref_ann = AnnotationFile.from_csv_bi(ref_file)
+        hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
+        self._map_events(ref_ann.events, params.label_map)
+        self._map_events(hyp_ann.events, params.label_map)
+        scorer = EpochScorer(epoch_duration=params.epoch_duration, null_class=params.null_class)
+        return scorer.score(ref_ann.events, hyp_ann.events, ref_ann.duration)
+
+    def evaluate_overlap(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
+        params = load_nedc_params()
+        ref_ann = AnnotationFile.from_csv_bi(ref_file)
+        hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
+        self._map_events(ref_ann.events, params.label_map)
+        self._map_events(hyp_ann.events, params.label_map)
+        scorer = OverlapScorer()
+        return scorer.score(ref_ann.events, hyp_ann.events)
+
+    def evaluate_ira(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
+        params = load_nedc_params()
+        ref_ann = AnnotationFile.from_csv_bi(ref_file)
+        hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
+        self._map_events(ref_ann.events, params.label_map)
+        self._map_events(hyp_ann.events, params.label_map)
+        ep = EpochScorer(epoch_duration=params.epoch_duration, null_class=params.null_class)
+        epochs = ep._create_epochs(ref_ann.duration)
+        ref_labels = ep._classify_epochs(epochs, ref_ann.events)
+        hyp_labels = ep._classify_epochs(epochs, hyp_ann.events)
+        return IRAScorer().score(ref_labels, hyp_labels)
 
 
 class DualPipelineOrchestrator:
@@ -81,6 +129,14 @@ class DualPipelineOrchestrator:
         start_beta = time.perf_counter()
         if algorithm == "taes":
             beta_result = self.beta_pipeline.evaluate_taes(Path(ref_file), Path(hyp_file))
+        elif algorithm == "dp":
+            beta_result = self.beta_pipeline.evaluate_dp(Path(ref_file), Path(hyp_file))
+        elif algorithm == "epoch":
+            beta_result = self.beta_pipeline.evaluate_epoch(Path(ref_file), Path(hyp_file))
+        elif algorithm == "overlap":
+            beta_result = self.beta_pipeline.evaluate_overlap(Path(ref_file), Path(hyp_file))
+        elif algorithm == "ira":
+            beta_result = self.beta_pipeline.evaluate_ira(Path(ref_file), Path(hyp_file))
         else:
             raise ValueError(f"Algorithm {algorithm} not yet implemented in Beta")
         time_beta = time.perf_counter() - start_beta
@@ -88,6 +144,14 @@ class DualPipelineOrchestrator:
         # Validate parity
         if algorithm == "taes":
             parity_report = self.validator.compare_taes(alpha_result["taes"], beta_result)
+        elif algorithm == "dp":
+            parity_report = self.validator.compare_dp(alpha_result["dp_alignment"], beta_result)
+        elif algorithm == "epoch":
+            parity_report = self.validator.compare_epoch(alpha_result["epoch"], beta_result)
+        elif algorithm == "overlap":
+            parity_report = self.validator.compare_overlap(alpha_result["overlap"], beta_result)
+        elif algorithm == "ira":
+            parity_report = self.validator.compare_ira(alpha_result["ira"], beta_result)
         else:
             raise ValueError(f"Parity validation for {algorithm} not implemented")
 
