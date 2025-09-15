@@ -41,21 +41,13 @@ class ValidationReport:
     beta_metrics: dict[str, Any]
 
     def __str__(self) -> str:
-        """Human-readable report"""
         if self.passed:
             return f"✅ {self.algorithm} Parity PASSED"
-
-        lines = [f"❌ {self.algorithm} Parity FAILED"]
-        lines.append(f"Found {len(self.discrepancies)} discrepancies:")
-
+        lines = [f"❌ {self.algorithm} Parity FAILED", f"Found {len(self.discrepancies)} discrepancies:"]
         lines.extend(
-            f"  - {disc.metric}: "
-            f"Alpha={disc.alpha_value:.6f}, "
-            f"Beta={disc.beta_value:.6f}, "
-            f"Diff={disc.absolute_difference:.2e}"
-            for disc in self.discrepancies
+            f"  - {d.metric}: Alpha={d.alpha_value:.6f}, Beta={d.beta_value:.6f}, Diff={d.absolute_difference:.2e}"
+            for d in self.discrepancies
         )
-
         return "\n".join(lines)
 
 
@@ -63,33 +55,13 @@ class ParityValidator:
     """Validate parity between Alpha and Beta pipeline results"""
 
     def __init__(self, tolerance: float = 1e-10):
-        """
-        Initialize validator
-
-        Args:
-            tolerance: Maximum acceptable absolute difference
-        """
         self.tolerance = tolerance
 
-    def compare_taes(
-        self, alpha_result: dict[str, Any], beta_result: TAESResult
-    ) -> ValidationReport:
-        """
-        Compare TAES results from both pipelines
-
-        IMPORTANT: TAES uses fractional scoring, so TP/FP/FN are floats.
-        We compare counts first, then recompute metrics centrally.
-
-        Args:
-            alpha_result: Dictionary from Alpha pipeline
-            beta_result: TAESResult from Beta pipeline
-
-        Returns:
-            ValidationReport with comparison details
-        """
+    # ---------------------- TAES (fractional floats) ----------------------
+    def compare_taes(self, alpha_result: dict[str, Any], beta_result: TAESResult) -> ValidationReport:
         discrepancies: list[DiscrepancyReport] = []
 
-        # Round counts to NEDC aggregation precision (2 decimals)
+        # Round counts to NEDC aggregation precision (summary typically prints 2 decimals)
         alpha_tp = round(float(alpha_result.get("true_positives", 0.0)), 2)
         alpha_fp = round(float(alpha_result.get("false_positives", 0.0)), 2)
         alpha_fn = round(float(alpha_result.get("false_negatives", 0.0)), 2)
@@ -98,111 +70,103 @@ class ParityValidator:
         beta_fp = round(float(beta_result.false_positives), 2)
         beta_fn = round(float(beta_result.false_negatives), 2)
 
-        # Compare counts first
+        # Counts-first comparison (floats with atol)
         for name, a, b in (
             ("true_positives", alpha_tp, beta_tp),
             ("false_positives", alpha_fp, beta_fp),
             ("false_negatives", alpha_fn, beta_fn),
         ):
-            abs_diff = abs(a - b)
-            if abs_diff > self.tolerance:
+            if abs(a - b) > self.tolerance:
                 discrepancies.append(
                     DiscrepancyReport(
                         metric=name,
                         alpha_value=a,
                         beta_value=b,
-                        absolute_difference=abs_diff,
-                        relative_difference=abs_diff / max(abs(a), 1e-16),
+                        absolute_difference=abs(a - b),
+                        relative_difference=abs(a - b) / max(abs(a), 1e-16),
                         tolerance=self.tolerance,
                     )
                 )
 
-        # Compute metrics centrally from the same-rounded counts
-        def metrics_from_counts(tp: float, fp: float, fn: float) -> tuple[float, float, float]:
+        # Recompute metrics centrally from same-rounded counts
+        def mm(tp: float, fp: float, fn: float) -> tuple[float, float, float]:
             sen = tp / (tp + fn) if (tp + fn) > 0 else 0.0
             pre = tp / (tp + fp) if (tp + fp) > 0 else 0.0
             f1 = 0.0 if (pre + sen) == 0 else 2 * (pre * sen) / (pre + sen)
             return sen, pre, f1
 
-        alpha_sen, alpha_pre, alpha_f1 = metrics_from_counts(alpha_tp, alpha_fp, alpha_fn)
-        beta_sen, beta_pre, beta_f1 = metrics_from_counts(beta_tp, beta_fp, beta_fn)
+        alpha_sen, alpha_pre, alpha_f1 = mm(alpha_tp, alpha_fp, alpha_fn)
+        beta_sen, beta_pre, beta_f1 = mm(beta_tp, beta_fp, beta_fn)
 
         for name, a, b in (
             ("sensitivity", alpha_sen, beta_sen),
             ("precision", alpha_pre, beta_pre),
             ("f1_score", alpha_f1, beta_f1),
         ):
-            abs_diff = abs(a - b)
-            if abs_diff > self.tolerance:
+            if abs(a - b) > self.tolerance:
                 discrepancies.append(
                     DiscrepancyReport(
                         metric=name,
                         alpha_value=a,
                         beta_value=b,
-                        absolute_difference=abs_diff,
-                        relative_difference=abs_diff / max(abs(a), 1e-16),
+                        absolute_difference=abs(a - b),
+                        relative_difference=abs(a - b) / max(abs(a), 1e-16),
                         tolerance=self.tolerance,
                     )
                 )
-
-        beta_metrics = {
-            "true_positives": beta_tp,
-            "false_positives": beta_fp,
-            "false_negatives": beta_fn,
-            "sensitivity": beta_sen,
-            "precision": beta_pre,
-            "f1_score": beta_f1,
-        }
-
-        alpha_metrics = {
-            "true_positives": alpha_tp,
-            "false_positives": alpha_fp,
-            "false_negatives": alpha_fn,
-            "sensitivity": alpha_sen,
-            "precision": alpha_pre,
-            "f1_score": alpha_f1,
-        }
 
         return ValidationReport(
             algorithm="TAES",
             passed=len(discrepancies) == 0,
             discrepancies=discrepancies,
-            alpha_metrics=alpha_metrics,
-            beta_metrics=beta_metrics,
+            alpha_metrics={
+                "true_positives": alpha_tp,
+                "false_positives": alpha_fp,
+                "false_negatives": alpha_fn,
+                "sensitivity": alpha_sen,
+                "precision": alpha_pre,
+                "f1_score": alpha_f1,
+            },
+            beta_metrics={
+                "true_positives": beta_tp,
+                "false_positives": beta_fp,
+                "false_negatives": beta_fn,
+                "sensitivity": beta_sen,
+                "precision": beta_pre,
+                "f1_score": beta_f1,
+            },
         )
 
-    def compare_dp(
-        self, alpha_result: dict[str, Any], beta_result: DPAlignmentResult
-    ) -> ValidationReport:
-        """Compare DP results: integer counts must match exactly."""
+    # ---------------------- DP Alignment (integers) ----------------------
+    def compare_dp(self, alpha_result: dict[str, Any], beta_result: DPAlignmentResult) -> ValidationReport:
         discrepancies: list[DiscrepancyReport] = []
 
-        # Primary DP counts from Alpha parser
-        # Alpha TP/FP/FN may differ due to different counting
-        # Compare raw counts instead
-        alpha_tp = float(alpha_result.get("true_positives", 0))
-        alpha_fp = float(alpha_result.get("false_positives", 0))
-        alpha_fn = float(alpha_result.get("false_negatives", 0))
-        alpha_ins = float(alpha_result.get("insertions", 0))
-        alpha_del = float(alpha_result.get("deletions", 0))
+        # Primary integer counts from Alpha (parser provides totals)
+        pairs: list[tuple[str, float, float]] = [
+            ("true_positives", float(alpha_result.get("true_positives", 0)), float(beta_result.true_positives)),
+            ("false_positives", float(alpha_result.get("false_positives", 0)), float(beta_result.false_positives)),
+            ("false_negatives", float(alpha_result.get("false_negatives", 0)), float(beta_result.false_negatives)),
+            ("insertions", float(alpha_result.get("insertions", 0)), float(beta_result.total_insertions)),
+            ("deletions", float(alpha_result.get("deletions", 0)), float(beta_result.total_deletions)),
+        ]
 
-        # Beta maps: TP=hits, FP=insertions, FN=deletions+substitutions
-        for name, alpha_val, beta_val in [
-            ("true_positives", alpha_tp, float(beta_result.true_positives)),
-            ("false_positives", alpha_fp, float(beta_result.false_positives)),
-            ("false_negatives", alpha_fn, float(beta_result.false_negatives)),
-            ("insertions", alpha_ins, float(beta_result.total_insertions)),
-            ("deletions", alpha_del, float(beta_result.total_deletions)),
-        ]:
-            abs_diff = abs(alpha_val - beta_val)
-            if abs_diff > 0.0:  # ints must match exactly
+        # Include substitutions if Alpha exposed them (from summary_dpalign.txt)
+        if "substitutions" in alpha_result:
+            pairs.append((
+                "substitutions",
+                float(alpha_result.get("substitutions", 0)),
+                float(beta_result.total_substitutions),
+            ))
+
+        for name, a, b in pairs:
+            if abs(a - b) > 0.0:
                 discrepancies.append(
                     DiscrepancyReport(
                         metric=name,
-                        alpha_value=alpha_val,
-                        beta_value=beta_val,
-                        absolute_difference=abs_diff,
-                        relative_difference=abs_diff / max(abs(alpha_val), 1e-16),
+                        alpha_value=a,
+                        beta_value=b,
+                        absolute_difference=abs(a - b),
+                        relative_difference=abs(a - b) / max(abs(a), 1e-16),
                         tolerance=0.0,
                     )
                 )
@@ -218,59 +182,52 @@ class ParityValidator:
                 "false_negatives": beta_result.false_negatives,
                 "insertions": beta_result.total_insertions,
                 "deletions": beta_result.total_deletions,
+                "substitutions": beta_result.total_substitutions,
             },
         )
 
-    def compare_epoch(
-        self, alpha_result: dict[str, Any], beta_result: EpochResult
-    ) -> ValidationReport:
-        """Compare Epoch results: integer confusion matrix entries must match exactly."""
+    # ---------------------- Epoch (integers) ----------------------
+    def compare_epoch(self, alpha_result: dict[str, Any], beta_result: EpochResult) -> ValidationReport:
         discrepancies: list[DiscrepancyReport] = []
 
-        # Alpha confusion matrix expected under key names or counts
-        # We compare aggregate counts if confusion not available
-        # Try confusion-like keys first
         alpha_cm = alpha_result.get("confusion") or {}
-
         if alpha_cm:
             for rlabel, row in beta_result.confusion_matrix.items():
                 for clabel, bcount in row.items():
                     acount = float(alpha_cm.get(rlabel, {}).get(clabel, 0))
-                    abs_diff = abs(acount - float(bcount))
-                    if abs_diff > 0.0:
+                    if abs(acount - float(bcount)) > 0.0:
                         discrepancies.append(
                             DiscrepancyReport(
                                 metric=f"confusion[{rlabel},{clabel}]",
                                 alpha_value=acount,
                                 beta_value=float(bcount),
-                                absolute_difference=abs_diff,
-                                relative_difference=abs_diff / max(abs(acount), 1e-16),
+                                absolute_difference=abs(acount - float(bcount)),
+                                relative_difference=abs(acount - float(bcount)) / max(abs(acount), 1e-16),
                                 tolerance=0.0,
                             )
                         )
         else:
-            # Fall back to high-level counts if Alpha parser doesn't expose confusion
-            for name, a in (
-                ("true_positives", float(alpha_result.get("true_positives", 0))),
-                ("false_positives", float(alpha_result.get("false_positives", 0))),
-                ("false_negatives", float(alpha_result.get("false_negatives", 0))),
+            # Fall back to aggregate counts from Beta confusion
+            # Map: TP=sum diag (non-null), FP=sum column off-diag, FN=sum row off-diag
+            labels = list(beta_result.confusion_matrix.keys())
+            pos_labels = [l for l in labels if l != "null"] or labels
+            tp = float(sum(beta_result.confusion_matrix[l][l] for l in pos_labels))
+            fn = float(sum(sum(beta_result.confusion_matrix[l][j] for j in labels if j != l) for l in pos_labels))
+            fp = float(sum(sum(beta_result.confusion_matrix[i][l] for i in labels if i != l) for l in pos_labels))
+
+            for name, a, b in (
+                ("true_positives", float(alpha_result.get("true_positives", 0)), tp),
+                ("false_positives", float(alpha_result.get("false_positives", 0)), fp),
+                ("false_negatives", float(alpha_result.get("false_negatives", 0)), fn),
             ):
-                b = {
-                    "true_positives": float(
-                        sum(v for k, v in beta_result.hits.items() if k != "null")
-                    ),
-                    "false_positives": float(sum(beta_result.false_alarms.values())),
-                    "false_negatives": float(sum(beta_result.misses.values())),
-                }[name]
-                abs_diff = abs(a - b)
-                if abs_diff > 0.0:
+                if abs(a - b) > 0.0:
                     discrepancies.append(
                         DiscrepancyReport(
                             metric=name,
                             alpha_value=a,
                             beta_value=b,
-                            absolute_difference=abs_diff,
-                            relative_difference=abs_diff / max(abs(a), 1e-16),
+                            absolute_difference=abs(a - b),
+                            relative_difference=abs(a - b) / max(abs(a), 1e-16),
                             tolerance=0.0,
                         )
                     )
@@ -280,48 +237,40 @@ class ParityValidator:
             passed=len(discrepancies) == 0,
             discrepancies=discrepancies,
             alpha_metrics=alpha_result,
-            beta_metrics={
-                "confusion": beta_result.confusion_matrix,
-                "hits": beta_result.hits,
-                "misses": beta_result.misses,
-                "false_alarms": beta_result.false_alarms,
-            },
+            beta_metrics={"confusion": beta_result.confusion_matrix},
         )
 
-    def compare_overlap(
-        self, alpha_result: dict[str, Any], beta_result: OverlapResult
-    ) -> ValidationReport:
-        """Compare Overlap results: integer totals must match exactly."""
+    # ---------------------- Overlap (integers) ----------------------
+    def compare_overlap(self, alpha_result: dict[str, Any], beta_result: OverlapResult) -> ValidationReport:
         discrepancies: list[DiscrepancyReport] = []
-        for name, a, b in (
-            (
-                "true_positives",
-                float(alpha_result.get("true_positives", 0)),
-                float(beta_result.total_hits),
-            ),
-            (
-                "false_positives",
-                float(alpha_result.get("false_positives", 0)),
-                float(beta_result.total_false_alarms),
-            ),
-            (
-                "false_negatives",
-                float(alpha_result.get("false_negatives", 0)),
-                float(beta_result.total_misses),
-            ),
-        ):
-            abs_diff = abs(a - b)
-            if abs_diff > 0.0:
+
+        # Prefer direct totals if Alpha exposed them; else map to TP/FP/FN
+        if {"hits", "misses", "false_alarms"}.issubset(alpha_result.keys()):
+            pairs = [
+                ("total_hits", float(alpha_result.get("hits", 0)), float(beta_result.total_hits)),
+                ("total_misses", float(alpha_result.get("misses", 0)), float(beta_result.total_misses)),
+                ("total_false_alarms", float(alpha_result.get("false_alarms", 0)), float(beta_result.total_false_alarms)),
+            ]
+        else:
+            pairs = [
+                ("true_positives", float(alpha_result.get("true_positives", 0)), float(beta_result.total_hits)),
+                ("false_negatives", float(alpha_result.get("false_negatives", 0)), float(beta_result.total_misses)),
+                ("false_positives", float(alpha_result.get("false_positives", 0)), float(beta_result.total_false_alarms)),
+            ]
+
+        for name, a, b in pairs:
+            if abs(a - b) > 0.0:
                 discrepancies.append(
                     DiscrepancyReport(
                         metric=name,
                         alpha_value=a,
                         beta_value=b,
-                        absolute_difference=abs_diff,
-                        relative_difference=abs_diff / max(abs(a), 1e-16),
+                        absolute_difference=abs(a - b),
+                        relative_difference=abs(a - b) / max(abs(a), 1e-16),
                         tolerance=0.0,
                     )
                 )
+
         return ValidationReport(
             algorithm="OVERLAP",
             passed=len(discrepancies) == 0,
@@ -329,32 +278,56 @@ class ParityValidator:
             alpha_metrics=alpha_result,
             beta_metrics={
                 "total_hits": beta_result.total_hits,
-                "total_false_alarms": beta_result.total_false_alarms,
                 "total_misses": beta_result.total_misses,
+                "total_false_alarms": beta_result.total_false_alarms,
             },
         )
 
+    # ---------------------- IRA (floats for kappa) ----------------------
     def compare_ira(self, alpha_result: dict[str, Any], beta_result: IRAResult) -> ValidationReport:
-        """Compare IRA results: confusion ints exact; kappas floats with atol."""
         discrepancies: list[DiscrepancyReport] = []
 
-        # Confusion matrix if Alpha parser provides one (often IRA only in summary)
-        alpha_cm = alpha_result.get("confusion") or {}
-        for rlabel, row in beta_result.confusion_matrix.items():
-            for clabel, bcount in row.items():
-                acount = float(alpha_cm.get(rlabel, {}).get(clabel, 0))
-                abs_diff = abs(acount - float(bcount))
-                if abs_diff > 0.0:
-                    discrepancies.append(
-                        DiscrepancyReport(
-                            metric=f"confusion[{rlabel},{clabel}]",
-                            alpha_value=acount,
-                            beta_value=float(bcount),
-                            absolute_difference=abs_diff,
-                            relative_difference=abs_diff / max(abs(acount), 1e-16),
-                            tolerance=0.0,
-                        )
+        # Compare kappas with modest tolerance (Alpha prints to 4 decimals)
+        alpha_multi = float(alpha_result.get("multi_class_kappa", alpha_result.get("kappa", 0.0)))
+        beta_multi = float(beta_result.multi_class_kappa)
+        if abs(alpha_multi - beta_multi) > 1e-4:
+            discrepancies.append(
+                DiscrepancyReport(
+                    metric="multi_class_kappa",
+                    alpha_value=alpha_multi,
+                    beta_value=beta_multi,
+                    absolute_difference=abs(alpha_multi - beta_multi),
+                    relative_difference=abs(alpha_multi - beta_multi) / max(abs(alpha_multi), 1e-16),
+                    tolerance=1e-4,
+                )
+            )
+
+        alpha_per = alpha_result.get("per_label_kappa", {})
+        for label, b in beta_result.per_label_kappa.items():
+            a = float(alpha_per.get(label, 0.0))
+            if abs(a - b) > 1e-4:
+                discrepancies.append(
+                    DiscrepancyReport(
+                        metric=f"kappa[{label}]",
+                        alpha_value=a,
+                        beta_value=b,
+                        absolute_difference=abs(a - b),
+                        relative_difference=abs(a - b) / max(abs(a), 1e-16),
+                        tolerance=1e-4,
                     )
+                )
+
+        return ValidationReport(
+            algorithm="IRA",
+            passed=len(discrepancies) == 0,
+            discrepancies=discrepancies,
+            alpha_metrics=alpha_result,
+            beta_metrics={
+                "confusion_matrix": beta_result.confusion_matrix,
+                "multi_class_kappa": beta_result.multi_class_kappa,
+                "per_label_kappa": beta_result.per_label_kappa,
+            },
+        )
 
         # Kappa values: FLOATS with absolute tolerance
         alpha_kappa = float(alpha_result.get("kappa", 0.0))
