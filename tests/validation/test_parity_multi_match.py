@@ -13,7 +13,7 @@ from alpha.wrapper import NEDCAlphaWrapper
 from nedc_bench.algorithms.taes import TAESScorer
 from nedc_bench.models.annotations import AnnotationFile
 from nedc_bench.validation.parity import ParityValidator
-from ..utils import cleanup_temp_files, create_csv_bi_annotation
+from tests.utils import cleanup_temp_files, create_csv_bi_annotation
 
 
 @pytest.mark.integration

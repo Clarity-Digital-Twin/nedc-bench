@@ -7,7 +7,7 @@ import pytest
 from pydantic import ValidationError
 
 from nedc_bench.models.annotations import AnnotationFile, EventAnnotation
-from ..utils import create_csv_bi_annotation
+from tests.utils import create_csv_bi_annotation
 
 
 def test_event_annotation_validation():
