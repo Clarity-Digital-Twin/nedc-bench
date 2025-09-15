@@ -10,6 +10,7 @@ except Exception:  # pragma: no cover
     def generate_latest() -> bytes:  # type: ignore
         return b""
 
+
 router = APIRouter()
 
 

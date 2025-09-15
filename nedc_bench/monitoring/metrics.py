@@ -14,10 +14,12 @@ try:  # pragma: no cover - import guard for test envs without dependency
         Gauge as _PromGauge,
         Histogram as _PromHistogram,
     )
+
     Counter = _PromCounter
     Gauge = _PromGauge
     Histogram = _PromHistogram
 except Exception:  # pragma: no cover - provide no-op fallback
+
     class _NoopMetric:
         def labels(self, **_: Any) -> _NoopMetric:
             return self
@@ -53,12 +55,8 @@ evaluation_duration = Histogram(
     ["algorithm", "pipeline"],
     buckets=[0.1, 0.5, 1.0, 2.5, 5.0, 10.0],
 )
-parity_failures = Counter(
-    "nedc_parity_failures_total", "Total parity failures", ["algorithm"]
-)
-active_evaluations = Gauge(
-    "nedc_active_evaluations", "Currently running evaluations"
-)
+parity_failures = Counter("nedc_parity_failures_total", "Total parity failures", ["algorithm"])
+active_evaluations = Gauge("nedc_active_evaluations", "Currently running evaluations")
 
 F = TypeVar("F", bound=Callable[..., Awaitable[Any]])
 

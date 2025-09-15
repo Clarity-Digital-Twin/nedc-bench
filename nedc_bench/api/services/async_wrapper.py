@@ -54,9 +54,7 @@ class AsyncOrchestrator:
         try:
             ref_bytes = Path(ref_file).read_bytes()
             hyp_bytes = Path(hyp_file).read_bytes()
-            key = RedisCache.make_key(
-                ref_bytes, hyp_bytes, algorithm, pipeline, PACKAGE_VERSION
-            )
+            key = RedisCache.make_key(ref_bytes, hyp_bytes, algorithm, pipeline, PACKAGE_VERSION)
         except Exception:  # pragma: no cover - IO issues treated as cache miss
             key = None
 

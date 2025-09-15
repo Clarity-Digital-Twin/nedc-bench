@@ -169,7 +169,7 @@ class TestCacheIntegration:
                 "alpha_result": {"score": 0.95},
                 "beta_result": {"score": 0.95},
                 "parity_passed": True,
-                "cached": True
+                "cached": True,
             }
             orchestrator.cache.get_json.return_value = cached_result
             orchestrator.cache.make_key.return_value = "test_key"
@@ -288,7 +288,7 @@ class TestCachePerformance:
                 return {
                     "alpha_result": {"score": 0.95},
                     "beta_result": {"score": 0.95},
-                    "parity_passed": True
+                    "parity_passed": True,
                 }
 
             # Time first call (cache miss)
@@ -323,7 +323,7 @@ class TestCachePerformance:
             cached_data = {
                 "alpha_result": {"score": 0.95},
                 "beta_result": {"score": 0.95},
-                "parity_passed": True
+                "parity_passed": True,
             }
             orchestrator.cache.get_json.return_value = cached_data
 
@@ -349,14 +349,11 @@ class TestCachePerformance:
             orchestrator.cache.get_json.return_value = {
                 "alpha_result": {"score": 0.95},
                 "beta_result": {"score": 0.95},
-                "parity_passed": True
+                "parity_passed": True,
             }
 
             # Launch multiple concurrent requests
-            tasks = [
-                orchestrator.evaluate(ref_file, hyp_file, "taes", "dual")
-                for _ in range(10)
-            ]
+            tasks = [orchestrator.evaluate(ref_file, hyp_file, "taes", "dual") for _ in range(10)]
 
             start = time.time()
             results = await asyncio.gather(*tasks)
