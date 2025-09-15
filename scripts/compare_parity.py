@@ -18,12 +18,15 @@ def compare_results():
     print("ALPHA vs BETA PARITY COMPARISON")
     print("="*60)
 
-    for algo in ["taes", "epoch", "overlap", "dp"]:
-        print(f"\n{algo.upper()} Algorithm:")
+    # Map algorithm names
+    algo_map = {"taes": "taes", "epoch": "epoch", "overlap": "ovlp", "dp": "dp"}
+
+    for algo_alpha, algo_beta in algo_map.items():
+        print(f"\n{algo_alpha.upper()} Algorithm:")
         print("-"*40)
 
-        a = alpha[algo]
-        b = beta[algo]
+        a = alpha[algo_alpha]
+        b = beta[algo_beta]
 
         # Calculate differences
         tp_diff = b["tp"] - a["tp"]
