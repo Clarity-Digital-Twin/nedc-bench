@@ -93,9 +93,9 @@ class EpochScorer:
         refo, hypo = self._compress_joint(reft, hypt)
 
         # Per-label counts
-        hits: dict[str, int] = {l: 0 for l in labels}
-        misses: dict[str, int] = {l: 0 for l in labels}
-        false_alarms: dict[str, int] = {l: 0 for l in labels}
+        hits: dict[str, int] = {label: 0 for label in labels}
+        misses: dict[str, int] = {label: 0 for label in labels}
+        false_alarms: dict[str, int] = {label: 0 for label in labels}
         insertions: dict[str, int] = {}
         deletions: dict[str, int] = {}
 
