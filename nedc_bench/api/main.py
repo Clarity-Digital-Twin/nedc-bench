@@ -5,12 +5,10 @@ import logging
 import os
 import pathlib
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
 
 from .endpoints import evaluation, health, websocket
 from .middleware.error_handler import error_handler_middleware
@@ -23,14 +21,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-orchestrator: DualPipelineOrchestrator | None = None
-
-
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     """Manage application lifecycle."""
-    global orchestrator
-
     # Ensure NEDC env is available for orchestrator construction
     nedc_root = os.environ.get("NEDC_NFC")
     if not nedc_root:
@@ -45,8 +38,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             os.environ["PYTHONPATH"] = lib_path
 
     logger.info("Starting NEDC-BENCH API")
-    orchestrator = DualPipelineOrchestrator()
-
     # Start the job worker task
     worker_task = asyncio.create_task(job_manager.run_worker(process_evaluation))
     logger.info("Job worker task started")
@@ -57,10 +48,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         logger.info("Shutting down NEDC-BENCH API")
         await job_manager.shutdown()
         worker_task.cancel()
-        try:
+        with contextlib.suppress(asyncio.CancelledError):
             await worker_task
-        except asyncio.CancelledError:
-            pass
 
 
 app = FastAPI(
