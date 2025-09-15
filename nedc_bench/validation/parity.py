@@ -257,18 +257,18 @@ class ParityValidator:
                         )
         else:
             labels = list(beta_result.confusion_matrix.keys())
-            pos_labels = [l for l in labels if l != "null"] or labels
-            tp = float(sum(beta_result.confusion_matrix[l][l] for l in pos_labels))
+            pos_labels = [lbl for lbl in labels if lbl != "null"] or labels
+            tp = float(sum(beta_result.confusion_matrix[lbl][lbl] for lbl in pos_labels))
             fn = float(
                 sum(
-                    sum(beta_result.confusion_matrix[l][j] for j in labels if j != l)
-                    for l in pos_labels
+                    sum(beta_result.confusion_matrix[lbl][j] for j in labels if j != lbl)
+                    for lbl in pos_labels
                 )
             )
             fp = float(
                 sum(
-                    sum(beta_result.confusion_matrix[i][l] for i in labels if i != l)
-                    for l in pos_labels
+                    sum(beta_result.confusion_matrix[i][lbl] for i in labels if i != lbl)
+                    for lbl in pos_labels
                 )
             )
 
