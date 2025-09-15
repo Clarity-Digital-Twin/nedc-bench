@@ -154,5 +154,8 @@ class TestDPAlignment:
         )
         assert result.total_substitutions == total_subs
 
-        # NEDC relationship: FN = deletions + substitutions
-        assert result.false_negatives == result.total_deletions + result.total_substitutions
+        # In NEDC EEG convention, FN only counts misses for positive class ("seiz")
+        # FN = deletions of seiz + substitutions from seiz
+        seiz_deletions = result.deletions.get("seiz", 0)
+        seiz_substitutions = sum(result.substitutions.get("seiz", {}).values())
+        assert result.false_negatives == seiz_deletions + seiz_substitutions
