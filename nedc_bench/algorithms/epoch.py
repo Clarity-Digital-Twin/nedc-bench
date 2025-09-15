@@ -113,11 +113,16 @@ class EpochScorer:
         """NEDC epoch scoring (sampling midpoints + joint compression).
 
         Mirrors nedc_eeg_eval_epoch.py:
+        - Augment annotations with background to fill gaps (CRITICAL for parity!)
         - Sample at epoch_duration/2, 3/2*epoch_duration, ... <= duration
         - Build substitution matrix at sample resolution
         - Add leading/trailing nulls, jointly compress duplicates
         - Derive per-label hits/misses/false alarms and ins/del from compressed streams
         """
+        # CRITICAL: Augment events like NEDC does - fill all gaps with background
+        ref_events = self._augment_events(ref_events, file_duration)
+        hyp_events = self._augment_events(hyp_events, file_duration)
+
         # Generate sample times and initialize confusion matrix labels
         samples = self._sample_times(file_duration)
         labels = sorted(
@@ -204,6 +209,64 @@ class EpochScorer:
             if (val >= ev.start_time) & (val <= ev.stop_time):  # noqa: PLR2004
                 return idx
         return -1
+
+    def _augment_events(
+        self, events: list[EventAnnotation], file_duration: float
+    ) -> list[EventAnnotation]:
+        """Augment events with background to fill all gaps (NEDC-style).
+
+        NEDC fills gaps between events with background annotation so that
+        the entire file duration is covered continuously. This is CRITICAL
+        for exact parity - without this, we had a 9 TP difference!
+        """
+        if not events:
+            # Empty annotation - fill entire duration with background
+            return [
+                EventAnnotation(
+                    channel="TERM",
+                    start_time=0.0,
+                    stop_time=file_duration,
+                    label=self.null_class,
+                    confidence=1.0,
+                )
+            ]
+
+        augmented: list[EventAnnotation] = []
+        curr_time = 0.0
+
+        # Sort events by start time
+        sorted_events = sorted(events, key=lambda x: x.start_time)
+
+        for ev in sorted_events:
+            # Fill gap before this event if needed
+            if curr_time < ev.start_time:
+                augmented.append(
+                    EventAnnotation(
+                        channel="TERM",
+                        start_time=curr_time,
+                        stop_time=ev.start_time,
+                        label=self.null_class,
+                        confidence=1.0,
+                    )
+                )
+
+            # Add the actual event
+            augmented.append(ev)
+            curr_time = ev.stop_time
+
+        # Fill gap at end if needed
+        if curr_time < file_duration:
+            augmented.append(
+                EventAnnotation(
+                    channel="TERM",
+                    start_time=curr_time,
+                    stop_time=file_duration,
+                    label=self.null_class,
+                    confidence=1.0,
+                )
+            )
+
+        return augmented
 
     def _compress_joint(self, reft: list[str], hypt: list[str]) -> tuple[list[str], list[str]]:
         """Compress duplicate consecutive pairs across ref/hyp jointly."""
