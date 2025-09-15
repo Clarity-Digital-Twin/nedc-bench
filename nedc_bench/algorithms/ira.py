@@ -9,7 +9,6 @@ SOLID Principles:
 """
 
 from dataclasses import dataclass
-from typing import Dict, List
 
 
 @dataclass
@@ -21,16 +20,16 @@ class IRAResult:
     - Kappa values are FLOATS (agreement scores)
     """
     # Confusion matrix (INTEGERS)
-    confusion_matrix: Dict[str, Dict[str, int]]
+    confusion_matrix: dict[str, dict[str, int]]
 
     # Per-label kappa (FLOATS)
-    per_label_kappa: Dict[str, float]
+    per_label_kappa: dict[str, float]
 
     # Multi-class kappa (FLOAT)
     multi_class_kappa: float
 
     # Labels
-    labels: List[str]
+    labels: list[str]
 
 
 class IRAScorer:
@@ -41,8 +40,8 @@ class IRAScorer:
     and float kappa values.
     """
 
-    def score(self, ref_labels: List[str],
-              hyp_labels: List[str]) -> IRAResult:
+    def score(self, ref_labels: list[str],
+              hyp_labels: list[str]) -> IRAResult:
         """NEDC IRA using epoch-based approach
 
         Implements NEDC lines 22-24: uses epoch-based scoring internally.
@@ -92,8 +91,8 @@ class IRAScorer:
             labels=labels
         )
 
-    def _compute_label_kappa(self, confusion: Dict, label: str,
-                            labels: List[str]) -> float:
+    def _compute_label_kappa(self, confusion: dict, label: str,
+                            labels: list[str]) -> float:
         """Per-label kappa using 2x2 matrix (lines 499-540)
 
         Computes Cohen's kappa for a single label vs all others.
@@ -118,7 +117,7 @@ class IRAScorer:
 
         # d = true negative (both agree it's not this label)
         d = sum(confusion.get(l2, {}).get(l3, 0) for l2 in labels for l3 in labels
-                if l2 != label and l3 != label)
+                if label not in {l2, l3})
 
         # Compute total
         denom = a + b + c + d
@@ -139,8 +138,8 @@ class IRAScorer:
 
         return (p_o - p_e) / (1 - p_e)
 
-    def _compute_multi_class_kappa(self, confusion: Dict,
-                                   labels: List[str]) -> float:
+    def _compute_multi_class_kappa(self, confusion: dict,
+                                   labels: list[str]) -> float:
         """Multi-class kappa (lines 548-583)
 
         Computes overall Cohen's kappa for all classes.
@@ -167,21 +166,21 @@ class IRAScorer:
             sum_cols[label] = sum(confusion.get(l2, {}).get(label, 0) for l2 in labels)
 
         # Diagonal sum (correct predictions)
-        sum_M = sum(confusion.get(l, {}).get(l, 0) for l in labels)
+        sum_m = sum(confusion.get(label, {}).get(label, 0) for label in labels)
 
         # Total count
-        sum_N = sum(sum_rows.values())
+        sum_n = sum(sum_rows.values())
 
         # Handle empty confusion matrix
-        if sum_N == 0:
+        if sum_n == 0:
             return 0.0
 
         # Sum of products of marginals
-        sum_gc = sum(sum_rows[l] * sum_cols[l] for l in labels)
+        sum_gc = sum(sum_rows[label] * sum_cols[label] for label in labels)
 
         # Compute kappa
-        num = sum_N * sum_M - sum_gc
-        denom = sum_N * sum_N - sum_gc
+        num = sum_n * sum_m - sum_gc
+        denom = sum_n * sum_n - sum_gc
 
         if denom == 0:
             return 1.0 if num == 0 else 0.0

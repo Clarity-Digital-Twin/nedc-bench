@@ -9,7 +9,6 @@ SOLID Principles:
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, Tuple
 
 from nedc_bench.models.annotations import EventAnnotation
 
@@ -21,18 +20,18 @@ class EpochResult:
     All counts are integers per NEDC source lines 690-723.
     """
     # Full NxN confusion matrix (all integers)
-    confusion_matrix: Dict[str, Dict[str, int]]
+    confusion_matrix: dict[str, dict[str, int]]
 
     # Per-label counts (all integers)
-    hits: Dict[str, int]
-    misses: Dict[str, int]
-    false_alarms: Dict[str, int]
-    insertions: Dict[str, int]  # From NULL_CLASS transitions
-    deletions: Dict[str, int]  # To NULL_CLASS transitions
+    hits: dict[str, int]
+    misses: dict[str, int]
+    false_alarms: dict[str, int]
+    insertions: dict[str, int]  # From NULL_CLASS transitions
+    deletions: dict[str, int]  # To NULL_CLASS transitions
 
     # Compressed epoch sequences (for debugging)
-    compressed_ref: List[str]
-    compressed_hyp: List[str]
+    compressed_ref: list[str]
+    compressed_hyp: list[str]
 
 
 class EpochScorer:
@@ -54,8 +53,8 @@ class EpochScorer:
         self.epoch_duration = epoch_duration
         self.null_class = null_class
 
-    def score(self, ref_events: List[EventAnnotation],
-              hyp_events: List[EventAnnotation],
+    def score(self, ref_events: list[EventAnnotation],
+              hyp_events: list[EventAnnotation],
               file_duration: float) -> EpochResult:
         """NEDC epoch scoring with compression
 
@@ -83,7 +82,7 @@ class EpochScorer:
         # Build confusion matrix and count errors
         return self._compute_metrics(ref_compressed, hyp_compressed)
 
-    def _create_epochs(self, file_duration: float) -> List[Tuple[float, float]]:
+    def _create_epochs(self, file_duration: float) -> list[tuple[float, float]]:
         """Create fixed-width epoch windows
 
         Args:
@@ -102,8 +101,8 @@ class EpochScorer:
 
         return epochs
 
-    def _classify_epochs(self, epochs: List[Tuple[float, float]],
-                        events: List[EventAnnotation]) -> List[str]:
+    def _classify_epochs(self, epochs: list[tuple[float, float]],
+                        events: list[EventAnnotation]) -> list[str]:
         """Classify each epoch based on overlapping events
 
         Args:
@@ -131,7 +130,7 @@ class EpochScorer:
 
         return labels
 
-    def _compress_epochs(self, labels: List[str]) -> List[str]:
+    def _compress_epochs(self, labels: list[str]) -> list[str]:
         """Remove consecutive duplicates (NEDC lines 600-610)
 
         This is a CRITICAL step that distinguishes epoch scoring from
@@ -147,14 +146,12 @@ class EpochScorer:
             return []
 
         compressed = [labels[0]]
-        for i in range(1, len(labels)):
-            if labels[i] != labels[i-1]:
-                compressed.append(labels[i])
+        compressed.extend(labels[i] for i in range(1, len(labels)) if labels[i] != labels[i - 1])
 
         return compressed
 
-    def _compute_metrics(self, ref_compressed: List[str],
-                        hyp_compressed: List[str]) -> EpochResult:
+    def _compute_metrics(self, ref_compressed: list[str],
+                        hyp_compressed: list[str]) -> EpochResult:
         """Build confusion matrix and compute metrics
 
         Implements NEDC lines 690-723: confusion matrix with NULL_CLASS handling.

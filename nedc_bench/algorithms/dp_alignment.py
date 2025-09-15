@@ -8,11 +8,9 @@ SOLID Principles:
 - Dependency Inversion: Depend on abstractions (Result dataclass)
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Tuple, Optional
-import numpy as np
+from dataclasses import dataclass
 
-from nedc_bench.models.annotations import EventAnnotation
+import numpy as np
 
 NULL_CLASS = "null"
 
@@ -25,9 +23,9 @@ class DPAlignmentResult:
     """
     # Primary counts (all integers per NEDC)
     hits: int
-    substitutions: Dict[str, Dict[str, int]]
-    insertions: Dict[str, int]
-    deletions: Dict[str, int]
+    substitutions: dict[str, dict[str, int]]
+    insertions: dict[str, int]
+    deletions: dict[str, int]
 
     # Aggregate counts
     total_insertions: int
@@ -40,8 +38,8 @@ class DPAlignmentResult:
     false_negatives: int
 
     # Aligned sequences for debugging
-    aligned_ref: List[str]
-    aligned_hyp: List[str]
+    aligned_ref: list[str]
+    aligned_hyp: list[str]
 
 
 class DPAligner:
@@ -66,7 +64,7 @@ class DPAligner:
         self.penalty_ins = penalty_ins
         self.penalty_sub = penalty_sub
 
-    def align(self, ref: List[str], hyp: List[str]) -> DPAlignmentResult:
+    def align(self, ref: list[str], hyp: list[str]) -> DPAlignmentResult:
         """NEDC-exact DP alignment matching lines 550-711
 
         Args:
@@ -77,8 +75,8 @@ class DPAligner:
             DPAlignmentResult with integer counts and aligned sequences
         """
         # Add NULL_CLASS sentinels (NEDC lines 578-586)
-        ref_padded = [NULL_CLASS] + ref + [NULL_CLASS]
-        hyp_padded = [NULL_CLASS] + hyp + [NULL_CLASS]
+        ref_padded = [NULL_CLASS, *ref, NULL_CLASS]
+        hyp_padded = [NULL_CLASS, *hyp, NULL_CLASS]
 
         # Run DP alignment
         aligned_ref, aligned_hyp = self._dp_align(ref_padded, hyp_padded)
@@ -88,7 +86,7 @@ class DPAligner:
 
         return result
 
-    def _dp_align(self, ref: List[str], hyp: List[str]) -> Tuple[List[str], List[str]]:
+    def _dp_align(self, ref: list[str], hyp: list[str]) -> tuple[list[str], list[str]]:
         """Core DP alignment with backtracking
 
         Implements NEDC lines 587-680: matrix construction and backtrack.
@@ -101,26 +99,26 @@ class DPAligner:
 
         # Initialize first row (all insertions)
         for j in range(1, n_hyp + 1):
-            dp[0][j] = dp[0][j-1] + self.penalty_ins
+            dp[0][j] = dp[0][j - 1] + self.penalty_ins
 
         # Initialize first column (all deletions)
         for i in range(1, n_ref + 1):
-            dp[i][0] = dp[i-1][0] + self.penalty_del
+            dp[i][0] = dp[i - 1][0] + self.penalty_del
 
         # Fill DP matrix
         for i in range(1, n_ref + 1):
             for j in range(1, n_hyp + 1):
                 # Match/substitution cost
-                if ref[i-1] == hyp[j-1]:
-                    match_cost = dp[i-1][j-1]  # No penalty for match
+                if ref[i - 1] == hyp[j - 1]:
+                    match_cost = dp[i - 1][j - 1]  # No penalty for match
                 else:
-                    match_cost = dp[i-1][j-1] + self.penalty_sub
+                    match_cost = dp[i - 1][j - 1] + self.penalty_sub
 
                 # Deletion cost
-                del_cost = dp[i-1][j] + self.penalty_del
+                del_cost = dp[i - 1][j] + self.penalty_del
 
                 # Insertion cost
-                ins_cost = dp[i][j-1] + self.penalty_ins
+                ins_cost = dp[i][j - 1] + self.penalty_ins
 
                 # Take minimum
                 dp[i][j] = min(match_cost, del_cost, ins_cost)
@@ -134,11 +132,11 @@ class DPAligner:
             if i == 0:
                 # Only insertions left
                 aligned_ref.append("_GAP_")
-                aligned_hyp.append(hyp[j-1])
+                aligned_hyp.append(hyp[j - 1])
                 j -= 1
             elif j == 0:
                 # Only deletions left
-                aligned_ref.append(ref[i-1])
+                aligned_ref.append(ref[i - 1])
                 aligned_hyp.append("_GAP_")
                 i -= 1
             else:
@@ -146,26 +144,26 @@ class DPAligner:
                 current = dp[i][j]
 
                 # Check match/substitution
-                if ref[i-1] == hyp[j-1]:
-                    match_cost = dp[i-1][j-1]
+                if ref[i - 1] == hyp[j - 1]:
+                    match_cost = dp[i - 1][j - 1]
                 else:
-                    match_cost = dp[i-1][j-1] + self.penalty_sub
+                    match_cost = dp[i - 1][j - 1] + self.penalty_sub
 
                 if current == match_cost:
                     # Match or substitution
-                    aligned_ref.append(ref[i-1])
-                    aligned_hyp.append(hyp[j-1])
+                    aligned_ref.append(ref[i - 1])
+                    aligned_hyp.append(hyp[j - 1])
                     i -= 1
                     j -= 1
-                elif current == dp[i-1][j] + self.penalty_del:
+                elif current == dp[i - 1][j] + self.penalty_del:
                     # Deletion
-                    aligned_ref.append(ref[i-1])
+                    aligned_ref.append(ref[i - 1])
                     aligned_hyp.append("_GAP_")
                     i -= 1
                 else:
                     # Insertion
                     aligned_ref.append("_GAP_")
-                    aligned_hyp.append(hyp[j-1])
+                    aligned_hyp.append(hyp[j - 1])
                     j -= 1
 
         # Reverse to get correct order
@@ -174,7 +172,7 @@ class DPAligner:
 
         return aligned_ref, aligned_hyp
 
-    def _count_errors(self, aligned_ref: List[str], aligned_hyp: List[str]) -> DPAlignmentResult:
+    def _count_errors(self, aligned_ref: list[str], aligned_hyp: list[str]) -> DPAlignmentResult:
         """Count alignment errors matching NEDC lines 685-708
 
         Implements the dual counting system: hit/miss/false_alarm AND del/ins/sub.

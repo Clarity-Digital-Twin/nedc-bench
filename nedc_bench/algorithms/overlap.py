@@ -9,7 +9,6 @@ SOLID Principles:
 """
 
 from dataclasses import dataclass
-from typing import List, Dict
 
 from nedc_bench.models.annotations import EventAnnotation
 
@@ -22,13 +21,13 @@ class OverlapResult:
     All counts are integers per NEDC source lines 596-613.
     """
     # Direct counts (all integers per NEDC)
-    hits: Dict[str, int]  # Per-label hits
-    misses: Dict[str, int]  # Per-label misses
-    false_alarms: Dict[str, int]  # Per-label false alarms
+    hits: dict[str, int]  # Per-label hits
+    misses: dict[str, int]  # Per-label misses
+    false_alarms: dict[str, int]  # Per-label false alarms
 
     # NEDC mappings (lines 711-713)
-    insertions: Dict[str, int]  # = false_alarms
-    deletions: Dict[str, int]  # = misses
+    insertions: dict[str, int]  # = false_alarms
+    deletions: dict[str, int]  # = misses
 
     # Totals
     total_hits: int
@@ -43,8 +42,8 @@ class OverlapScorer:
     using binary ANY overlap detection, not proportional overlap.
     """
 
-    def score(self, ref_events: List[EventAnnotation],
-              hyp_events: List[EventAnnotation]) -> OverlapResult:
+    def score(self, ref_events: list[EventAnnotation],
+              hyp_events: list[EventAnnotation]) -> OverlapResult:
         """NEDC overlap: binary ANY overlap detection
 
         Implements NEDC lines 593-613: ANY temporal overlap counts as hit.

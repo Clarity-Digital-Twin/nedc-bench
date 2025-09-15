@@ -1,8 +1,9 @@
 """Test suite for Epoch Scoring algorithm - TDD approach"""
 
+
 import pytest
-from typing import List
-from nedc_bench.algorithms.epoch import EpochScorer, EpochResult
+
+from nedc_bench.algorithms.epoch import EpochScorer
 from nedc_bench.models.annotations import EventAnnotation
 
 
@@ -10,7 +11,7 @@ class TestEpochScoring:
     """Test Epoch Scoring following NEDC exact semantics"""
 
     @pytest.fixture
-    def simple_events(self) -> tuple[List[EventAnnotation], List[EventAnnotation]]:
+    def simple_events(self) -> tuple[list[EventAnnotation], list[EventAnnotation]]:
         """Simple test case with events"""
         ref = [
             EventAnnotation(
@@ -47,7 +48,7 @@ class TestEpochScoring:
         return ref, hyp
 
     @pytest.fixture
-    def consecutive_duplicate_case(self) -> tuple[List[EventAnnotation], List[EventAnnotation]]:
+    def consecutive_duplicate_case(self) -> tuple[list[EventAnnotation], list[EventAnnotation]]:
         """Test case requiring consecutive duplicate compression"""
         ref = [
             EventAnnotation(
@@ -188,9 +189,9 @@ class TestEpochScoring:
 
         # Check no consecutive duplicates in compressed sequences
         for i in range(1, len(result.compressed_ref)):
-            assert result.compressed_ref[i] != result.compressed_ref[i-1]
+            assert result.compressed_ref[i] != result.compressed_ref[i - 1]
         for i in range(1, len(result.compressed_hyp)):
-            assert result.compressed_hyp[i] != result.compressed_hyp[i-1]
+            assert result.compressed_hyp[i] != result.compressed_hyp[i - 1]
 
     def test_epoch_creation_with_fixed_windows(self):
         """Test that epochs are fixed-width windows"""

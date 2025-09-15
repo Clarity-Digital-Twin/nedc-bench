@@ -1,8 +1,9 @@
 """Test suite for Overlap Scoring algorithm - TDD approach"""
 
+
 import pytest
-from typing import List
-from nedc_bench.algorithms.overlap import OverlapScorer, OverlapResult
+
+from nedc_bench.algorithms.overlap import OverlapScorer
 from nedc_bench.models.annotations import EventAnnotation
 
 
@@ -10,7 +11,7 @@ class TestOverlapScoring:
     """Test Overlap Scoring following NEDC exact semantics"""
 
     @pytest.fixture
-    def any_overlap_case(self) -> tuple[List[EventAnnotation], List[EventAnnotation]]:
+    def any_overlap_case(self) -> tuple[list[EventAnnotation], list[EventAnnotation]]:
         """Test case demonstrating ANY overlap (not proportional)"""
         ref = [
             EventAnnotation(
@@ -33,7 +34,7 @@ class TestOverlapScoring:
         return ref, hyp
 
     @pytest.fixture
-    def no_confusion_matrix_case(self) -> tuple[List[EventAnnotation], List[EventAnnotation]]:
+    def no_confusion_matrix_case(self) -> tuple[list[EventAnnotation], list[EventAnnotation]]:
         """Test case showing overlap doesn't build confusion matrix"""
         ref = [
             EventAnnotation(
@@ -70,7 +71,7 @@ class TestOverlapScoring:
         return ref, hyp
 
     @pytest.fixture
-    def perfect_overlap_case(self) -> tuple[List[EventAnnotation], List[EventAnnotation]]:
+    def perfect_overlap_case(self) -> tuple[list[EventAnnotation], list[EventAnnotation]]:
         """Perfect overlap case"""
         events = [
             EventAnnotation(

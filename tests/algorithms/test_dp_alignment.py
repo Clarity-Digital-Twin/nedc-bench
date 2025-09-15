@@ -1,32 +1,30 @@
 """Test suite for DP Alignment algorithm - TDD approach"""
 
+
 import pytest
-from typing import List, Dict
-from nedc_bench.algorithms.dp_alignment import (
-    DPAligner, DPAlignmentResult, NULL_CLASS
-)
-from nedc_bench.models.annotations import EventAnnotation
+
+from nedc_bench.algorithms.dp_alignment import NULL_CLASS, DPAligner
 
 
 class TestDPAlignment:
     """Test DP Alignment following NEDC exact semantics"""
 
     @pytest.fixture
-    def simple_sequences(self) -> tuple[List[str], List[str]]:
+    def simple_sequences(self) -> tuple[list[str], list[str]]:
         """Simple test case for alignment"""
         ref = ["seiz", "bckg", "seiz", "bckg"]
         hyp = ["bckg", "seiz", "seiz", "bckg"]
         return ref, hyp
 
     @pytest.fixture
-    def null_class_case(self) -> tuple[List[str], List[str]]:
+    def null_class_case(self) -> tuple[list[str], list[str]]:
         """Test case requiring NULL_CLASS handling"""
         ref = ["seiz", "seiz", "bckg"]
         hyp = ["bckg", "seiz"]  # Shorter sequence
         return ref, hyp
 
     @pytest.fixture
-    def exact_match_case(self) -> tuple[List[str], List[str]]:
+    def exact_match_case(self) -> tuple[list[str], list[str]]:
         """Perfect alignment case"""
         ref = ["seiz", "bckg", "seiz"]
         hyp = ["seiz", "bckg", "seiz"]

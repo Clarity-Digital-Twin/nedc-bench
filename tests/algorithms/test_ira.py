@@ -1,29 +1,30 @@
 """Test suite for IRA (Inter-Rater Agreement) algorithm - TDD approach"""
 
+
 import pytest
-from typing import List
-from nedc_bench.algorithms.ira import IRAScorer, IRAResult
+
+from nedc_bench.algorithms.ira import IRAScorer
 
 
 class TestIRA:
     """Test IRA following NEDC exact semantics"""
 
     @pytest.fixture
-    def perfect_agreement_case(self) -> tuple[List[str], List[str]]:
+    def perfect_agreement_case(self) -> tuple[list[str], list[str]]:
         """Perfect agreement case"""
         ref = ["seiz", "bckg", "seiz", "bckg", "artf"]
         hyp = ["seiz", "bckg", "seiz", "bckg", "artf"]
         return ref, hyp
 
     @pytest.fixture
-    def no_agreement_case(self) -> tuple[List[str], List[str]]:
+    def no_agreement_case(self) -> tuple[list[str], list[str]]:
         """No agreement case"""
         ref = ["seiz", "seiz", "seiz"]
         hyp = ["bckg", "bckg", "bckg"]
         return ref, hyp
 
     @pytest.fixture
-    def mixed_agreement_case(self) -> tuple[List[str], List[str]]:
+    def mixed_agreement_case(self) -> tuple[list[str], list[str]]:
         """Mixed agreement case"""
         ref = ["seiz", "bckg", "seiz", "bckg", "artf", "null"]
         hyp = ["seiz", "seiz", "bckg", "bckg", "artf", "artf"]
@@ -69,7 +70,7 @@ class TestIRA:
         assert abs(result.multi_class_kappa - 1.0) < 1e-10
 
         # Each label should also have perfect kappa
-        for label, kappa in result.per_label_kappa.items():
+        for kappa in result.per_label_kappa.values():
             assert abs(kappa - 1.0) < 1e-10
 
     def test_no_agreement_kappa(self, no_agreement_case):
