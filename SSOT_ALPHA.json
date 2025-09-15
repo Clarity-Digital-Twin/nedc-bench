@@ -1,30 +1,37 @@
 {
+  "dp": {
+    "tp": 328.0,
+    "fp": 966.0,
+    "fn": 747.0,
+    "sensitivity": 30.511627906976745,
+    "fa_per_24h": 0.0
+  },
+  "epoch": {
+    "tp": 0.0,
+    "fp": 0.0,
+    "fn": 0.0,
+    "sensitivity": 0.0,
+    "fa_per_24h": 0.0
+  },
+  "overlap": {
+    "tp": 253.0,
+    "fp": 536.0,
+    "fn": 822.0,
+    "sensitivity": 23.53488372093023,
+    "fa_per_24h": 0.0
+  },
   "taes": {
     "tp": 133.84,
     "fp": 552.77,
     "fn": 941.16,
-    "sensitivity": 12.45,
-    "fa_per_24h": 30.46
+    "sensitivity": 12.450232558139534,
+    "fa_per_24h": 0.0
   },
-  "epoch": {
-    "tp": 33704.00,
-    "fp": 18816.00,
-    "fn": 250459.00,
-    "sensitivity": 11.86,
-    "fa_per_24h": 259.23
-  },
-  "overlap": {
-    "tp": 253.00,
-    "fp": 536.00,
-    "fn": 822.00,
-    "sensitivity": 23.53,
-    "fa_per_24h": 29.54
-  },
-  "dp": {
-    "tp": 328.00,
-    "fp": 966.00,
-    "fn": 747.00,
-    "sensitivity": 30.51,
-    "fa_per_24h": 53.23
+  "ira": {
+    "multi_class_kappa": 0.1887,
+    "per_label_kappa": {
+      "seiz": 0.1887,
+      "bckg": 0.1887
+    }
   }
 }

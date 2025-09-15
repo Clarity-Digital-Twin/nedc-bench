@@ -18,7 +18,7 @@ def compare_results():
     print("ALPHA vs BETA PARITY COMPARISON")
     print("="*60)
 
-    # Map algorithm names
+    # Map algorithm names (alpha key -> beta key)
     algo_map = {"taes": "taes", "epoch": "epoch", "overlap": "ovlp", "dp": "dp"}
 
     for algo_alpha, algo_beta in algo_map.items():
@@ -52,6 +52,22 @@ def compare_results():
             print("  ⚠️ Near parity (< 1 event difference)")
         else:
             print(f"  ❌ Parity mismatch: TP diff={tp_diff:.2f}")
+
+    # IRA: compare kappa values
+    if "ira" in alpha and "ira" in beta:
+        print("\nIRA Algorithm:")
+        print("-"*40)
+        a = alpha["ira"]
+        b = beta["ira"]
+        a_multi = float(a.get("multi_class_kappa", a.get("kappa", 0.0)))
+        b_multi = float(b.get("multi_class_kappa", 0.0))
+        print(f"  Alpha Multi-Class Kappa: {a_multi:.4f}")
+        print(f"  Beta  Multi-Class Kappa: {b_multi:.4f}")
+        diff = abs(a_multi - b_multi)
+        if diff <= 1e-4:
+            print("  ✅ EXACT PARITY ACHIEVED!")
+        else:
+            print(f"  ❌ Parity mismatch: Δkappa={diff:.6f}")
 
 if __name__ == "__main__":
     compare_results()

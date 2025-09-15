@@ -1,100 +1,120 @@
 #!/usr/bin/env python3
-"""Parse Alpha (NEDC v6.0.0) results from summary files."""
+"""Parse Alpha (NEDC v6.0.0) results from summary.txt and per‑algo files.
+
+Outputs SSOT_ALPHA.json with per‑algorithm metrics that align with how
+our Beta implementation reports totals:
+- TAES/DP/Overlap/Epoch: tp, fp, fn, sensitivity, fa_per_24h
+- IRA: multi_class_kappa, per_label_kappa
+
+Notes:
+- Epoch FA/24h is per NEDC: scale FP by epoch_duration before rate.
+- All values are parsed from NEDC summary to avoid recomputation drift.
+"""
 
 import json
 from pathlib import Path
+import re
 
-def parse_alpha_results():
-    """Parse NEDC output to extract totals."""
+def parse_alpha_results() -> dict:
+    """Parse NEDC output to extract totals for all algorithms.
+
+    We prefer parsing summary.txt for consistency (also contains IRA).
+    """
     nedc_output = Path("nedc_eeg_eval/v6.0.0/output")
+    summary_path = nedc_output / "summary.txt"
+    if not summary_path.exists():
+        raise FileNotFoundError(f"NEDC summary not found: {summary_path}")
 
-    results = {}
+    text = summary_path.read_text(encoding="utf-8", errors="ignore")
 
-    # Parse each algorithm summary
+    def section(block_title: str) -> str:
+        pat = rf"==============================\n{re.escape(block_title)}.*?\n(.*?)\n=============================="
+        m = re.search(pat, text, re.DOTALL | re.IGNORECASE)
+        if not m:
+            # Fallback: try non-greedy between title and next separator
+            pat2 = rf"{re.escape(block_title)}.*?\n(.*?)(?:\n={10,}|\Z)"
+            m = re.search(pat2, text, re.DOTALL | re.IGNORECASE)
+        return m.group(1) if m else ""
 
-    # 1. TAES - look for SUMMARY section
-    taes_file = nedc_output / "summary_taes.txt"
-    with open(taes_file) as f:
-        lines = f.readlines()
-    for i, line in enumerate(lines):
-        if "SUMMARY:" in line:
-            # Next line has totals
-            parts = lines[i+1].split()
-            results["taes"] = {
-                "tp": float(parts[1]),
-                "fp": float(parts[2]),
-                "fn": float(parts[3])
-            }
-            break
+    def parse_label_block(sect: str, label: str) -> dict:
+        # Extract per-label metrics for LABEL: <label>
+        # Supports both uppercase and lowercase labels
+        lab_pat = rf"LABEL:\s*{label}\b.*?\n(.*?)(?:\n\n|\Z)"
+        m = re.search(lab_pat, sect, re.DOTALL | re.IGNORECASE)
+        return {k: v for k, v in (re.findall(r"^\s*([A-Za-z \(\)]+):\s+([0-9\.]+)", m.group(1), re.M) if m else [])}
 
-    # 2. Epoch - look for confusion matrix
-    epoch_file = nedc_output / "summary_epoch.txt"
-    with open(epoch_file) as f:
-        lines = f.readlines()
-    for line in lines:
-        if "seiz:" in line and "bckg" not in line[:10]:
-            parts = line.split()
-            # Format: seiz:    33704.00 ( 11.86%)   250459.00 ( 88.14%)
-            results["epoch"] = {
-                "tp": float(parts[1]),
-                "fn": float(parts[4])
-            }
-        elif "bckg:" in line and "seiz" not in line[:10]:
-            parts = line.split()
-            # Format: bckg:    18816.00 (  0.31%)  5968398.00 ( 99.69%)
-            results["epoch"]["fp"] = float(parts[1])
-            break
+    results: dict[str, dict] = {}
 
-    # 3. Overlap - look for SUMMARY
-    overlap_file = nedc_output / "summary_ovlp.txt"
-    with open(overlap_file) as f:
-        lines = f.readlines()
-    for i, line in enumerate(lines):
-        if "SUMMARY:" in line:
-            parts = lines[i+1].split()
-            results["overlap"] = {
-                "tp": float(parts[1]),
-                "fp": float(parts[2]),
-                "fn": float(parts[3])
-            }
-            break
+    # ---------- DP ----------
+    dp_sec = section("NEDC DP ALIGNMENT SCORING SUMMARY")
+    dp_seiz = parse_label_block(dp_sec, "SEIZ")
+    if dp_seiz:
+        tp = float(dp_seiz.get("Hits", 0))
+        fp = float(dp_seiz.get("False Alarms", 0))
+        fn = float(dp_seiz.get("Misses", 0))
+        fa = float(dp_seiz.get("False Alarm Rate", 0.0))
+        sens = 100.0 * tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        results["dp"] = {"tp": tp, "fp": fp, "fn": fn, "sensitivity": sens, "fa_per_24h": fa}
 
-    # 4. DP Alignment - look for SUMMARY
-    dp_file = nedc_output / "summary_dpalign.txt"
-    with open(dp_file) as f:
-        lines = f.readlines()
-    for i, line in enumerate(lines):
-        if "SUMMARY:" in line:
-            parts = lines[i+1].split()
-            results["dp"] = {
-                "tp": float(parts[1]),
-                "fp": float(parts[2]),
-                "fn": float(parts[3])
-            }
-            break
+    # ---------- Epoch ----------
+    ep_sec = section("NEDC EPOCH SCORING SUMMARY")
+    # Pull TP/FP/FN from the "PER LABEL RESULTS -> LABEL: SEIZ" block
+    # True Positives (TP), False Positives (FP), False Negatives (FN)
+    ep_seiz = parse_label_block(ep_sec, "SEIZ")
+    if ep_seiz:
+        tp = float(ep_seiz.get("True Positives (TP)", 0))
+        fp = float(ep_seiz.get("False Positives (FP)", 0))
+        fn = float(ep_seiz.get("False Negatives (FN)", 0))
+        fa = float(ep_seiz.get("False Alarm Rate", 0.0))
+        sens = 100.0 * tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        results["epoch"] = {"tp": tp, "fp": fp, "fn": fn, "sensitivity": sens, "fa_per_24h": fa}
 
-    # Calculate sensitivity and FA/24h
-    total_hours = 436.53  # From NEDC output
-    for algo, metrics in results.items():
-        tp = metrics["tp"]
-        fp = metrics["fp"]
-        fn = metrics["fn"]
+    # ---------- Overlap ----------
+    ov_sec = section("NEDC OVERLAP SCORING SUMMARY")
+    ov_seiz = parse_label_block(ov_sec, "SEIZ")
+    if ov_seiz:
+        tp = float(ov_seiz.get("Hits", 0))
+        fp = float(ov_seiz.get("False Alarms", 0))
+        fn = float(ov_seiz.get("Misses", 0))
+        fa = float(ov_seiz.get("False Alarm Rate", 0.0))
+        sens = 100.0 * tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        results["overlap"] = {"tp": tp, "fp": fp, "fn": fn, "sensitivity": sens, "fa_per_24h": fa}
 
-        metrics["sensitivity"] = (tp / (tp + fn) * 100) if (tp + fn) > 0 else 0
-        metrics["fa_per_24h"] = fp * 24 / total_hours
+    # ---------- TAES ----------
+    ta_sec = section("NEDC TAES SCORING SUMMARY")
+    ta_seiz = parse_label_block(ta_sec, "SEIZ")
+    if ta_seiz:
+        tp = float(ta_seiz.get("Hits", 0))
+        fp = float(ta_seiz.get("False Alarms", 0))
+        fn = float(ta_seiz.get("Misses", 0))
+        fa = float(ta_seiz.get("False Alarm Rate", 0.0))
+        sens = 100.0 * tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        results["taes"] = {"tp": tp, "fp": fp, "fn": fn, "sensitivity": sens, "fa_per_24h": fa}
+
+    # ---------- IRA ----------
+    ira_sec = section("NEDC INTER-RATER AGREEMENT SUMMARY")
+    if ira_sec:
+        # Multi-Class Kappa
+        mk = re.search(r"Multi-Class Kappa:\s*([0-9\.]+)", ira_sec)
+        multi = float(mk.group(1)) if mk else 0.0
+        # Per-label kappa lines: "Label: seiz   Kappa:  0.1887"
+        per: dict[str, float] = {}
+        for lab, kv in re.findall(r"Label:\s*(\w+)\s*Kappa:\s*([0-9\.]+)", ira_sec):
+            per[lab.lower()] = float(kv)
+        results["ira"] = {"multi_class_kappa": multi, "per_label_kappa": per}
 
     # Save results
-    with open("SSOT_ALPHA.json", "w") as f:
-        json.dump(results, f, indent=2)
+    Path("SSOT_ALPHA.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
 
-    print("Alpha Results:")
+    # Friendly print
+    print("Alpha Results (parsed from summary.txt):")
     for algo, metrics in results.items():
         print(f"\n{algo.upper()}:")
-        print(f"  TP: {metrics['tp']:.2f}")
-        print(f"  FP: {metrics['fp']:.2f}")
-        print(f"  FN: {metrics['fn']:.2f}")
-        print(f"  Sensitivity: {metrics['sensitivity']:.2f}%")
-        print(f"  FA/24h: {metrics['fa_per_24h']:.2f}")
+        for k, v in metrics.items():
+            if isinstance(v, float):
+                print(f"  {k}: {v:.4f}")
+            else:
+                print(f"  {k}: {v}")
 
     return results
 
