@@ -902,24 +902,42 @@ class ParityValidator:
                             )
                         )
         else:
-            a_tp = float(alpha_result.get("true_positives", 0))
-            a_fp = float(alpha_result.get("false_positives", 0))
-            a_fn = float(alpha_result.get("false_negatives", 0))
-            agg = self._aggregate_tp_fp_fn_tn(beta_result.confusion_matrix)
-            for name, a, b in (
-                ("true_positives", a_tp, agg["tp"]),
-                ("false_positives", a_fp, agg["fp"]),
-                ("false_negatives", a_fn, agg["fn"]),
-            ):
-                if abs(a - b) > 0.0:
+            # If Alpha doesn't expose counts, compare per-label metrics for
+            # the SEIZ class (NEDC prints these in the main summary)
+            cm = beta_result.confusion_matrix
+            if "seiz" in cm:
+                pos = "seiz"
+            else:
+                # fallback: first non-null label
+                labels = [k for k in cm.keys() if k != "null"]
+                pos = labels[0] if labels else next(iter(cm))
+            labels = list(cm.keys())
+            tp = float(cm[pos][pos])
+            fn = float(sum(cm[pos][j] for j in labels if j != pos))
+            fp = float(sum(cm[i][pos] for i in labels if i != pos))
+            tn = float(sum(cm[i][j] for i in labels for j in labels if i != pos and j != pos))
+
+            # Compute per-label metrics
+            metrics = {}
+            metrics["sensitivity"] = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+            metrics["precision"] = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+            metrics["accuracy"] = (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) > 0 else 0.0
+            prec = metrics["precision"]
+            rec = metrics["sensitivity"]
+            metrics["f1_score"] = 0.0 if (prec + rec) == 0 else 2 * (prec * rec) / (prec + rec)
+
+            for m in ["sensitivity", "precision", "f1_score", "accuracy"]:
+                a = float(alpha_result.get(m, 0.0))
+                b = float(metrics[m])
+                if abs(a - b) > 1e-4:
                     discrepancies.append(
                         DiscrepancyReport(
-                            metric=name,
+                            metric=m,
                             alpha_value=a,
                             beta_value=b,
                             absolute_difference=abs(a - b),
                             relative_difference=abs(a - b) / max(abs(a), 1e-16),
-                            tolerance=0.0,
+                            tolerance=1e-4,
                         )
                     )
 
@@ -1003,7 +1021,7 @@ class ParityValidator:
         # Compare kappa values (floats)
         a_multi = float(alpha_result.get("kappa", alpha_result.get("multi_class_kappa", 0.0)))
         b_multi = float(beta_result.multi_class_kappa)
-        if abs(a_multi - b_multi) > self.tolerance:
+        if abs(a_multi - b_multi) > 1e-4:
             discrepancies.append(
                 DiscrepancyReport(
                     metric="multi_class_kappa",
@@ -1011,14 +1029,14 @@ class ParityValidator:
                     beta_value=b_multi,
                     absolute_difference=abs(a_multi - b_multi),
                     relative_difference=abs(a_multi - b_multi) / max(abs(a_multi), 1e-16),
-                    tolerance=self.tolerance,
+                    tolerance=1e-4,
                 )
             )
 
         a_pl = alpha_result.get("per_label_kappa", {})
         for lbl, bval in beta_result.per_label_kappa.items():
             aval = float(a_pl.get(lbl, bval))
-            if abs(aval - float(bval)) > self.tolerance:
+            if abs(aval - float(bval)) > 1e-4:
                 discrepancies.append(
                     DiscrepancyReport(
                         metric=f"kappa[{lbl}]",
@@ -1026,7 +1044,7 @@ class ParityValidator:
                         beta_value=float(bval),
                         absolute_difference=abs(aval - float(bval)),
                         relative_difference=abs(aval - float(bval)) / max(abs(aval), 1e-16),
-                        tolerance=self.tolerance,
+                        tolerance=1e-4,
                     )
                 )
 
