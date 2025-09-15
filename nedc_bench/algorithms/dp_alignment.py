@@ -74,12 +74,9 @@ class DPAligner:
         Returns:
             DPAlignmentResult with integer counts and aligned sequences
         """
-        # Add NULL_CLASS sentinels (NEDC lines 578-586)
-        ref_padded = [NULL_CLASS, *ref, NULL_CLASS]
-        hyp_padded = [NULL_CLASS, *hyp, NULL_CLASS]
-
-        # Run DP alignment
-        aligned_ref, aligned_hyp = self._dp_align(ref_padded, hyp_padded)
+        # Run DP alignment on raw sequences; padding is handled inside
+        # _dp_align to ensure a single pair of NULL sentinels.
+        aligned_ref, aligned_hyp = self._dp_align(ref, hyp)
 
         # Count errors matching NEDC lines 685-708
         result = self._count_errors(aligned_ref, aligned_hyp)
