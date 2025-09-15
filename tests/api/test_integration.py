@@ -33,11 +33,15 @@ def test_health_check(client):
 
 def test_submit_and_result_single_algorithm(client, sample_files):
     # Submit job for TAES dual pipeline
-    res = client.post(
-        "/api/v1/evaluate",
-        files=sample_files,
-        data=[("algorithms", "taes"), ("pipeline", "dual")],
-    )
+    ref_file, hyp_file = sample_files
+
+    with open(ref_file, "rb") as f1, open(hyp_file, "rb") as f2:
+        files = {
+            "reference": ("ref.csv_bi", f1, "application/octet-stream"),
+            "hypothesis": ("hyp.csv_bi", f2, "application/octet-stream"),
+        }
+        data = {"algorithms": "taes", "pipeline": "dual"}
+        res = client.post("/api/v1/evaluate", files=files, data=data)
     assert res.status_code == 200
     job_id = res.json()["job_id"]
     assert job_id
