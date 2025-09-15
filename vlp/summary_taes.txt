@@ -1,6 +1,0 @@
-    0: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaasf_s001_t000.csv_bi
-       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaasf_s001_t000.csv_bi
-  Ref: bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg seiz bckg
-  Hyp: 
-       (Hit: 6.3320  Miss: 28.6680  False Alarms: 4.3290  Total: 32.9969)
-
