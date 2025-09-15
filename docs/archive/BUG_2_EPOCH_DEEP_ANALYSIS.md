@@ -177,3 +177,4 @@ Must match Alpha exactly:
 - FN = 250459 (±0.01)
 - Sensitivity = 11.8608% (±0.01%)
 - FA/24h = 259.2257 (±0.01)
+\n[Archived] See docs/FINAL_PARITY_RESULTS.md and docs/EPOCH_BUG_FIXED.md for current status.

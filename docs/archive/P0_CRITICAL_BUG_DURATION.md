@@ -157,3 +157,4 @@ We have perfect test data from the SeizureTransformer outputs:
 ---
 
 **Note**: While the core algorithm has perfect parity (TP/FP/FN match exactly), this duration bug is CRITICAL because it directly affects the reported false alarm rate, making the system appear 5.67x worse than it actually is. This MUST be fixed before any production deployment or research publication.
+\n[Archived] Duration handling is resolved; see docs/PARITY_TESTING_SSOT.md.

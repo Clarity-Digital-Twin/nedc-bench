@@ -269,3 +269,4 @@ Only TAES currently meets these criteria.
 ---
 
 **Critical Note**: We CANNOT deploy to production until ALL algorithms achieve parity. The current 20% success rate (1 of 5) is unacceptable for clinical use.
+\n[Archived] See docs/CURRENT_STATUS.md for the up‑to‑date parity report.

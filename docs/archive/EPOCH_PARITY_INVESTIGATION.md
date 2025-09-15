@@ -196,3 +196,4 @@ However, a 9 TP difference remains. The most likely explanation:
 3. Our implementation is correct - the baseline comparison is wrong
 
 **The investigation revealed:** Both implementations being Python DOES allow exact parity. We successfully matched the NEDC implementation details including rounding, boundary conditions, and background augmentation. The tiny remaining discrepancy appears to be a testing artifact, not an implementation issue.
+\n[Archived] Final fix documented in docs/EPOCH_BUG_FIXED.md.
