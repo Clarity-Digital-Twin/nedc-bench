@@ -58,26 +58,27 @@ But our actual data is in:
 ## THE SOLUTION: PROPER ALPHA/BETA TESTING
 
 ### Step 1: Fix the List Files
-We need to create corrected list files that point to our actual data location.
+Create runtime list files that point to our actual data within this repo.
 
 ### Step 2: Run NEDC v6.0.0 (Alpha Pipeline)
 ```bash
-# Create corrected list files programmatically
-python scripts/create_correct_lists.py
+# Create runtime lists (reuse csv_bi_export_clean/lists/*.list names)
+python scripts/create_runtime_lists.py
 
-# Run actual NEDC v6.0.0 on our data
-./run_nedc.sh \
-    data/csv_bi_parity/csv_bi_export_clean/ref_correct.list \
-    data/csv_bi_parity/csv_bi_export_clean/hyp_correct.list
+# Run actual NEDC v6.0.0 on our data (from project root)
+./run_nedc.sh runtime_lists/ref_complete.list runtime_lists/hyp_complete.list
 
-# Save the output as our TRUE Alpha baseline
+# Parse results to SSOT_ALPHA.json (also includes IRA kappa)
+python scripts/parse_alpha_results.py
 ```
 
 ### Step 3: Run Our Implementation (Beta Pipeline)
-```python
-# Use the same corrected list files
-# Run all algorithms and capture results
-python scripts/run_beta_algorithms.py
+```bash
+# Run all four count-based algorithms (TAES, EPOCH, OVLP, DP)
+python scripts/run_beta_batch.py
+
+# Add IRA (kappa) to SSOT_BETA.json
+python scripts/run_beta_ira.py
 ```
 
 ### Step 4: Compare ACTUAL Results
@@ -95,12 +96,13 @@ If we see ~11.86% sensitivity, we're using the WRONG dataset or configuration.
 
 ## ACTION ITEMS
 
-1. ✅ **STOP using hardcoded baseline values**
-2. ⬜ **CREATE correct list files programmatically**
-3. ⬜ **RUN actual NEDC v6.0.0 on our csv_bi_parity data**
-4. ⬜ **CAPTURE those results as true Alpha baseline**
-5. ⬜ **COMPARE Beta results against true Alpha baseline**
-6. ⬜ **UPDATE ultimate_parity_test.py to use dynamic baselines**
+1. ✅ STOP using hardcoded baseline values
+2. ✅ CREATE runtime list files programmatically
+3. ✅ RUN actual NEDC v6.0.0 on csv_bi_parity
+4. ✅ CAPTURE those results as SSOT_ALPHA.json (with IRA)
+5. ✅ CAPTURE Beta totals as SSOT_BETA.json (with IRA)
+6. ✅ COMPARE via scripts/compare_parity.py
+7. ⬜ Optional: Update ultimate_parity_test.py to source SSOT files dynamically
 
 ## THE REAL PARITY TEST
 

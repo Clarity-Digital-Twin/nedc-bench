@@ -34,6 +34,12 @@
 - **Difference:** 0.00 (100.00% match)
 - **Status:** ✅ EXACT PARITY ACHIEVED!
 
+### ✅ IRA Algorithm - EXACT PARITY
+- **Alpha Kappa (multi-class):** 0.1887
+- **Beta Kappa (multi-class):** 0.1888
+- **Difference:** 0.0001 (≤ 1e-4 tolerance)
+- **Status:** ✅ EXACT PARITY ACHIEVED!
+
 ### ✅ IRA Algorithm (Inter-Rater Agreement) - EXACT PARITY
 - **Alpha Multi-Class Kappa:** 0.1887
 - **Beta Multi-Class Kappa:** 0.1888
@@ -49,6 +55,7 @@
 | EPOCH     | 11.86%           | 11.86%           | ✅    |
 | OVERLAP   | 23.53%           | 23.53%           | ✅    |
 | DP        | 30.51%           | 30.51%           | ✅    |
+| IRA       | —                | —                | ✅ Kappa |
 
 ## FALSE ALARM RATE COMPARISON
 
@@ -58,6 +65,7 @@
 | EPOCH     | 259.23       | 259.40      | ~     |
 | OVERLAP   | 29.54        | 29.54       | ✅    |
 | DP        | 53.23        | 53.23       | ✅    |
+| IRA       | —            | —           | ✅ Kappa |
 
 ## KEY FINDINGS
 
