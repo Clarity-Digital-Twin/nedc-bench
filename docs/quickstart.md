@@ -1,52 +1,56 @@
 # Quickstart Guide
 
-> TODO: Extract from README.md quick start section and scripts/
-
 ## 5-Minute Setup
 
 ### Prerequisites
-<!-- TODO: Minimal requirements to get started -->
+- Python 3.10+
+- UV (recommended) or pip
 
-### Quick Install
-<!-- TODO: Fastest installation method -->
-
-### First Evaluation
-
-#### Using the CLI
-<!-- TODO: Extract from run_nedc.sh and scripts/ -->
+### Install
 ```bash
-# Example command
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv pip install -e .[dev]
 ```
 
-#### Using the API
-<!-- TODO: Extract from nedc_bench/api/ -->
-```python
-# Example code
-```
+## First Evaluation
 
-#### Using Docker
-<!-- TODO: Extract from docker-compose.yml -->
+### Option A: Use the API
 ```bash
-# Docker commands
+uv run uvicorn nedc_bench.api.main:app --reload
+# Submit via curl
+curl -s -X POST "http://localhost:8000/api/v1/evaluate" \
+  -F reference=@data/csv_bi_parity/csv_bi_export_clean/ref/aaaaaajy_s001_t000.csv_bi \
+  -F hypothesis=@data/csv_bi_parity/csv_bi_export_clean/hyp/aaaaaajy_s001_t000.csv_bi \
+  -F algorithms=ALL -F pipeline=DUAL | jq
+
+# Watch progress
+wscat -c ws://localhost:8000/ws/<job_id>
 ```
 
-## Understanding the Output
+### Option B: Use scripts (no CLI)
+```bash
+# Run all Beta algorithms and save SSOT
+uv run python scripts/run_beta_batch.py
 
-<!-- TODO: Extract from nedc_bench/algorithms/ result classes -->
-- What the metrics mean
-- How to interpret results
-- Common values
+# Compare Alpha vs Beta parity
+uv run python scripts/compare_parity.py
+```
+
+### Option C: Docker Compose
+```bash
+docker-compose up -d
+curl http://localhost:8000/api/v1/health
+```
+
+## Understanding Output
+- TP/FP/FN and FA/24h are returned per algorithm. See `docs/algorithms/metrics.md` for definitions.
+- Epoch and IRA operate on fixed windows; TAES returns fractional counts; DP/Overlap return integer counts.
 
 ## Example Dataset
+- Sample CSV_BI files live under `data/csv_bi_parity/csv_bi_export_clean/` with `ref/` and `hyp/` subfolders and list files in `lists/`.
 
-<!-- TODO: Document sample data in data/csv_bi_parity/ -->
-- Location of test data
-- Format explanation
-- Expected results
-
-## What's Next?
-
-- [Full User Guide](user-guide/overview.md)
+## What’s Next
+- [User Guide](user-guide/overview.md)
 - [Algorithm Details](algorithms/overview.md)
-- [API Documentation](api/endpoints.md)
-- [Deployment Guide](deployment/docker.md)
+- [API Docs](api/endpoints.md)
+- [Deployment](deployment/overview.md)

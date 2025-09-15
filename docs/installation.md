@@ -1,52 +1,63 @@
 # Installation Guide
 
-> TODO: Extract installation steps from README.md, Makefile, pyproject.toml, and docker-compose.yml
-
 ## System Requirements
+- Python 3.10+ (3.10 and 3.11 tested in CI)
+- OS: Linux, Windows (CI), macOS (developer-supported)
+- Disk: ~1 GB free for dependencies and data
 
-<!-- TODO: Extract from pyproject.toml and .python-version -->
-- Python version
-- Operating systems supported
-- Memory requirements
-- Disk space requirements
+## Install with UV (recommended)
+UV is a fast Python package manager.
 
-## Installation Methods
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# Linux/macOS shells will add $HOME/.cargo/bin to PATH; on Windows, use the PowerShell installer.
 
-### Using UV (Recommended)
-<!-- TODO: Extract from Makefile and README.md -->
+# Install project in editable mode with dev tools
+uv pip install -e .[dev]
 
-### Using pip
-<!-- TODO: Document pip installation method -->
+# Optional: install docs and API extras
+uv pip install -e .[docs,api]
+```
 
-### Using Docker
-<!-- TODO: Extract from Dockerfile.api and docker-compose.yml -->
+## Install with pip
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+pip install -e .[dev]
+```
 
-### Using Docker Compose
-<!-- TODO: Extract from docker-compose.yml -->
+## Run the API locally
+```bash
+uv run uvicorn nedc_bench.api.main:app --reload
+# Open http://localhost:8000/docs
+```
 
-## Dependencies
+## Docker
+```bash
+# Build API image
+docker build -f Dockerfile.api -t nedc-bench/api:latest .
 
-<!-- TODO: Extract from pyproject.toml -->
-- Python packages
-- System dependencies
-- Optional dependencies
+# Run container
+docker run --rm -p 8000:8000 nedc-bench/api:latest
+```
 
-## Verification
+## Docker Compose
+```bash
+docker-compose up -d
+curl http://localhost:8000/api/v1/health
+```
 
-<!-- TODO: Extract test commands from Makefile -->
-- How to verify installation
-- Running tests
-- Checking version
+## Verify setup
+- Lint and typecheck: `make lint && make typecheck`
+- Run tests: `make test`
+- Parity check (optional): `uv run python scripts/compare_parity.py`
 
 ## Troubleshooting
-
-<!-- TODO: Common installation issues from archived docs -->
-- Common errors
-- Platform-specific issues
-- FAQ
+- Ensure Python 3.10+ is active: `python --version`
+- If `/api/v1/ready` is 503 locally, Redis may be unavailable; use `/api/v1/health` for a simple health check.
+- If Alpha pipeline fails, verify `NEDC_NFC` and `PYTHONPATH` are set or start via the API which sets them.
 
 ## Next Steps
-
-- [Quickstart Guide](quickstart.md)
-- [User Guide](user-guide/overview.md)
-- [API Documentation](api/endpoints.md)
+- Read the [Quickstart](quickstart.md)
+- Explore the [Algorithms](algorithms/overview.md)
+- Use the [API](api/endpoints.md)
