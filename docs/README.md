@@ -1,26 +1,63 @@
-# Documentation Home
+# NEDC-BENCH Documentation
 
-This repository contains a complete, validated reimplementation of the NEDC EEG evaluation suite with a dual‑pipeline architecture (Alpha = original tool, Beta = modern rewrite) and 100% parity across all five algorithms.
+## Overview
 
-Use this page to navigate the canonical, up‑to‑date documents. Historical notes and investigation logs are preserved under docs/archive/.
+Complete documentation for NEDC-BENCH - a production-ready EEG benchmarking platform with 100% parity to NEDC v6.0.0.
 
-## Canonical Docs
+## Documentation Structure
 
-- Current Status: docs/CURRENT_STATUS.md
-- Parity Results (SSOT): docs/FINAL_PARITY_RESULTS.md
-- SSOT Process and How to Reproduce: docs/PARITY_TESTING_SSOT.md
-- Alpha vs Beta Totals (per algorithm): docs/TRUE_ALPHA_BETA_SCORES.md
-- Epoch Parity Fix (root cause and solution): docs/EPOCH_BUG_FIXED.md
-- IRA Kappa Fix (root cause and solution): docs/IRA_KAPPA_FIX.md
-- Implementation Plan (overview and goals): docs/NEDC_BENCH_IMPLEMENTATION_PLAN.md
-- Deployment: docs/deployment.md
-- Runbook (operations): docs/runbook.md
+### 📚 Getting Started
+- [`installation.md`](installation.md) - How to install NEDC-BENCH
+- [`quickstart.md`](quickstart.md) - 5-minute guide to get running
 
-## Algorithms & References
+### 👤 User Guide
+- [`user-guide/`](user-guide/) - Complete user documentation
+  - Overview, algorithms, input/output formats, CLI and API usage
 
-- NEDC TAES exact algorithm notes: docs/NEDC_TAES_EXACT_ALGORITHM.md
+### 🔌 API Documentation
+- [`api/`](api/) - REST API and WebSocket documentation
+  - OpenAPI spec, endpoints, examples, Python client
 
-## Historical (Archived)
+### 🧑‍💻 Developer Guide
+- [`developer/`](developer/) - For contributors and developers
+  - Architecture, testing, code style, debugging
 
-See docs/archive/ for investigation logs and phase planning docs kept for reference.
+### 🧮 Algorithm Reference
+- [`algorithms/`](algorithms/) - Detailed algorithm specifications
+  - TAES, Epoch, Overlap, DP Alignment, IRA, metrics
+
+### 🚀 Deployment
+- [`deployment/`](deployment/) - Production deployment guides
+  - Docker, Kubernetes, configuration, monitoring, scaling
+
+### 📖 Reference
+- [`reference/`](reference/) - Complete reference material
+  - Configuration, CLI, API reference, glossary, FAQ
+
+### 🔄 Migration
+- [`migration/`](migration/) - Migration and upgrade guides
+  - From NEDC v6.0.0, version upgrades, data format conversion
+
+### 📦 Archive
+- [`archive/`](archive/) - Historical documentation
+  - Parity achievement history
+  - Bug investigations and fixes
+  - Implementation phases
+
+## Quick Links
+
+- [Project README](../README.md)
+- [Installation Guide](installation.md)
+- [API Documentation](api/endpoints.md)
+- [Algorithm Guide](algorithms/overview.md)
+- [Docker Deployment](deployment/docker.md)
+
+## Documentation Status
+
+All documentation sections have been created with placeholders. Content is being extracted from:
+1. Codebase implementations
+2. Configuration files
+3. Archived documentation
+
+Last updated: 2025-01-15
 

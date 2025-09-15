@@ -220,6 +220,9 @@ class EpochScorer:
         for exact parity - without this, we had a 9 TP difference!
         """
         if not events:
+            # If duration is non-positive, return empty to avoid zero-length events
+            if file_duration <= 0.0:
+                return []
             # Empty annotation - fill entire duration with background
             return [
                 EventAnnotation(

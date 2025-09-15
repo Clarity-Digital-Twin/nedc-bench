@@ -133,12 +133,15 @@ class IRAScorer:
         Mirrors NEDC ann augmentation used before IRA/Epoch sampling.
         """
         if not events:
+            # If duration is non-positive, avoid creating zero-length background
+            if file_duration <= 0.0:
+                return []
             return [
                 EventAnnotation(
                     channel="TERM",
                     start_time=0.0,
                     stop_time=file_duration,
-                    label=null_class,
+                    label= null_class,
                     confidence=1.0,
                 )
             ]
