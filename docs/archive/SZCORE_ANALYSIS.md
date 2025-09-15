@@ -189,3 +189,4 @@ The key insight is that NEDC-BENCH can leverage SzCORE's infrastructure patterns
 4. Better developer experience with local testing tools
 
 This positions NEDC-BENCH as both a benchmarking platform AND a migration tool for modernizing legacy EEG analysis code.
+\n[Archived] Reference analysis; core implementation finalized in docs/.

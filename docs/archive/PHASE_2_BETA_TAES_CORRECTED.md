@@ -1137,3 +1137,4 @@ def test_phase2_criteria():
 - TAES parity proven on all 30 golden files
 - Validation framework operational (reports, tolerances, CI)
 - Dual-pipeline orchestration in place and exercised by tests
+\n[Archived] TAES is at exact parity; see docs/FINAL_PARITY_RESULTS.md.

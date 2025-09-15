@@ -1392,3 +1392,4 @@ docker-compose up -d
 - Async wrapper maintains thread safety
 - WebSocket provides real-time visibility
 - Ready for Phase 5 Kubernetes deployment
+\n[Archived] API is implemented; see docs/runbook.md and docs/deployment.md.
