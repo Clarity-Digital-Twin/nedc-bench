@@ -133,7 +133,7 @@ def run_all_beta_algorithms():
         total_fn = 0.0
         file_count = 0
 
-        for ref_file, hyp_file in zip(ref_files, hyp_files):
+        for ref_file, hyp_file in zip(ref_files, hyp_files, strict=False):
             # Process file pair - errors are logged but don't stop processing
             success = _process_file_pair(ref_file, hyp_file, algo_name, scorer, params)
             if success:

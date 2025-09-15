@@ -82,7 +82,7 @@ class IRAScorer:
             hyps = cast(list[str], hyp) if hyp else []
             labels: list[str] = sorted(set(refs + hyps)) if (refs or hyps) else []
             confusion: dict[str, dict[str, int]] = {r: {c: 0 for c in labels} for r in labels}
-            for rlab, hlab in zip(refs, hyps):
+            for rlab, hlab in zip(refs, hyps, strict=False):
                 confusion[rlab][hlab] += 1
         else:
             # Event mode

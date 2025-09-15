@@ -82,7 +82,7 @@ def main():
 
         return augmented
 
-    for ref_file, hyp_file in zip(ref_files, hyp_files):
+    for ref_file, hyp_file in zip(ref_files, hyp_files, strict=False):
         ref_ann = AnnotationFile.from_csv_bi(Path(ref_file))
         hyp_ann = AnnotationFile.from_csv_bi(Path(hyp_file))
         # Normalize labels

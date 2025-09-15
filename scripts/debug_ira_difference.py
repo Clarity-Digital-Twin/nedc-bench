@@ -45,7 +45,7 @@ def main():
     files_with_events = 0
     files_without_events = 0
 
-    for i, (ref_file, hyp_file) in enumerate(zip(ref_files, hyp_files)):
+    for i, (ref_file, hyp_file) in enumerate(zip(ref_files, hyp_files, strict=False)):
         if i % 100 == 0:
             print(f"  Processed {i}/{len(ref_files)} files...")
 

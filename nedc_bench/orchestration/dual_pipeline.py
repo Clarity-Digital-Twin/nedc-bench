@@ -269,7 +269,7 @@ class DualPipelineOrchestrator:
             "total_files": len(ref_files),
         }
 
-        for ref_file, hyp_file in zip(ref_files, hyp_files):
+        for ref_file, hyp_file in zip(ref_files, hyp_files, strict=False):
             result = self.evaluate(ref_file, hyp_file, algorithm)
             file_results.append({
                 "ref": ref_file,

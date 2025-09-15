@@ -128,7 +128,7 @@ def main():
     total_fp = 0
     total_fn = 0
 
-    for i, (ref_file, hyp_file) in enumerate(zip(ref_files, hyp_files)):
+    for i, (ref_file, hyp_file) in enumerate(zip(ref_files, hyp_files, strict=False)):
         if i % 100 == 0:
             print(f"  Processed {i}/{len(ref_files)} files...")
 

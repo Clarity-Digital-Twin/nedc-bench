@@ -88,7 +88,7 @@ def main():
     print(f"Processing {len(ref_files)} files...")
     print("\nTesting first 100 files for quick comparison...")
 
-    for i, (ref_file, hyp_file) in enumerate(zip(ref_files[:100], hyp_files[:100])):
+    for i, (ref_file, hyp_file) in enumerate(zip(ref_files[:100], hyp_files[:100], strict=False)):
         if i % 20 == 0:
             print(f"  Processed {i}/100...")
 

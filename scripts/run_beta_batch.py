@@ -70,7 +70,7 @@ def main():
         agg_labels = sorted({params.null_class, "seiz", "bckg"})
         agg_conf = {r: {c: 0 for c in agg_labels} for r in agg_labels}
 
-        for ref_file, hyp_file in zip(ref_files, hyp_files):
+        for ref_file, hyp_file in zip(ref_files, hyp_files, strict=False):
             ref_ann = AnnotationFile.from_csv_bi(Path(ref_file))
             hyp_ann = AnnotationFile.from_csv_bi(Path(hyp_file))
             # Normalize labels

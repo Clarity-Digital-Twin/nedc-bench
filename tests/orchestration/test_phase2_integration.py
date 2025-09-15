@@ -31,7 +31,7 @@ class TestPhase2Integration:
         failed_files = []
 
         # Test first 3 files for speed in CI
-        for ref_file, hyp_file in list(zip(ref_files, hyp_files))[:3]:
+        for ref_file, hyp_file in list(zip(ref_files, hyp_files, strict=False))[:3]:
             # Ensure paired files
             assert ref_file.stem == hyp_file.stem
 

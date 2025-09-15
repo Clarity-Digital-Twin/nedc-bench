@@ -139,7 +139,9 @@ def main():
     test_limit = 10
     print(f"\nTesting first {test_limit} files for quick analysis...")
 
-    for i, (ref_file, hyp_file) in enumerate(zip(ref_files[:test_limit], hyp_files[:test_limit])):
+    for i, (ref_file, hyp_file) in enumerate(
+        zip(ref_files[:test_limit], hyp_files[:test_limit], strict=False)
+    ):
         print(f"\rProcessing {i + 1}/{test_limit}...", end="", flush=True)
 
         # Run Beta (faster, internal)
