@@ -87,90 +87,91 @@ class DPAligner:
         return result
 
     def _dp_align(self, ref: list[str], hyp: list[str]) -> tuple[list[str], list[str]]:
-        """Core DP alignment with backtracking
+        """Core DP alignment with backtracking (NEDC-exact)
 
-        Implements NEDC lines 587-680: matrix construction and backtrack.
+        Mirrors nedc_eeg_eval_dpalign.py (lines ~560-712):
+        - Pad sequences with NULL_CLASS at start/end
+        - Build cost matrix and backpointers
+        - Backtrack to produce aligned sequences with NULL_CLASS gaps
         """
-        n_ref = len(ref)
-        n_hyp = len(hyp)
+        # Extract labels and pad with NULL_CLASS at both ends
+        refi = [NULL_CLASS, *ref, NULL_CLASS]
+        hypi = [NULL_CLASS, *hyp, NULL_CLASS]
 
-        # Initialize DP matrix
-        dp = np.zeros((n_ref + 1, n_hyp + 1))
+        m = len(refi)
+        n = len(hypi)
 
-        # Initialize first row (all insertions)
-        for j in range(1, n_hyp + 1):
-            dp[0][j] = dp[0][j - 1] + self.penalty_ins
+        # Cost and backpointer matrices
+        d = np.zeros((m, n), dtype=float)
+        etypes = np.full((m, n), fill_value=-1, dtype=int)  # -1 = null
 
-        # Initialize first column (all deletions)
-        for i in range(1, n_ref + 1):
-            dp[i][0] = dp[i - 1][0] + self.penalty_del
+        # Initialize borders
+        for j in range(1, n):
+            d[0, j] = d[0, j - 1] + self.penalty_ins
+            etypes[0, j] = 1  # INS
 
-        # Fill DP matrix
-        for i in range(1, n_ref + 1):
-            for j in range(1, n_hyp + 1):
-                # Match/substitution cost
-                if ref[i - 1] == hyp[j - 1]:
-                    match_cost = dp[i - 1][j - 1]  # No penalty for match
-                else:
-                    match_cost = dp[i - 1][j - 1] + self.penalty_sub
+        for i in range(1, m):
+            d[i, 0] = d[i - 1, 0] + self.penalty_del
+            etypes[i, 0] = 0  # DEL
 
-                # Deletion cost
-                del_cost = dp[i - 1][j] + self.penalty_del
+        etypes[0, 0] = 2  # treat as SUB/MATCH for start
 
-                # Insertion cost
-                ins_cost = dp[i][j - 1] + self.penalty_ins
+        # Fill interior
+        for j in range(1, n):
+            for i in range(1, m):
+                d_del = d[i - 1, j] + self.penalty_del
+                d_ins = d[i, j - 1] + self.penalty_ins
+                d_sub = d[i - 1, j - 1]
+                if refi[i] != hypi[j]:
+                    d_sub += self.penalty_sub
 
-                # Take minimum
-                dp[i][j] = min(match_cost, del_cost, ins_cost)
+                # Choose min and set error type: 0=DEL,1=INS,2=SUB/MATCH
+                min_dist = d_sub
+                et = 2
+                if d_ins < min_dist:
+                    min_dist = d_ins
+                    et = 1
+                if d_del < min_dist:
+                    min_dist = d_del
+                    et = 0
+                d[i, j] = min_dist
+                etypes[i, j] = et
 
-        # Backtrack to get alignment
-        aligned_ref = []
-        aligned_hyp = []
-        i, j = n_ref, n_hyp
+        # Backtrack from (m-1,n-1) to (0,0)
+        i = m - 1
+        j = n - 1
+        reft: list[str] = []
+        hypt: list[str] = []
 
-        while i > 0 or j > 0:
-            if i == 0:
-                # Only insertions left
-                aligned_ref.append("_GAP_")
-                aligned_hyp.append(hyp[j - 1])
-                j -= 1
-            elif j == 0:
-                # Only deletions left
-                aligned_ref.append(ref[i - 1])
-                aligned_hyp.append("_GAP_")
+        while True:
+            et = etypes[i, j]
+            if et == 0:  # DEL
+                reft.append(refi[i])
+                hypt.append(NULL_CLASS)
                 i -= 1
+            elif et == 1:  # INS
+                reft.append(NULL_CLASS)
+                hypt.append(hypi[j])
+                j -= 1
+            elif et == 2:  # SUB/MATCH
+                reft.append(refi[i])
+                hypt.append(hypi[j])
+                i -= 1
+                j -= 1
             else:
-                # Check which operation was used
-                current = dp[i][j]
+                # Should not happen if matrices are set correctly
+                reft.append(refi[i])
+                hypt.append(hypi[j])
+                i -= 1
+                j -= 1
 
-                # Check match/substitution
-                if ref[i - 1] == hyp[j - 1]:
-                    match_cost = dp[i - 1][j - 1]
-                else:
-                    match_cost = dp[i - 1][j - 1] + self.penalty_sub
+            if (i < 0) and (j < 0):
+                break
 
-                if current == match_cost:
-                    # Match or substitution
-                    aligned_ref.append(ref[i - 1])
-                    aligned_hyp.append(hyp[j - 1])
-                    i -= 1
-                    j -= 1
-                elif current == dp[i - 1][j] + self.penalty_del:
-                    # Deletion
-                    aligned_ref.append(ref[i - 1])
-                    aligned_hyp.append("_GAP_")
-                    i -= 1
-                else:
-                    # Insertion
-                    aligned_ref.append("_GAP_")
-                    aligned_hyp.append(hyp[j - 1])
-                    j -= 1
-
-        # Reverse to get correct order
-        aligned_ref.reverse()
-        aligned_hyp.reverse()
-
-        return aligned_ref, aligned_hyp
+        # Reverse to correct order
+        refo = reft[::-1]
+        hypo = hypt[::-1]
+        return refo, hypo
 
     def _count_errors(self, aligned_ref: list[str], aligned_hyp: list[str]) -> DPAlignmentResult:
         """Count alignment errors matching NEDC lines 685-708
@@ -183,32 +184,33 @@ class DPAligner:
         insertions: dict[str, int] = {}
         deletions: dict[str, int] = {}
 
-        for ref_label, hyp_label in zip(aligned_ref, aligned_hyp):
-            # Skip NULL_CLASS sentinels from counting
-            if ref_label == NULL_CLASS and hyp_label == NULL_CLASS:
-                continue
+        # Ignore first and last items (dummy nodes)
+        for idx in range(1, len(aligned_ref) - 1):
+            ref_label = aligned_ref[idx]
+            hyp_label = aligned_hyp[idx]
 
-            if ref_label == "_GAP_":
-                # Insertion
-                if hyp_label not in insertions:
-                    insertions[hyp_label] = 0
-                insertions[hyp_label] += 1  # INTEGER increment
-            elif hyp_label == "_GAP_":
-                # Deletion
-                if ref_label not in deletions:
-                    deletions[ref_label] = 0
-                deletions[ref_label] += 1  # INTEGER increment
-            elif ref_label == hyp_label:
-                # Hit (exact match) - but not for NULL_CLASS
-                if ref_label != NULL_CLASS:
-                    hits += 1  # INTEGER increment
+            # Track insertions/deletions/substitutions (targets tracked on ref side)
+            if ref_label == NULL_CLASS:
+                insertions[hyp_label] = insertions.get(hyp_label, 0) + 1
+            elif hyp_label == NULL_CLASS:
+                deletions[ref_label] = deletions.get(ref_label, 0) + 1
             else:
-                # Substitution
-                if ref_label not in substitutions:
-                    substitutions[ref_label] = {}
-                if hyp_label not in substitutions[ref_label]:
-                    substitutions[ref_label][hyp_label] = 0
-                substitutions[ref_label][hyp_label] += 1  # INTEGER increment
+                # Substitution matrix by ref->hyp when both not null
+                substitutions.setdefault(ref_label, {})
+                substitutions[ref_label][hyp_label] = substitutions[ref_label].get(hyp_label, 0) + 1
+
+            # Track hits/misses/false alarms as in NEDC
+            if ref_label == NULL_CLASS:
+                # false alarm (not stored in result directly)
+                pass
+            elif hyp_label == NULL_CLASS:
+                # miss
+                pass
+            elif ref_label == hyp_label:
+                hits += 1
+            else:
+                # miss
+                pass
 
         # Calculate totals (all integers)
         total_insertions = sum(insertions.values())
