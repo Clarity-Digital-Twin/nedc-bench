@@ -49,3 +49,4 @@ Unified guide for AI coding agents and human contributors. These rules apply to 
 ## Security & Compliance
 - Pre-commit scans for secrets; never commit credentials or large private datasets.
 - External services: Redis/Prometheus via compose or k8s. Don’t hardcode endpoints; use env vars.
+
