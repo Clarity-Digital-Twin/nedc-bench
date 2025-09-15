@@ -24,9 +24,9 @@ These documents were created during development and contain outdated information
 - `ALPHA_WRAPPER_P0_BUG.md` - Wrapper issues (RESOLVED)
 
 ### Old Status Reports (Superseded)
-- `FINAL_PARITY_STATUS.md` - Old status showing only 2/5 working (WRONG - all 5 work!)
+- `FINAL_PARITY_STATUS.md` (removed) - Old status showing only 2/5 working (WRONG - all 5 work!)
 - `AI_AGENT_REVIEW_FINAL.md` - Old review (before fixes)
-- `TRUE_ALPHA_BETA_SCORES.md` - Partial results (now complete)
+- `TRUE_ALPHA_BETA_SCORES.md` (removed) - Partial results (now complete)
 
 ### Process Docs
 - `DOD_CHECKLIST.md` - Definition of Done (mostly complete)
