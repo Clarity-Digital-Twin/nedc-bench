@@ -52,7 +52,9 @@ class BetaPipeline:
         scorer = TAESScorer()
         return scorer.score(ref_annotations.events, hyp_annotations.events)
 
-    def _map_events(self, events: list[EventAnnotation], label_map: dict[str, str]) -> list[EventAnnotation]:
+    def _map_events(
+        self, events: list[EventAnnotation], label_map: dict[str, str]
+    ) -> list[EventAnnotation]:
         for ev in events:
             ev.label = map_event_label(ev.label, label_map)
         return events

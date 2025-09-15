@@ -6,6 +6,7 @@ falls back to the in-repo param file.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -35,8 +36,6 @@ def _default_param_path() -> Path:
 
 def _env_param_path() -> Path | None:
     """Return path based on NEDC_NFC env if available."""
-    import os
-
     root = os.environ.get("NEDC_NFC")
     if not root:
         return None

@@ -114,7 +114,9 @@ async def get_evaluation_result(job_id: str) -> EvaluationResult:
 
 
 @router.get("/evaluate", response_model=list[EvaluationResult])
-async def list_evaluations(limit: int = 10, offset: int = 0, status: str | None = None) -> list[EvaluationResult]:
+async def list_evaluations(
+    limit: int = 10, offset: int = 0, status: str | None = None
+) -> list[EvaluationResult]:
     jobs = await job_manager.list_jobs(limit, offset, status)
     out: list[EvaluationResult] = [
         EvaluationResult(
