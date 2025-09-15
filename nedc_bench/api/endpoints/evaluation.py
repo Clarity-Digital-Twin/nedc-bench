@@ -43,11 +43,7 @@ async def submit_evaluation(
         await f.write(hyp_bytes)
 
     # Normalize algorithms and pipeline
-    alg_list = (
-        algorithms
-        if isinstance(algorithms, list)
-        else [algorithms]
-    )
+    alg_list = algorithms if isinstance(algorithms, list) else [algorithms]
     alg_values = [a.value if isinstance(a, AlgorithmType) else str(a) for a in alg_list]
     pipeline_value = pipeline.value if isinstance(pipeline, PipelineType) else str(pipeline)
 

@@ -171,14 +171,38 @@ class ParityValidator:
         discrepancies: list[DiscrepancyReport] = []
 
         pairs: list[tuple[str, float, float]] = [
-            ("true_positives", float(alpha_result.get("true_positives", 0)), float(beta_result.true_positives)),
-            ("false_positives", float(alpha_result.get("false_positives", 0)), float(beta_result.false_positives)),
-            ("false_negatives", float(alpha_result.get("false_negatives", 0)), float(beta_result.false_negatives)),
-            ("insertions", float(alpha_result.get("insertions", 0)), float(beta_result.total_insertions)),
-            ("deletions", float(alpha_result.get("deletions", 0)), float(beta_result.total_deletions)),
+            (
+                "true_positives",
+                float(alpha_result.get("true_positives", 0)),
+                float(beta_result.true_positives),
+            ),
+            (
+                "false_positives",
+                float(alpha_result.get("false_positives", 0)),
+                float(beta_result.false_positives),
+            ),
+            (
+                "false_negatives",
+                float(alpha_result.get("false_negatives", 0)),
+                float(beta_result.false_negatives),
+            ),
+            (
+                "insertions",
+                float(alpha_result.get("insertions", 0)),
+                float(beta_result.total_insertions),
+            ),
+            (
+                "deletions",
+                float(alpha_result.get("deletions", 0)),
+                float(beta_result.total_deletions),
+            ),
         ]
         if "substitutions" in alpha_result:
-            pairs.append(("substitutions", float(alpha_result.get("substitutions", 0)), float(beta_result.total_substitutions)))
+            pairs.append((
+                "substitutions",
+                float(alpha_result.get("substitutions", 0)),
+                float(beta_result.total_substitutions),
+            ))
 
         for name, a, b in pairs:
             if abs(a - b) > 0.0:
@@ -226,7 +250,8 @@ class ParityValidator:
                                 alpha_value=acount,
                                 beta_value=float(bcount),
                                 absolute_difference=abs(acount - float(bcount)),
-                                relative_difference=abs(acount - float(bcount)) / max(abs(acount), 1e-16),
+                                relative_difference=abs(acount - float(bcount))
+                                / max(abs(acount), 1e-16),
                                 tolerance=0.0,
                             )
                         )
@@ -281,14 +306,34 @@ class ParityValidator:
         if {"hits", "misses", "false_alarms"}.issubset(alpha_result.keys()):
             pairs = [
                 ("total_hits", float(alpha_result.get("hits", 0)), float(beta_result.total_hits)),
-                ("total_misses", float(alpha_result.get("misses", 0)), float(beta_result.total_misses)),
-                ("total_false_alarms", float(alpha_result.get("false_alarms", 0)), float(beta_result.total_false_alarms)),
+                (
+                    "total_misses",
+                    float(alpha_result.get("misses", 0)),
+                    float(beta_result.total_misses),
+                ),
+                (
+                    "total_false_alarms",
+                    float(alpha_result.get("false_alarms", 0)),
+                    float(beta_result.total_false_alarms),
+                ),
             ]
         else:
             pairs = [
-                ("true_positives", float(alpha_result.get("true_positives", 0)), float(beta_result.total_hits)),
-                ("false_negatives", float(alpha_result.get("false_negatives", 0)), float(beta_result.total_misses)),
-                ("false_positives", float(alpha_result.get("false_positives", 0)), float(beta_result.total_false_alarms)),
+                (
+                    "true_positives",
+                    float(alpha_result.get("true_positives", 0)),
+                    float(beta_result.total_hits),
+                ),
+                (
+                    "false_negatives",
+                    float(alpha_result.get("false_negatives", 0)),
+                    float(beta_result.total_misses),
+                ),
+                (
+                    "false_positives",
+                    float(alpha_result.get("false_positives", 0)),
+                    float(beta_result.total_false_alarms),
+                ),
             ]
 
         for name, a, b in pairs:
@@ -329,7 +374,8 @@ class ParityValidator:
                     alpha_value=alpha_multi,
                     beta_value=beta_multi,
                     absolute_difference=abs(alpha_multi - beta_multi),
-                    relative_difference=abs(alpha_multi - beta_multi) / max(abs(alpha_multi), 1e-16),
+                    relative_difference=abs(alpha_multi - beta_multi)
+                    / max(abs(alpha_multi), 1e-16),
                     tolerance=1e-4,
                 )
             )
@@ -374,7 +420,9 @@ class ParityValidator:
         if "epoch" in alpha_results and "epoch" in beta_results:
             reports["epoch"] = self.compare_epoch(alpha_results["epoch"], beta_results["epoch"])
         if "overlap" in alpha_results and "overlap" in beta_results:
-            reports["overlap"] = self.compare_overlap(alpha_results["overlap"], beta_results["overlap"])
+            reports["overlap"] = self.compare_overlap(
+                alpha_results["overlap"], beta_results["overlap"]
+            )
         if "ira" in alpha_results and "ira" in beta_results:
             reports["ira"] = self.compare_ira(alpha_results["ira"], beta_results["ira"])
 
