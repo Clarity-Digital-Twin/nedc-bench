@@ -7,7 +7,7 @@ from typing import Any
 class ProgressTracker:
     """Track high-level progress for evaluation jobs."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.progress: dict[str, dict[str, Any]] = {}
 
     async def init_job(self, job_id: str, total_algorithms: int) -> None:

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -28,7 +28,7 @@ class EventAnnotation(BaseModel):
 
     @field_validator("stop_time")
     @classmethod
-    def validate_times(cls, v: float, info) -> float:
+    def validate_times(cls, v: float, info: Any) -> float:
         """Ensure stop_time > start_time"""
         if "start_time" in info.data and v <= info.data["start_time"]:
             raise ValueError(f"stop_time ({v}) must be > start_time ({info.data['start_time']})")
@@ -45,7 +45,7 @@ class EventAnnotation(BaseModel):
             raise ValueError(f"Invalid CSV_BI line: {line}")
 
         return cls(
-            channel=parts[0],
+            channel=parts[0],  # type: ignore[arg-type]
             start_time=float(parts[1]),
             stop_time=float(parts[2]),
             label=parts[3],

@@ -36,10 +36,10 @@ class PerformanceMetrics:
 class PerformanceMonitor:
     """Monitor and compare pipeline performance"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.metrics: dict[str, PerformanceMetrics] = {}
 
-    def record_execution(self, algorithm: str, pipeline: str, execution_time: float):
+    def record_execution(self, algorithm: str, pipeline: str, execution_time: float) -> None:
         """Record an execution time"""
         key = f"{algorithm}_{pipeline}"
 

@@ -9,6 +9,7 @@ import os
 import subprocess
 import tempfile
 from pathlib import Path
+from typing import Any
 
 from .parsers import UnifiedOutputParser
 
@@ -30,7 +31,7 @@ class NEDCAlphaWrapper:
         # Initialize parser
         self.parser = UnifiedOutputParser()
 
-    def _validate_installation(self):
+    def _validate_installation(self) -> None:
         """TDD: Verify NEDC installation"""
         if not self.nedc_root.exists():
             raise RuntimeError(f"NEDC root not found: {self.nedc_root}")
@@ -43,7 +44,7 @@ class NEDCAlphaWrapper:
         if not eval_script.exists():
             raise RuntimeError(f"NEDC evaluation script not found: {eval_script}")
 
-    def evaluate(self, ref_csv: str, hyp_csv: str, output_dir: str | None = None) -> dict:
+    def evaluate(self, ref_csv: str, hyp_csv: str, output_dir: str | None = None) -> dict[str, Any]:
         """
         Run nedc_eeg_eval on a single file pair by creating temp lists,
         then parse summary files into structured JSON (all 5 algorithms).

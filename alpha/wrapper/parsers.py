@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import Any
 
 
 class BaseParser:
@@ -40,13 +41,13 @@ class BaseParser:
 class DPAlignmentParser(BaseParser):
     """Parser for DP Alignment algorithm output"""
 
-    def parse(self, text: str) -> dict:
+    def parse(self, text: str) -> dict[str, Any]:
         """Parse DP Alignment from main summary and/or dedicated file.
 
         - If main summary section is present, extract metrics and 2x2 counts.
         - Regardless, sum per-file Hit/Sub/Ins/Del if present in the text.
         """
-        result: dict = {}
+        result: dict[str, Any] = {}
 
         # Optional main summary section
         dp_section = re.search(
@@ -91,12 +92,12 @@ class DPAlignmentParser(BaseParser):
 class EpochParser(BaseParser):
     """Parser for Epoch-based scoring output"""
 
-    def parse(self, text: str) -> dict:
+    def parse(self, text: str) -> dict[str, Any]:
         """Parse Epoch section from summary
 
         Prefer metrics and counts from the SUMMARY subsection (totals across labels).
         """
-        result: dict = {}
+        result: dict[str, Any] = {}
 
         epoch_section = re.search(r"NEDC EPOCH SCORING SUMMARY.*?(?=\n={70,}|\Z)", text, re.DOTALL)
         if not epoch_section:
@@ -142,9 +143,9 @@ class EpochParser(BaseParser):
 class OverlapParser(BaseParser):
     """Parser for Overlap scoring output"""
 
-    def parse(self, text: str) -> dict:
+    def parse(self, text: str) -> dict[str, Any]:
         """Parse Overlap from main summary and/or dedicated file."""
-        result: dict = {}
+        result: dict[str, Any] = {}
 
         # Optional main summary section
         ovlp_section = re.search(r"NEDC OVERLAP SCORING SUMMARY.*?(?=\n={70,}|\Z)", text, re.DOTALL)
@@ -182,14 +183,14 @@ class OverlapParser(BaseParser):
 class TAESParser(BaseParser):
     """Parser for Time-Aligned Event Scoring output"""
 
-    def parse(self, text: str) -> dict:
+    def parse(self, text: str) -> dict[str, Any]:
         """Parse TAES section from summary or dedicated file
 
         TAES uses fractional scoring, so TP/TN/FP/FN are floats.
         Prefer summary_taes.txt for higher precision (4 decimals)
         over summary.txt (2 decimals).
         """
-        result = {}
+        result: dict[str, Any] = {}
 
         # Find TAES section
         taes_section = re.search(r"NEDC TAES SCORING SUMMARY.*?(?=\n={70,}|\Z)", text, re.DOTALL)
@@ -220,9 +221,9 @@ class TAESParser(BaseParser):
 class IRAParser(BaseParser):
     """Parser for Inter-Rater Agreement output"""
 
-    def parse(self, text: str) -> dict:
+    def parse(self, text: str) -> dict[str, Any]:
         """Parse IRA section from summary (no separate file)"""
-        result: dict = {}
+        result: dict[str, Any] = {}
 
         # Find IRA section
         ira_section = re.search(
@@ -256,14 +257,14 @@ class IRAParser(BaseParser):
 class UnifiedOutputParser:
     """Parse all 5 algorithm outputs from NEDC"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.dp_parser = DPAlignmentParser()
         self.epoch_parser = EpochParser()
         self.overlap_parser = OverlapParser()
         self.taes_parser = TAESParser()
         self.ira_parser = IRAParser()
 
-    def parse_summary(self, text: str, output_dir: Path | None = None) -> dict:
+    def parse_summary(self, text: str, output_dir: Path | None = None) -> dict[str, Any]:
         """
         Parse main summary and individual algorithm files
 
