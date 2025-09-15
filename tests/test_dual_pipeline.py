@@ -62,14 +62,17 @@ def test_dual_pipeline_result():
     assert result.speedup == 2.0  # 1.0 / 0.5
 
 
-def test_dual_pipeline_with_list_files(setup_nedc_env, test_data_dir):
+def test_dual_pipeline_with_list_files(setup_nedc_env):
     """Test with list files like Alpha pipeline"""
-    ref_list = test_data_dir / "lists" / "ref.list"
-    hyp_list = test_data_dir / "lists" / "hyp.list"
+    from pathlib import Path
 
-    # Skip if list files don't exist
-    if not ref_list.exists() or not hyp_list.exists():
-        pytest.skip("List files not found")
+    # Use the actual list files from NEDC data
+    ref_list = Path("nedc_eeg_eval/v6.0.0/data/lists/ref.list")
+    hyp_list = Path("nedc_eeg_eval/v6.0.0/data/lists/hyp.list")
+
+    # These should always exist in the vendored NEDC tool
+    assert ref_list.exists(), f"Reference list not found: {ref_list}"
+    assert hyp_list.exists(), f"Hypothesis list not found: {hyp_list}"
 
     orchestrator = DualPipelineOrchestrator()
     result = orchestrator.evaluate_lists(

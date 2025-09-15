@@ -247,6 +247,11 @@ class DualPipelineOrchestrator:
         with open(hyp_list, encoding="utf-8") as f:  # noqa: PTH123
             hyp_files = [line.strip() for line in f if line.strip()]
 
+        # Expand $NEDC_NFC paths
+        nedc_nfc = os.environ.get("NEDC_NFC", str(Path("nedc_eeg_eval/v6.0.0").absolute()))
+        ref_files = [f.replace("$NEDC_NFC", nedc_nfc) for f in ref_files]
+        hyp_files = [f.replace("$NEDC_NFC", nedc_nfc) for f in hyp_files]
+
         assert len(ref_files) == len(hyp_files), "List files must have same length"
 
         # Process each pair
