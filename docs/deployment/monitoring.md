@@ -10,6 +10,10 @@
   - Evaluation duration per algorithm
   - Active evaluations gauge
 
+Multi-worker metrics:
+- If running with `MAX_WORKERS > 1`, enable Prometheus multiprocess mode by setting `PROMETHEUS_MULTIPROC_DIR`.
+- The image entrypoint creates/cleans the directory and the API exposes multiprocess metrics when this env var is set.
+
 Example:
 ```bash
 curl http://localhost:8000/metrics
