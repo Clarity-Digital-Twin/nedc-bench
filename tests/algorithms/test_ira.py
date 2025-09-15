@@ -3,30 +3,65 @@
 import pytest
 
 from nedc_bench.algorithms.ira import IRAScorer
+from nedc_bench.models.annotations import EventAnnotation
 
 
 class TestIRA:
     """Test IRA following NEDC exact semantics"""
 
     @pytest.fixture
-    def perfect_agreement_case(self) -> tuple[list[str], list[str]]:
+    def perfect_agreement_case(self) -> tuple[list[EventAnnotation], list[EventAnnotation]]:
         """Perfect agreement case"""
-        ref = ["seiz", "bckg", "seiz", "bckg", "artf"]
-        hyp = ["seiz", "bckg", "seiz", "bckg", "artf"]
+        ref = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="artf", confidence=1.0),
+        ]
+        hyp = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="artf", confidence=1.0),
+        ]
         return ref, hyp
 
     @pytest.fixture
-    def no_agreement_case(self) -> tuple[list[str], list[str]]:
+    def no_agreement_case(self) -> tuple[list[EventAnnotation], list[EventAnnotation]]:
         """No agreement case"""
-        ref = ["seiz", "seiz", "seiz"]
-        hyp = ["bckg", "bckg", "bckg"]
+        ref = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
+        ]
+        hyp = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="bckg", confidence=1.0),
+        ]
         return ref, hyp
 
     @pytest.fixture
-    def mixed_agreement_case(self) -> tuple[list[str], list[str]]:
+    def mixed_agreement_case(self) -> tuple[list[EventAnnotation], list[EventAnnotation]]:
         """Mixed agreement case"""
-        ref = ["seiz", "bckg", "seiz", "bckg", "artf", "null"]
-        hyp = ["seiz", "seiz", "bckg", "bckg", "artf", "artf"]
+        ref = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="artf", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=5.0, stop_time=6.0, label="null", confidence=1.0),
+        ]
+        hyp = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="artf", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=5.0, stop_time=6.0, label="artf", confidence=1.0),
+        ]
         return ref, hyp
 
     def test_ira_scorer_initialization(self):
@@ -38,7 +73,7 @@ class TestIRA:
         """Test that confusion matrix contains only integers"""
         ref, hyp = mixed_agreement_case
         scorer = IRAScorer()
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, epoch_duration=1.0, file_duration=6.0)
 
         # All confusion matrix entries must be integers
         for ref_label in result.confusion_matrix:
@@ -50,7 +85,7 @@ class TestIRA:
         """Test that kappa values are floats"""
         ref, hyp = mixed_agreement_case
         scorer = IRAScorer()
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, epoch_duration=1.0, file_duration=6.0)
 
         # Per-label kappa values must be floats
         for label, kappa in result.per_label_kappa.items():
@@ -63,7 +98,7 @@ class TestIRA:
         """Test that perfect agreement yields kappa = 1.0"""
         ref, hyp = perfect_agreement_case
         scorer = IRAScorer()
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, epoch_duration=1.0, file_duration=5.0)
 
         # Perfect agreement should yield kappa close to 1.0
         assert abs(result.multi_class_kappa - 1.0) < 1e-10
@@ -76,7 +111,7 @@ class TestIRA:
         """Test that no agreement yields zero or negative kappa"""
         ref, hyp = no_agreement_case
         scorer = IRAScorer()
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, epoch_duration=1.0, file_duration=3.0)
 
         # Complete disagreement should yield zero or negative kappa
         # In this case with 2 classes and complete disagreement, kappa = 0
@@ -86,10 +121,10 @@ class TestIRA:
         """Test confusion matrix structure and counts"""
         ref, hyp = mixed_agreement_case
         scorer = IRAScorer()
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, epoch_duration=1.0, file_duration=6.0)
 
         # Check that all labels are in the matrix
-        expected_labels = sorted(set(ref + hyp))
+        expected_labels = sorted(set([ev.label for ev in ref] + [ev.label for ev in hyp]))
         assert sorted(result.labels) == expected_labels
 
         # Check matrix is square
@@ -98,20 +133,32 @@ class TestIRA:
             for hyp_label in result.labels:
                 assert hyp_label in result.confusion_matrix[ref_label]
 
-        # Check total count matches input length
+        # Check total count matches number of samples (6 samples at 1s intervals)
         total_count = sum(
             result.confusion_matrix[r][h] for r in result.labels for h in result.labels
         )
-        assert total_count == len(ref)
+        assert total_count == 6  # 6 samples at 0.5, 1.5, 2.5, 3.5, 4.5, 5.5
 
     def test_per_label_kappa_computation(self):
         """Test per-label kappa using 2x2 matrices"""
         # Simple case: mostly correct for one label
-        ref = ["seiz", "seiz", "seiz", "bckg", "bckg"]
-        hyp = ["seiz", "seiz", "bckg", "bckg", "bckg"]
+        ref = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="bckg", confidence=1.0),
+        ]
+        hyp = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="bckg", confidence=1.0),
+        ]
 
         scorer = IRAScorer()
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, epoch_duration=1.0, file_duration=5.0)
 
         # seiz: 2 hits, 1 miss, 0 false alarms - should have positive kappa
         assert result.per_label_kappa["seiz"] > 0
@@ -121,11 +168,25 @@ class TestIRA:
 
     def test_multi_class_kappa_formula(self):
         """Test multi-class kappa computation"""
-        ref = ["A", "A", "B", "B", "C", "C"]
-        hyp = ["A", "B", "B", "C", "C", "A"]
+        ref = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="A", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="B", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="B", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="C", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=5.0, stop_time=6.0, label="C", confidence=1.0),
+        ]
+        hyp = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="B", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="B", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="C", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="C", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=5.0, stop_time=6.0, label="A", confidence=1.0),
+        ]
 
         scorer = IRAScorer()
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, epoch_duration=1.0, file_duration=6.0)
 
         # Manual calculation check
         # Confusion: A->A:1, A->B:1, B->B:1, B->C:1, C->C:1, C->A:1
@@ -138,16 +199,24 @@ class TestIRA:
         scorer = IRAScorer()
 
         # Both empty
-        result = scorer.score([], [])
+        result = scorer.score([], [], epoch_duration=1.0, file_duration=0.0)
         assert result.multi_class_kappa == 0.0  # No data = no agreement
 
     def test_single_label_case(self):
         """Test case with only one label type"""
-        ref = ["seiz", "seiz", "seiz"]
-        hyp = ["seiz", "seiz", "seiz"]
+        ref = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
+        ]
+        hyp = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
+        ]
 
         scorer = IRAScorer()
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, epoch_duration=1.0, file_duration=3.0)
 
         # Perfect agreement on single label
         assert abs(result.multi_class_kappa - 1.0) < 1e-10
@@ -158,14 +227,34 @@ class TestIRA:
         scorer = IRAScorer()
 
         # Case 1: All same label (no variance)
-        ref1 = ["A", "A", "A", "A"]
-        hyp1 = ["A", "A", "A", "A"]
-        result1 = scorer.score(ref1, hyp1)
+        ref1 = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="A", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="A", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="A", confidence=1.0),
+        ]
+        hyp1 = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="A", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="A", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="A", confidence=1.0),
+        ]
+        result1 = scorer.score(ref1, hyp1, epoch_duration=1.0, file_duration=4.0)
         assert abs(result1.multi_class_kappa - 1.0) < 1e-10
 
         # Case 2: Random agreement level
-        ref2 = ["A", "B", "A", "B"]
-        hyp2 = ["B", "A", "B", "A"]
-        result2 = scorer.score(ref2, hyp2)
+        ref2 = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="B", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="A", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="B", confidence=1.0),
+        ]
+        hyp2 = [
+            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="B", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="A", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="B", confidence=1.0),
+            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="A", confidence=1.0),
+        ]
+        result2 = scorer.score(ref2, hyp2, epoch_duration=1.0, file_duration=4.0)
         # Complete reversal should give kappa < 0
         assert result2.multi_class_kappa < 0

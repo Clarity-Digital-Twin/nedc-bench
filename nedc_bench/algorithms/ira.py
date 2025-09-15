@@ -61,37 +61,38 @@ class IRAScorer:
 
     def score(
         self,
-        ref_events: List[EventAnnotation],
-        hyp_events: List[EventAnnotation],
-        epoch_duration: float,
-        file_duration: float,
+        ref: List,  # Either labels (List[str]) or events (List[EventAnnotation])
+        hyp: List,
+        epoch_duration: float | None = None,
+        file_duration: float | None = None,
         null_class: str = "null",
     ) -> IRAResult:
-        """NEDC IRA using epoch-based sampling to build confusion matrix.
+        """Compute IRA from labels or events.
 
-        Args:
-            ref_events: Reference events
-            hyp_events: Hypothesis events
-            epoch_duration: Sampling epoch duration (seconds)
-            file_duration: Total duration of the file
-            null_class: Background/NULL class label
-
-        Returns:
-            IRAResult with integer confusion and kappa values.
+        - Label mode: if `ref` contains strings, treat as epoch labels and build the confusion directly.
+        - Event mode: if `ref` contains EventAnnotation, sample midpoints using epoch_duration and file_duration.
         """
-        # Determine labels
-        labels = sorted(
-            {ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {null_class}
-        )
-        confusion: Dict[str, Dict[str, int]] = {r: {c: 0 for c in labels} for r in labels}
-
-        # Sample midpoints
-        for t in self._sample_times(epoch_duration, file_duration):
-            j = self._time_to_index(t, ref_events)
-            k = self._time_to_index(t, hyp_events)
-            rlab = ref_events[j].label if j >= 0 else null_class
-            hlab = hyp_events[k].label if k >= 0 else null_class
-            confusion[rlab][hlab] += 1
+        # Label mode
+        if not ref or isinstance(ref[0], str):
+            labels = sorted(set(ref + hyp)) if ref or hyp else []
+            confusion: Dict[str, Dict[str, int]] = {r: {c: 0 for c in labels} for r in labels}
+            for rlab, hlab in zip(ref, hyp):
+                confusion[rlab][hlab] += 1
+        else:
+            # Event mode
+            assert epoch_duration is not None and file_duration is not None, "epoch_duration and file_duration required for event mode"
+            ref_events: List[EventAnnotation] = ref  # type: ignore[assignment]
+            hyp_events: List[EventAnnotation] = hyp  # type: ignore[assignment]
+            labels = sorted(
+                {ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {null_class}
+            )
+            confusion = {r: {c: 0 for c in labels} for r in labels}
+            for t in self._sample_times(epoch_duration, file_duration):
+                j = self._time_to_index(t, ref_events)
+                k = self._time_to_index(t, hyp_events)
+                rlab = ref_events[j].label if j >= 0 else null_class
+                hlab = hyp_events[k].label if k >= 0 else null_class
+                confusion[rlab][hlab] += 1
 
         # Compute per-label kappa (NEDC lines 499-540)
         per_label_kappa = {}

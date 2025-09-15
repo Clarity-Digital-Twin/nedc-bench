@@ -118,10 +118,12 @@ class BetaPipeline:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
-        self._map_events(ref_ann.events, params.label_map)
-        self._map_events(hyp_ann.events, params.label_map)
+        ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
+        hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
+        self._map_events(ref_events, params.label_map)
+        self._map_events(hyp_events, params.label_map)
         scorer = OverlapScorer()
-        return scorer.score(ref_ann.events, hyp_ann.events)
+        return scorer.score(ref_events, hyp_events)
 
     def evaluate_ira(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
         params = load_nedc_params()

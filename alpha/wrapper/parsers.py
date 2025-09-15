@@ -41,45 +41,35 @@ class DPAlignmentParser(BaseParser):
     """Parser for DP Alignment algorithm output"""
 
     def parse(self, text: str) -> dict:
-        """Parse DP Alignment section from summary"""
-        result = {}
+        """Parse DP Alignment from main summary and/or dedicated file.
 
-        # Find DP Alignment section
+        - If main summary section is present, extract metrics and 2x2 counts.
+        - Regardless, sum per-file Hit/Sub/Ins/Del if present in the text.
+        """
+        result: dict = {}
+
+        # Optional main summary section
         dp_section = re.search(
             r"NEDC DP ALIGNMENT SCORING SUMMARY.*?(?=\n={70,}|\Z)", text, re.DOTALL
         )
+        if dp_section:
+            section_text = dp_section.group(0)
+            result["sensitivity"] = self.extract_percentage(section_text, r"Sensitivity \(TPR, Recall\)")
+            result["specificity"] = self.extract_percentage(section_text, r"Specificity \(TNR\)")
+            result["precision"] = self.extract_percentage(section_text, r"Precision \(PPV\)")
+            result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
+            result["accuracy"] = self.extract_percentage(section_text, r"Accuracy")
 
-        if not dp_section:
-            return result
+            result["true_positives"] = self.extract_int(section_text, r"True Positives \(TP\)")
+            result["true_negatives"] = self.extract_int(section_text, r"True Negatives \(TN\)")
+            result["false_positives"] = self.extract_int(section_text, r"False Positives \(FP\)")
+            result["false_negatives"] = self.extract_int(section_text, r"False Negatives \(FN\)")
+            result["insertions"] = self.extract_int(section_text, r"Insertions")
+            result["deletions"] = self.extract_int(section_text, r"Deletions")
 
-        section_text = dp_section.group(0)
-
-        # Extract metrics
-        result["sensitivity"] = self.extract_percentage(
-            section_text, r"Sensitivity \(TPR, Recall\)"
-        )
-        result["specificity"] = self.extract_percentage(section_text, r"Specificity \(TNR\)")
-        result["precision"] = self.extract_percentage(section_text, r"Precision \(PPV\)")
-        result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
-        result["accuracy"] = self.extract_percentage(section_text, r"Accuracy")
-
-        # Extract counts
-        result["true_positives"] = self.extract_int(section_text, r"True Positives \(TP\)")
-        result["true_negatives"] = self.extract_int(section_text, r"True Negatives \(TN\)")
-        result["false_positives"] = self.extract_int(section_text, r"False Positives \(FP\)")
-        result["false_negatives"] = self.extract_int(section_text, r"False Negatives \(FN\)")
-
-        result["insertions"] = self.extract_int(section_text, r"Insertions")
-        result["deletions"] = self.extract_int(section_text, r"Deletions")
-
-        # Also support per-file detailed lines: "(Hit: H  Sub: S  Ins: I  Del: D  Total: T)"
-        hits = 0
-        subs = 0
-        ins = 0
-        dels = 0
-        for m in re.finditer(
-            r"\(\s*Hit:\s*(\d+)\s+Sub:\s*(\d+)\s+Ins:\s*(\d+)\s+Del:\s*(\d+)\s+", text
-        ):
+        # Always scan for per-file counts from detailed file content
+        hits = subs = ins = dels = 0
+        for m in re.finditer(r"\(\s*Hit:\s*(\d+)\s+Sub:\s*(\d+)\s+Ins:\s*(\d+)\s+Del:\s*(\d+)\s+", text):
             h, s, i, d = m.groups()
             hits += int(h)
             subs += int(s)
@@ -98,32 +88,48 @@ class EpochParser(BaseParser):
     """Parser for Epoch-based scoring output"""
 
     def parse(self, text: str) -> dict:
-        """Parse Epoch section from summary"""
-        result = {}
+        """Parse Epoch section from summary
 
-        # Find Epoch section
+        Prefer metrics and counts from the SUMMARY subsection (totals across labels).
+        """
+        result: dict = {}
+
         epoch_section = re.search(r"NEDC EPOCH SCORING SUMMARY.*?(?=\n={70,}|\Z)", text, re.DOTALL)
-
         if not epoch_section:
             return result
 
         section_text = epoch_section.group(0)
 
-        # Extract metrics
-        result["sensitivity"] = self.extract_percentage(
-            section_text, r"Sensitivity \(TPR, Recall\)"
-        )
+        # Extract metrics from section (these are summary metrics)
+        result["sensitivity"] = self.extract_percentage(section_text, r"Sensitivity \(TPR, Recall\)")
         result["specificity"] = self.extract_percentage(section_text, r"Specificity \(TNR\)")
         result["precision"] = self.extract_percentage(section_text, r"Precision \(PPV\)")
         result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
         result["accuracy"] = self.extract_percentage(section_text, r"Accuracy")
         result["mcc"] = self.extract_float(section_text, r"Matthews \(MCC\)")
 
-        # Extract counts
-        result["true_positives"] = self.extract_int(section_text, r"True Positives \(TP\)")
-        result["true_negatives"] = self.extract_int(section_text, r"True Negatives \(TN\)")
-        result["false_positives"] = self.extract_int(section_text, r"False Positives \(FP\)")
-        result["false_negatives"] = self.extract_int(section_text, r"False Negatives \(FN\)")
+        # Try to narrow to the SUMMARY block for totals
+        summary_match = re.search(r"SUMMARY:\s*(.*?)(?=\n\s*\n|\Z)", section_text, re.DOTALL | re.IGNORECASE)
+        if summary_match:
+            summary_text = summary_match.group(1)
+        else:
+            summary_text = section_text
+
+        # Extract TOTAL counts from summary
+        tp = re.findall(r"True Positives\s*\(TP\)\s*:\s*(\d+)", summary_text)
+        tn = re.findall(r"True Negatives\s*\(TN\)\s*:\s*(\d+)", summary_text)
+        fp = re.findall(r"False Positives\s*\(FP\)\s*:\s*(\d+)", summary_text)
+        fn = re.findall(r"False Negatives\s*\(FN\)\s*:\s*(\d+)", summary_text)
+
+        # If multiple matches (per label), take the last which is likely summary
+        if tp:
+            result["true_positives"] = int(tp[-1])
+        if tn:
+            result["true_negatives"] = int(tn[-1])
+        if fp:
+            result["false_positives"] = int(fp[-1])
+        if fn:
+            result["false_negatives"] = int(fn[-1])
 
         return result
 
@@ -132,40 +138,26 @@ class OverlapParser(BaseParser):
     """Parser for Overlap scoring output"""
 
     def parse(self, text: str) -> dict:
-        """Parse Overlap section from summary"""
-        result = {}
+        """Parse Overlap from main summary and/or dedicated file."""
+        result: dict = {}
 
-        # Find Overlap section
+        # Optional main summary section
         ovlp_section = re.search(r"NEDC OVERLAP SCORING SUMMARY.*?(?=\n={70,}|\Z)", text, re.DOTALL)
+        if ovlp_section:
+            section_text = ovlp_section.group(0)
+            result["sensitivity"] = self.extract_percentage(section_text, r"Sensitivity \(TPR, Recall\)")
+            result["specificity"] = self.extract_percentage(section_text, r"Specificity \(TNR\)")
+            result["precision"] = self.extract_percentage(section_text, r"Precision \(PPV\)")
+            result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
+            result["accuracy"] = self.extract_percentage(section_text, r"Accuracy")
+            result["true_positives"] = self.extract_int(section_text, r"True Positives \(TP\)")
+            result["true_negatives"] = self.extract_int(section_text, r"True Negatives \(TN\)")
+            result["false_positives"] = self.extract_int(section_text, r"False Positives \(FP\)")
+            result["false_negatives"] = self.extract_int(section_text, r"False Negatives \(FN\)")
 
-        if not ovlp_section:
-            return result
-
-        section_text = ovlp_section.group(0)
-
-        # Extract metrics
-        result["sensitivity"] = self.extract_percentage(
-            section_text, r"Sensitivity \(TPR, Recall\)"
-        )
-        result["specificity"] = self.extract_percentage(section_text, r"Specificity \(TNR\)")
-        result["precision"] = self.extract_percentage(section_text, r"Precision \(PPV\)")
-        result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
-        result["accuracy"] = self.extract_percentage(section_text, r"Accuracy")
-
-        # Extract counts
-        result["true_positives"] = self.extract_int(section_text, r"True Positives \(TP\)")
-        result["true_negatives"] = self.extract_int(section_text, r"True Negatives \(TN\)")
-        result["false_positives"] = self.extract_int(section_text, r"False Positives \(FP\)")
-        result["false_negatives"] = self.extract_int(section_text, r"False Negatives \(FN\)")
-
-        # Also support per-file summary lines with Hit/Miss/False Alarms and aggregate totals
-        # e.g., "(Hit: 21  Miss: 14  False Alarms: 0  Total: 35)"
-        hits = 0
-        misses = 0
-        falses = 0
-        for m in re.finditer(
-            r"\(\s*Hit:\s*(\d+)\s+\s*Miss:\s*(\d+)\s+\s*False\s+Alarms:\s*(\d+)\s+", text
-        ):
+        # Always sum per-file totals if present
+        hits = misses = falses = 0
+        for m in re.finditer(r"\(\s*Hit:\s*(\d+)\s+Miss:\s*(\d+)\s+False\s+Alarms:\s*(\d+)\s+", text):
             h, mi, fa = m.groups()
             hits += int(h)
             misses += int(mi)
