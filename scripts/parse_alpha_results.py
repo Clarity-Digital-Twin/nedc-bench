@@ -37,11 +37,14 @@ def parse_alpha_results() -> dict:
         return m.group(1) if m else ""
 
     def parse_label_block(sect: str, label: str) -> dict:
-        # Extract per-label metrics for LABEL: <label>
-        # Supports both uppercase and lowercase labels
-        lab_pat = rf"LABEL:\s*{label}\b.*?\n(.*?)(?:\n\n|\Z)"
-        m = re.search(lab_pat, sect, re.DOTALL | re.IGNORECASE)
-        return {k: v for k, v in (re.findall(r"^\s*([A-Za-z \(\)]+):\s+([0-9\.]+)", m.group(1), re.M) if m else [])}
+        """Extract key:value pairs under "LABEL: <label>" until next label/summary.
+
+        We parse across blank lines to include TP/FP/FN and False Alarm Rate lines.
+        """
+        lab_pat = rf"^\s*LABEL:\s*{label}\b.*?\n(.*?)(?=\n\s*LABEL:|\n\s*SUMMARY:|\Z)"
+        m = re.search(lab_pat, sect, re.DOTALL | re.IGNORECASE | re.M)
+        block = m.group(1) if m else ""
+        return {k: v for k, v in (re.findall(r"^\s*([A-Za-z \(\)]+):\s+([0-9\.]+)", block, re.M) if block else [])}
 
     results: dict[str, dict] = {}
 
