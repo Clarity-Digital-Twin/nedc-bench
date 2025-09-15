@@ -60,6 +60,10 @@ hyp:  <----------------->  # 1 long detection
    - Multiple hyps can contribute to single ref
    - Each hyp adds to hit and reduces miss
 
+3. **Unmatched events**:
+   - Any reference event with no overlapping hypothesis adds +1.0 to miss
+   - Any hypothesis event with no overlapping reference adds +1.0 to false alarms
+
 ### Fractional Scoring Formula (`calc_hf`)
 
 The core scoring calculation for overlapping events:
@@ -154,18 +158,16 @@ print(f"FN: {result.false_negatives:.2f}")  # FN: 0.25
 - Systems requiring integer counts
 - Real-time streaming evaluation
 
-## Validation Results
+## Validation
 
-| Metric | Alpha Pipeline | Beta Pipeline | Status |
-|--------|---------------|---------------|--------|
-| True Positives | 133.84 | 133.84 | ✅ Exact |
-| False Positives | 134.20 | 134.20 | ✅ Exact |
-| False Negatives | 14.16 | 14.16 | ✅ Exact |
-| Sensitivity | 0.9043 | 0.9043 | ✅ Exact |
-| FA/24h | 11.61 | 11.61 | ✅ Exact |
+- Parity: Beta matches NEDC v6.0.0 TAES exactly on the SSOT parity set. See docs/archive/bugs/FINAL_PARITY_RESULTS.md.
+  - False alarm rate (FA/24h) uses event FP counts directly (no epoch scaling). See docs/algorithms/metrics.md.
 
 ## Related Documentation
 - [Algorithm Overview](overview.md) - Comparison of all algorithms
 - [Metrics Calculation](metrics.md) - FA/24h computation
 - Source: `nedc_bench/algorithms/taes.py`
-- NEDC Reference: `nedc_eeg_eval_taes.py` lines 241-470
+- NEDC Reference: `nedc_eeg_eval_taes.py` (v6.0.0):
+  - `ovlp_ref_seqs` (lines ~669–736)
+  - `ovlp_hyp_seqs` (lines ~740–891)
+  - `calc_hf` (lines ~926–1006)
