@@ -66,11 +66,15 @@ def test_submit_and_result_single_algorithm(client, sample_files):
 
 
 def test_websocket_progress(client, sample_files):
-    res = client.post(
-        "/api/v1/evaluate",
-        files=sample_files,
-        data=[("algorithms", "taes"), ("pipeline", "dual")],
-    )
+    ref_file, hyp_file = sample_files
+
+    with open(ref_file, "rb") as f1, open(hyp_file, "rb") as f2:
+        files = {
+            "reference": ("ref.csv_bi", f1, "application/octet-stream"),
+            "hypothesis": ("hyp.csv_bi", f2, "application/octet-stream"),
+        }
+        data = {"algorithms": "taes", "pipeline": "dual"}
+        res = client.post("/api/v1/evaluate", files=files, data=data)
     assert res.status_code == 200
     job_id = res.json()["job_id"]
 
