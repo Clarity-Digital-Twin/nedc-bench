@@ -7,6 +7,7 @@ SOLID Principles:
 - Interface Segregation: Focused methods for 2x2 and NxN matrices
 - Dependency Inversion: Works with label sequences abstraction
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -80,7 +81,9 @@ class IRAScorer:
                 confusion[rlab][hlab] += 1
         else:
             # Event mode
-            assert epoch_duration is not None and file_duration is not None, "epoch_duration and file_duration required for event mode"
+            assert epoch_duration is not None and file_duration is not None, (
+                "epoch_duration and file_duration required for event mode"
+            )
             ref_events: list[EventAnnotation] = ref  # type: ignore[assignment]
             hyp_events: list[EventAnnotation] = hyp  # type: ignore[assignment]
             labels = sorted(

@@ -591,7 +591,9 @@ class ParityValidator:
                     )
 
         # Kappa values - Alpha is rounded to 4 decimals; use looser tolerance
-        alpha_multi_kappa = float(alpha_result.get("multi_class_kappa", alpha_result.get("kappa", 0.0)))
+        alpha_multi_kappa = float(
+            alpha_result.get("multi_class_kappa", alpha_result.get("kappa", 0.0))
+        )
         beta_multi_kappa = float(beta_result.multi_class_kappa)
 
         if abs(alpha_multi_kappa - beta_multi_kappa) > 1e-4:
@@ -601,7 +603,8 @@ class ParityValidator:
                     alpha_value=alpha_multi_kappa,
                     beta_value=beta_multi_kappa,
                     absolute_difference=abs(alpha_multi_kappa - beta_multi_kappa),
-                    relative_difference=abs(alpha_multi_kappa - beta_multi_kappa) / max(abs(alpha_multi_kappa), 1e-16),
+                    relative_difference=abs(alpha_multi_kappa - beta_multi_kappa)
+                    / max(abs(alpha_multi_kappa), 1e-16),
                     tolerance=1e-4,
                 )
             )
@@ -617,7 +620,8 @@ class ParityValidator:
                         alpha_value=alpha_kappa,
                         beta_value=beta_kappa,
                         absolute_difference=abs(alpha_kappa - beta_kappa),
-                        relative_difference=abs(alpha_kappa - beta_kappa) / max(abs(alpha_kappa), 1e-16),
+                        relative_difference=abs(alpha_kappa - beta_kappa)
+                        / max(abs(alpha_kappa), 1e-16),
                         tolerance=1e-4,
                     )
                 )
@@ -916,7 +920,9 @@ class ParityValidator:
             metrics = {}
             metrics["sensitivity"] = tp / (tp + fn) if (tp + fn) > 0 else 0.0
             metrics["precision"] = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-            metrics["accuracy"] = (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) > 0 else 0.0
+            metrics["accuracy"] = (
+                (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) > 0 else 0.0
+            )
             prec = metrics["precision"]
             rec = metrics["sensitivity"]
             metrics["f1_score"] = 0.0 if (prec + rec) == 0 else 2 * (prec * rec) / (prec + rec)

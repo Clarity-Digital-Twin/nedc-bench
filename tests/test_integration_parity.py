@@ -218,7 +218,12 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
             else:
                 # Fallback for empty inputs: synthesize minimal Alpha results
                 alpha_results = {
-                    "dp_alignment": {"hits": 0, "insertions": 0, "deletions": 0, "substitutions": 0},
+                    "dp_alignment": {
+                        "hits": 0,
+                        "insertions": 0,
+                        "deletions": 0,
+                        "substitutions": 0,
+                    },
                     "epoch": {"confusion": {}},
                     "overlap": {"hits": 0, "misses": 0, "false_alarms": 0},
                     "taes": {"true_positives": 0.0, "false_positives": 0.0, "false_negatives": 0.0},
@@ -294,6 +299,7 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
             else:
                 # Fallback for mismatched labels: synthesize Alpha results from Beta
                 from nedc_bench.orchestration.dual_pipeline import BetaPipeline
+
                 bp = BetaPipeline()
                 dp_res = bp.evaluate_dp(ref_file, hyp_file)
                 epoch_res = bp.evaluate_epoch(ref_file, hyp_file)

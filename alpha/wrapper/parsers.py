@@ -54,7 +54,9 @@ class DPAlignmentParser(BaseParser):
         )
         if dp_section:
             section_text = dp_section.group(0)
-            result["sensitivity"] = self.extract_percentage(section_text, r"Sensitivity \(TPR, Recall\)")
+            result["sensitivity"] = self.extract_percentage(
+                section_text, r"Sensitivity \(TPR, Recall\)"
+            )
             result["specificity"] = self.extract_percentage(section_text, r"Specificity \(TNR\)")
             result["precision"] = self.extract_percentage(section_text, r"Precision \(PPV\)")
             result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
@@ -69,7 +71,9 @@ class DPAlignmentParser(BaseParser):
 
         # Always scan for per-file counts from detailed file content
         hits = subs = ins = dels = 0
-        for m in re.finditer(r"\(\s*Hit:\s*(\d+)\s+Sub:\s*(\d+)\s+Ins:\s*(\d+)\s+Del:\s*(\d+)\s+", text):
+        for m in re.finditer(
+            r"\(\s*Hit:\s*(\d+)\s+Sub:\s*(\d+)\s+Ins:\s*(\d+)\s+Del:\s*(\d+)\s+", text
+        ):
             h, s, i, d = m.groups()
             hits += int(h)
             subs += int(s)
@@ -101,7 +105,9 @@ class EpochParser(BaseParser):
         section_text = epoch_section.group(0)
 
         # Extract metrics from section (these are summary metrics)
-        result["sensitivity"] = self.extract_percentage(section_text, r"Sensitivity \(TPR, Recall\)")
+        result["sensitivity"] = self.extract_percentage(
+            section_text, r"Sensitivity \(TPR, Recall\)"
+        )
         result["specificity"] = self.extract_percentage(section_text, r"Specificity \(TNR\)")
         result["precision"] = self.extract_percentage(section_text, r"Precision \(PPV\)")
         result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
@@ -109,7 +115,9 @@ class EpochParser(BaseParser):
         result["mcc"] = self.extract_float(section_text, r"Matthews \(MCC\)")
 
         # Try to narrow to the SUMMARY block for totals
-        summary_match = re.search(r"SUMMARY:\s*(.*?)(?=\n\s*\n|\Z)", section_text, re.DOTALL | re.IGNORECASE)
+        summary_match = re.search(
+            r"SUMMARY:\s*(.*?)(?=\n\s*\n|\Z)", section_text, re.DOTALL | re.IGNORECASE
+        )
         summary_text = summary_match.group(1) if summary_match else section_text
 
         # Extract TOTAL counts from summary
@@ -142,7 +150,9 @@ class OverlapParser(BaseParser):
         ovlp_section = re.search(r"NEDC OVERLAP SCORING SUMMARY.*?(?=\n={70,}|\Z)", text, re.DOTALL)
         if ovlp_section:
             section_text = ovlp_section.group(0)
-            result["sensitivity"] = self.extract_percentage(section_text, r"Sensitivity \(TPR, Recall\)")
+            result["sensitivity"] = self.extract_percentage(
+                section_text, r"Sensitivity \(TPR, Recall\)"
+            )
             result["specificity"] = self.extract_percentage(section_text, r"Specificity \(TNR\)")
             result["precision"] = self.extract_percentage(section_text, r"Precision \(PPV\)")
             result["f1_score"] = self.extract_float(section_text, r"F1 Score \(F Ratio\)")
@@ -154,7 +164,9 @@ class OverlapParser(BaseParser):
 
         # Always sum per-file totals if present
         hits = misses = falses = 0
-        for m in re.finditer(r"\(\s*Hit:\s*(\d+)\s+Miss:\s*(\d+)\s+False\s+Alarms:\s*(\d+)\s+", text):
+        for m in re.finditer(
+            r"\(\s*Hit:\s*(\d+)\s+Miss:\s*(\d+)\s+False\s+Alarms:\s*(\d+)\s+", text
+        ):
             h, mi, fa = m.groups()
             hits += int(h)
             misses += int(mi)

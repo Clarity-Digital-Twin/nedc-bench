@@ -13,18 +13,38 @@ class TestIRA:
     def perfect_agreement_case(self) -> tuple[list[EventAnnotation], list[EventAnnotation]]:
         """Perfect agreement case"""
         ref = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="artf", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=4.0, stop_time=5.0, label="artf", confidence=1.0
+            ),
         ]
         hyp = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="artf", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=4.0, stop_time=5.0, label="artf", confidence=1.0
+            ),
         ]
         return ref, hyp
 
@@ -32,14 +52,26 @@ class TestIRA:
     def no_agreement_case(self) -> tuple[list[EventAnnotation], list[EventAnnotation]]:
         """No agreement case"""
         ref = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0
+            ),
         ]
         hyp = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="bckg", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="bckg", confidence=1.0
+            ),
         ]
         return ref, hyp
 
@@ -47,20 +79,44 @@ class TestIRA:
     def mixed_agreement_case(self) -> tuple[list[EventAnnotation], list[EventAnnotation]]:
         """Mixed agreement case"""
         ref = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="artf", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=5.0, stop_time=6.0, label="null", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=4.0, stop_time=5.0, label="artf", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=5.0, stop_time=6.0, label="null", confidence=1.0
+            ),
         ]
         hyp = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="artf", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=5.0, stop_time=6.0, label="artf", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=4.0, stop_time=5.0, label="artf", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=5.0, stop_time=6.0, label="artf", confidence=1.0
+            ),
         ]
         return ref, hyp
 
@@ -143,18 +199,38 @@ class TestIRA:
         """Test per-label kappa using 2x2 matrices"""
         # Simple case: mostly correct for one label
         ref = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="bckg", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=4.0, stop_time=5.0, label="bckg", confidence=1.0
+            ),
         ]
         hyp = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="bckg", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=3.0, stop_time=4.0, label="bckg", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=4.0, stop_time=5.0, label="bckg", confidence=1.0
+            ),
         ]
 
         scorer = IRAScorer()
@@ -169,20 +245,44 @@ class TestIRA:
     def test_multi_class_kappa_formula(self):
         """Test multi-class kappa computation"""
         ref = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="A", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="B", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="B", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="C", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=5.0, stop_time=6.0, label="C", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="A", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="B", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=3.0, stop_time=4.0, label="B", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=4.0, stop_time=5.0, label="C", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=5.0, stop_time=6.0, label="C", confidence=1.0
+            ),
         ]
         hyp = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="B", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="B", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="C", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=4.0, stop_time=5.0, label="C", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=5.0, stop_time=6.0, label="A", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="B", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="B", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=3.0, stop_time=4.0, label="C", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=4.0, stop_time=5.0, label="C", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=5.0, stop_time=6.0, label="A", confidence=1.0
+            ),
         ]
 
         scorer = IRAScorer()
@@ -205,14 +305,26 @@ class TestIRA:
     def test_single_label_case(self):
         """Test case with only one label type"""
         ref = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0
+            ),
         ]
         hyp = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="seiz", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="seiz", confidence=1.0
+            ),
         ]
 
         scorer = IRAScorer()
@@ -228,32 +340,64 @@ class TestIRA:
 
         # Case 1: All same label (no variance)
         ref1 = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="A", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="A", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="A", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="A", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="A", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=3.0, stop_time=4.0, label="A", confidence=1.0
+            ),
         ]
         hyp1 = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="A", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="A", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="A", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="A", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="A", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=3.0, stop_time=4.0, label="A", confidence=1.0
+            ),
         ]
         result1 = scorer.score(ref1, hyp1, epoch_duration=1.0, file_duration=4.0)
         assert abs(result1.multi_class_kappa - 1.0) < 1e-10
 
         # Case 2: Random agreement level
         ref2 = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="B", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="A", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="B", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="A", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="B", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="A", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=3.0, stop_time=4.0, label="B", confidence=1.0
+            ),
         ]
         hyp2 = [
-            EventAnnotation(channel="TERM", start_time=0.0, stop_time=1.0, label="B", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=1.0, stop_time=2.0, label="A", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=2.0, stop_time=3.0, label="B", confidence=1.0),
-            EventAnnotation(channel="TERM", start_time=3.0, stop_time=4.0, label="A", confidence=1.0),
+            EventAnnotation(
+                channel="TERM", start_time=0.0, stop_time=1.0, label="B", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=1.0, stop_time=2.0, label="A", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=2.0, stop_time=3.0, label="B", confidence=1.0
+            ),
+            EventAnnotation(
+                channel="TERM", start_time=3.0, stop_time=4.0, label="A", confidence=1.0
+            ),
         ]
         result2 = scorer.score(ref2, hyp2, epoch_duration=1.0, file_duration=4.0)
         # Complete reversal should give kappa < 0
