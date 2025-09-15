@@ -81,10 +81,10 @@ def run_all_beta_algorithms():
                 ref_ann = AnnotationFile.from_csv_bi(Path(ref_file))
                 hyp_ann = AnnotationFile.from_csv_bi(Path(hyp_file))
 
-                # Get duration on first algo only
-                if algo_name == "taes" and file_count == 0:
+                # Get duration for FA/24h calculation (only once per file)
+                if file_count == 0:
                     total_duration = 0.0
-                if algo_name == "taes":
+                if algo_name == list(scorers.keys())[0]:  # Only count duration once
                     total_duration += ref_ann.duration
 
                 # Score based on algorithm type
@@ -94,8 +94,8 @@ def run_all_beta_algorithms():
                     total_fp += result.false_positives
                     total_fn += result.false_negatives
                 elif algo_name == "epoch":
-                    # Epoch scorer returns EpochResult with different structure
-                    result = scorer.score(ref_ann.events, hyp_ann.events)
+                    # Epoch scorer needs file duration
+                    result = scorer.score(ref_ann.events, hyp_ann.events, ref_ann.duration)
                     # Get seiz-specific metrics
                     if "seiz" in result.true_positives:
                         total_tp += result.true_positives["seiz"]
