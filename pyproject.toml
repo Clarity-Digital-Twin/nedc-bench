@@ -189,6 +189,10 @@ unfixable = []
 "nedc_bench/api/endpoints/websocket.py" = [
     "PERF203", # heartbeat try/except timeout pattern acceptable
 ]
+"nedc_bench/orchestration/dual_pipeline.py" = [
+    "PLR6301", # Helper methods may remain bound
+    "PLR0912", # Branching due to algorithm dispatch
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["nedc_bench"]

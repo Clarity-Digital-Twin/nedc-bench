@@ -44,7 +44,7 @@ class DualPipelineResult:
 class BetaPipeline:
     """Beta pipeline runner"""
 
-    def evaluate_taes(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
+    def evaluate_taes(self, ref_file: Path, hyp_file: Path) -> Any:
         """Run TAES evaluation on single file pair"""
         ref_annotations = AnnotationFile.from_csv_bi(ref_file)
         hyp_annotations = AnnotationFile.from_csv_bi(hyp_file)
