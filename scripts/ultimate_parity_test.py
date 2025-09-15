@@ -78,20 +78,21 @@ def get_alpha_metrics() -> dict[str, AlgorithmResult]:
     # Use exact values from parity_snapshot.json to avoid rounding errors
     return {
         "taes": AlgorithmResult(
-            133.84137545872733, 552.7689020231412, 941.1586245412731,
-            12.450360507788584, 30.461710971183077, "TAES"
+            133.84137545872733,
+            552.7689020231412,
+            941.1586245412731,
+            12.450360507788584,
+            30.461710971183077,
+            "TAES",
         ),
         "dp": AlgorithmResult(
-            328.0, 966.0, 747.0,
-            30.511627906976745, 53.23384273330729, "DP Alignment"
+            328.0, 966.0, 747.0, 30.511627906976745, 53.23384273330729, "DP Alignment"
         ),
         "epoch": AlgorithmResult(
-            33704.0, 18816.0, 250459.0,
-            11.860798203847791, 259.22566896219206, "Epoch"
+            33704.0, 18816.0, 250459.0, 11.860798203847791, 259.22566896219206, "Epoch"
         ),
         "ovlp": AlgorithmResult(
-            253.0, 536.0, 822.0,
-            23.53488372093023, 29.537618742290594, "Overlap"
+            253.0, 536.0, 822.0, 23.53488372093023, 29.537618742290594, "Overlap"
         ),
     }
 
@@ -226,7 +227,9 @@ def compare_results(alpha: dict[str, AlgorithmResult], beta: dict[str, Algorithm
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description="Test parity between Alpha (NEDC) and Beta implementations")
+    parser = argparse.ArgumentParser(
+        description="Test parity between Alpha (NEDC) and Beta implementations"
+    )
     parser.add_argument("--subset", type=int, help="Test only first N file pairs")
     parser.add_argument("--verbose", action="store_true", help="Show detailed output")
     args = parser.parse_args()
