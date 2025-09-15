@@ -185,26 +185,9 @@ def get_total_duration(annotations):
 - Vectorize confusion matrix operations
 - Use numpy for large-scale computations
 
-## Validation Examples
+## Validation
 
-### TAES Scoring
-```
-TP = 133.84 (fractional)
-FP = 134.20 (fractional)
-FN = 14.16 (fractional)
-Duration = 991.07 seconds
-FA/24h = 134.20 / 991.07 * 86400 = 11701.13
-```
-
-### Epoch Scoring
-```
-TP = 33704 (integer epochs)
-FP = 31989 (integer epochs)
-FN = 3992 (integer epochs)
-Duration = 991.07 seconds
-Epoch = 1.0 second
-FA/24h = 31989 * 1.0 / 991.07 * 86400 = 2789120.61
-```
+- See docs/archive/bugs/FINAL_PARITY_RESULTS.md for parity-confirmed metrics across all algorithms.
 
 ## Related Documentation
 - [Algorithm Overview](overview.md) - Algorithm comparison
