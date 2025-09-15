@@ -1,140 +1,51 @@
-# CLAUDE.md
+# Repository Guidelines
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Unified guide for AI coding agents and human contributors. These rules apply to the entire repo.
 
-## Repository Overview
+## Project Structure & Boundaries
+- `nedc_bench/` — modern source: `algorithms/`, `api/`, `models/`, `orchestration/`, `validation/`, `utils/`.
+- `alpha/` — thin wrapper for legacy NEDC. Keep new logic out.
+- `nedc_eeg_eval/v6.0.0/` — original NEDC code. Do not modify.
+- `tests/` — mirrors `nedc_bench/`. Place tests alongside the corresponding module subtree.
+- `scripts/` — parity checks, batch runs. Use `uv run python scripts/...` when possible.
+- `docs/`, `k8s/`, `monitoring/` — documentation and deployment assets.
 
-NEDC-BENCH is a dual-architecture EEG benchmarking platform that wraps the original NEDC EEG Evaluation tool (v6.0.0) while building a modern Python implementation alongside it. The project maintains 100% algorithmic fidelity to the original Temple University NEDC algorithms while modernizing the infrastructure.
+## Agent Operating Rules (2025)
+- Prefer small, surgical patches. Use `apply_patch`; avoid broad refactors unless requested.
+- Read files in chunks (≤250 lines). Use `rg` to search and `sed -n` to view ranges.
+- Before tool calls, add a one‑sentence preamble of next actions. For multi‑step work, maintain a plan via `update_plan` with exactly one `in_progress` step.
+- Follow repo tooling: Ruff (format/lint), MyPy (strict), Pytest. Don’t add dependencies or commit changes unless asked.
+- Respect boundaries: never edit `nedc_eeg_eval/`. Keep public APIs and behavior stable; update docs/tests if behavior changes.
 
-## Key Architecture Decisions
+## Build, Test, and Dev Commands
+- `make dev` — install dev deps + pre-commit (via `uv`).
+- `make test` / `make test-fast` — run tests with coverage (parallel for speed).
+- `make lint` / `make lint-fix` — Ruff + MyPy; `lint-fix` auto-fixes and formats.
+- `make format` — format with Ruff; `make typecheck` — strict MyPy on `nedc_bench/`.
+- `make docs-serve` — serve MkDocs; `docker-compose up -d` — run API stack locally.
 
-### Dual-Pipeline Strategy
-- **Alpha Pipeline (Legacy)**: Wraps original NEDC code in `nedc_eeg_eval/v6.0.0/` - DO NOT modify these files
-- **Beta Pipeline (Modern)**: New implementation in `nedc_bench/` using modern Python practices
-- Both pipelines must produce identical results for validation
+## Coding Style & Naming
+- Python ≥3.10; 4‑space indents; line length 100; double quotes.
+- NumPy docstrings; full type hints (no untyped defs). Prefer `pathlib.Path`.
+- Names: modules/functions `snake_case`; classes `CamelCase`; constants `UPPER_SNAKE`.
+- Imports sorted by Ruff/isort. Run `ruff check --fix` and `ruff format` before pushing.
 
-### Original NEDC Tool (`nedc_eeg_eval/v6.0.0/`)
-- Research-grade software from Temple University, no explicit license
-- Requires environment variables: `NEDC_NFC` (root dir) and `PYTHONPATH` (includes lib/)
-- Python 3.10+ with numpy 2.0.2, scipy 1.14.1, lxml 5.3.0, tomli (for Python <3.11)
-- 5 scoring algorithms: DP Alignment, Epoch-based, Overlap, TAES, IRA
-- Input: CSV_BI annotation files (anonymized test data safe for public repo)
-- Output: Text-based scoring reports in `output/` directory
+## Testing Guidelines
+- Pytest configured in `pyproject.toml`. File/class/function patterns: `test_*.py`, `Test*`, `test_*`.
+- Markers: `integration`, `performance`, `slow`, `benchmark`, `gpu`.
+- Examples: `pytest -n auto --cov=nedc_bench -v`, `pytest -v -m "not slow"`.
+- Keep or raise coverage (current ~92%). Add parity tests when touching algorithms/orchestration.
 
-### Modern Development Stack
-- **UV** for package management (10-100x faster than pip)
-- **Ruff** for linting/formatting (replaces Black, isort, flake8)
-- **MyPy** for strict type checking
-- **Pytest** with parallel execution and 80% coverage requirement
-- **Pre-commit** hooks for code quality
-- Python 3.11 default, supports 3.10+
+## API & Legacy Tooling
+- Env: API sets `NEDC_NFC` (legacy root) and adjusts `PYTHONPATH` for `lib/` at runtime.
+- `run_nedc.sh` chdirs to `nedc_eeg_eval/v6.0.0/` before execution. List files referenced must be relative to that directory; contents often need `../../data/...` paths.
+- Quick demo: `make run-nedc` or run API via `docker-compose up -d` then `curl localhost:8000/api/v1/health`.
 
-## Essential Commands
+## Commit & PR Expectations
+- Write imperative messages and link issues (e.g., `Fixes #123`).
+- Keep PRs focused; include tests and docs. Run `make lint typecheck test` locally.
+- Keep versions consistent across `pyproject.toml`, API `version`, and package `__init__` when releasing.
 
-### Development Setup
-```bash
-make dev          # Install dev dependencies + pre-commit hooks
-make update       # Update all dependencies to latest versions
-```
-
-### Running Original NEDC Tool
-```bash
-# Direct wrapper script
-./run_nedc.sh nedc_eeg_eval/v6.0.0/data/lists/ref.list \
-              nedc_eeg_eval/v6.0.0/data/lists/hyp.list
-
-# Via Makefile
-make run-nedc     # Runs demo with test data
-make nedc-help    # Shows NEDC tool help
-```
-
-### Testing
-```bash
-make test         # Run all tests with coverage
-make test-fast    # Run tests in parallel
-pytest tests/test_nedc_wrapper.py::TestNEDCWrapper::test_wrapper_help_command  # Single test
-pytest -k "wrapper" -v  # Run tests matching pattern
-```
-
-### Code Quality
-```bash
-make lint         # Run ruff + mypy checks
-make lint-fix     # Auto-fix linting issues and format
-make format       # Format code with Ruff
-make typecheck    # Run mypy type checking only
-make pre-commit   # Run all pre-commit hooks manually
-make ci           # Full CI pipeline locally (lint + typecheck + test)
-```
-
-### Utilities
-```bash
-make clean        # Clean build artifacts and caches
-make tree         # Show project structure (excludes vendor/cache)
-make loc          # Count lines of code (excluding vendor)
-make todo         # Find all TODOs in codebase
-```
-
-## Critical Implementation Notes
-
-### When Working with NEDC Original Code
-1. **NEVER modify files in `nedc_eeg_eval/`** - it's vendored code
-2. The wrapper script `run_nedc.sh` uses relative paths for portability
-3. One manual fix was applied: `nedc_file_tools.py` has tomllib/tomli compatibility patch
-4. All scoring algorithms must maintain exact numerical equivalence
-
-#### ⚠️ CRITICAL PATH RESOLUTION ISSUE (Constantly Trips Us Up!)
-**The `run_nedc.sh` script changes directory to `nedc_eeg_eval/v6.0.0/` before running!**
-
-This means:
-- List file paths given to `run_nedc.sh` must be relative to where it WILL look (from NEDC dir)
-- Contents of list files must use `../../data/...` to get back to project data
-- Example: `./run_nedc.sh custom_lists/ref.list custom_lists/hyp.list`
-  - These files must exist at: `nedc_eeg_eval/v6.0.0/custom_lists/*.list`
-  - Their contents: `../../data/csv_bi_parity/csv_bi_export_clean/ref/file.csv_bi`
-
-See `scripts/README.md` for detailed examples. This issue has wasted HOURS of debugging!
-
-### CSV_BI Annotation Format
-- Located in `nedc_eeg_eval/v6.0.0/data/csv/{ref,hyp}/`
-- Contains: version, patient ID, session, channel, start/stop times, labels, confidence
-- These are anonymized test annotations, safe for public repository
-- No actual EEG signals or patient data included
-
-### Testing Strategy
-- Tests in `tests/` use pytest fixtures from `conftest.py`
-- Fixtures auto-configure NEDC environment variables
-- Golden outputs in `nedc_eeg_eval/v6.0.0/test/results/` for validation
-- New implementations must match these outputs exactly
-
-### Configuration Files
-- `pyproject.toml`: All Python tool configs (UV, Ruff, MyPy, Pytest, coverage)
-- `.pre-commit-config.yaml`: Git hooks for code quality
-- `Makefile`: Developer commands with colored output
-- `.python-version`: Set to 3.11 for UV
-
-### Licensing
-- New code (wrapper, modern implementation): Apache 2.0
-- Original NEDC code: No explicit license, copyright Temple University
-- Keep licensing clear in all new files
-
-## Project Status Tracking
-
-Current implementation phase from `NEDC_BENCH_IMPLEMENTATION_PLAN.md`:
-- ✅ Repository initialized with vendored NEDC v6.0.0
-- ✅ Basic wrapper script functional
-- ✅ Modern Python development environment configured
-- ⬜ Docker containerization (Phase 1.2)
-- ⬜ Alpha pipeline wrapper class (Phase 1.2)
-- ⬜ Beta pipeline implementation (Phase 2)
-- ⬜ Validation framework (Phase 3)
-
-## Important File Paths
-
-Key analysis documents:
-- `NEDC_EEG_EVAL_ANALYSIS.md`: Complete technical analysis of original tool
-- `NEDC_BENCH_IMPLEMENTATION_PLAN.md`: 14-week implementation roadmap
-
-Test data locations:
-- Reference lists: `nedc_eeg_eval/v6.0.0/data/lists/{ref,hyp}.list`
-- Annotation files: `nedc_eeg_eval/v6.0.0/data/csv/{ref,hyp}/*.csv_bi`
-- Expected outputs: `nedc_eeg_eval/v6.0.0/test/results/*.txt`
+## Security & Compliance
+- Pre-commit scans for secrets; never commit credentials or large private datasets.
+- External services: Redis/Prometheus via compose or k8s. Don’t hardcode endpoints; use env vars.
