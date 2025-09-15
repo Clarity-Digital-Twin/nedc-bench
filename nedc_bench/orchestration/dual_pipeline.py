@@ -78,7 +78,7 @@ class BetaPipeline:
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
         self._map_events(ref_ann.events, params.label_map)
         self._map_events(hyp_ann.events, params.label_map)
-        scorer = OverlapScorer(guard_width=params.guard_width)
+        scorer = OverlapScorer()
         return scorer.score(ref_ann.events, hyp_ann.events)
 
     def evaluate_ira(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
@@ -87,11 +87,13 @@ class BetaPipeline:
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
         self._map_events(ref_ann.events, params.label_map)
         self._map_events(hyp_ann.events, params.label_map)
-        ep = EpochScorer(epoch_duration=params.epoch_duration, null_class=params.null_class)
-        epochs = ep._create_epochs(ref_ann.duration)
-        ref_labels = ep._classify_epochs(epochs, ref_ann.events)
-        hyp_labels = ep._classify_epochs(epochs, hyp_ann.events)
-        return IRAScorer().score(ref_labels, hyp_labels)
+        return IRAScorer().score(
+            ref_events=ref_ann.events,
+            hyp_events=hyp_ann.events,
+            epoch_duration=params.epoch_duration,
+            file_duration=ref_ann.duration,
+            null_class=params.null_class,
+        )
 
 
 class DualPipelineOrchestrator:
