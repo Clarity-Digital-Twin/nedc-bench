@@ -91,7 +91,7 @@ def test_rate_limit_returns_429(client: Any, monkeypatch: Any) -> None:
     # First 3 requests should succeed
     for i in range(3):
         allowed = asyncio.run(test_limiter.check_rate_limit(client_id))
-        assert allowed is True, f"Request {i+1} should be allowed"
+        assert allowed is True, f"Request {i + 1} should be allowed"
 
     # 4th request should be denied
     allowed = asyncio.run(test_limiter.check_rate_limit(client_id))
