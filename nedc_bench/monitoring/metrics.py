@@ -4,8 +4,19 @@ import time
 from collections.abc import Awaitable, Callable
 from typing import Any, TypeVar
 
+Counter: Any
+Gauge: Any
+Histogram: Any
+
 try:  # pragma: no cover - import guard for test envs without dependency
-    from prometheus_client import Counter, Gauge, Histogram
+    from prometheus_client import (
+        Counter as _PromCounter,
+        Gauge as _PromGauge,
+        Histogram as _PromHistogram,
+    )
+    Counter = _PromCounter
+    Gauge = _PromGauge
+    Histogram = _PromHistogram
 except Exception:  # pragma: no cover - provide no-op fallback
     class _NoopMetric:
         def labels(self, **_: Any) -> _NoopMetric:
@@ -17,14 +28,18 @@ except Exception:  # pragma: no cover - provide no-op fallback
         def observe(self, *args: Any, **kwargs: Any) -> None:  # noqa: ARG002
             return None
 
-    def Counter(*_args: Any, **_kwargs: Any) -> _NoopMetric:  # type: ignore[misc]
+    def _counter(*_args: Any, **_kwargs: Any) -> _NoopMetric:
         return _NoopMetric()
 
-    def Gauge(*_args: Any, **_kwargs: Any) -> _NoopMetric:  # type: ignore[misc]
+    def _gauge(*_args: Any, **_kwargs: Any) -> _NoopMetric:
         return _NoopMetric()
 
-    def Histogram(*_args: Any, **_kwargs: Any) -> _NoopMetric:  # type: ignore[misc]
+    def _histogram(*_args: Any, **_kwargs: Any) -> _NoopMetric:
         return _NoopMetric()
+
+    Counter = _counter
+    Gauge = _gauge
+    Histogram = _histogram
 
 
 evaluation_counter = Counter(

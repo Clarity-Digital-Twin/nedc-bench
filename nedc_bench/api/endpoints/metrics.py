@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Response
 
 try:  # pragma: no cover - allow running without prometheus_client installed
-    from prometheus_client import CONTENT_TYPE_LATEST, generate_latest  # type: ignore
+    from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 except Exception:  # pragma: no cover
     CONTENT_TYPE_LATEST = "text/plain; version=0.0.4"
 
