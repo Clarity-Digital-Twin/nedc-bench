@@ -9,6 +9,9 @@ SOLID Principles:
 """
 
 from dataclasses import dataclass
+from typing import Dict, List
+
+from nedc_bench.models.annotations import EventAnnotation
 
 
 @dataclass
@@ -36,41 +39,57 @@ class IRAResult:
 class IRAScorer:
     """NEDC-exact inter-rater agreement
 
-    Implements the IRA algorithm from nedc_eeg_eval_ira.py
-    using epoch-based approach with integer confusion matrix
-    and float kappa values.
+    Implements the IRA algorithm from nedc_eeg_eval_ira.py using epoch-based
+    sampling to build an NxN confusion matrix at sample resolution, then
+    computes Cohen's kappa per label and overall.
     """
 
-    def score(self, ref_labels: list[str], hyp_labels: list[str]) -> IRAResult:
-        """NEDC IRA using epoch-based approach
+    def _sample_times(self, epoch_duration: float, file_duration: float) -> List[float]:
+        half = epoch_duration / 2.0
+        t = half
+        samples: List[float] = []
+        while t <= file_duration + 1e-12:
+            samples.append(t)
+            t += epoch_duration
+        return samples
 
-        Implements NEDC lines 22-24: uses epoch-based scoring internally.
-        Builds integer confusion matrix, computes float kappa values.
+    def _time_to_index(self, val: float, events: List[EventAnnotation]) -> int:
+        for idx, ev in enumerate(events):
+            if (val >= ev.start_time) and (val <= ev.stop_time):
+                return idx
+        return -1
+
+    def score(
+        self,
+        ref_events: List[EventAnnotation],
+        hyp_events: List[EventAnnotation],
+        epoch_duration: float,
+        file_duration: float,
+        null_class: str = "null",
+    ) -> IRAResult:
+        """NEDC IRA using epoch-based sampling to build confusion matrix.
 
         Args:
-            ref_labels: Reference label sequence
-            hyp_labels: Hypothesis label sequence
+            ref_events: Reference events
+            hyp_events: Hypothesis events
+            epoch_duration: Sampling epoch duration (seconds)
+            file_duration: Total duration of the file
+            null_class: Background/NULL class label
 
         Returns:
-            IRAResult with integer confusion matrix and float kappa values
+            IRAResult with integer confusion and kappa values.
         """
-        # Handle empty sequences
-        if not ref_labels or not hyp_labels:
-            return IRAResult(
-                confusion_matrix={}, per_label_kappa={}, multi_class_kappa=0.0, labels=[]
-            )
+        # Determine labels
+        labels = sorted({ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {null_class})
+        confusion: Dict[str, Dict[str, int]] = {r: {c: 0 for c in labels} for r in labels}
 
-        # Build INTEGER confusion matrix
-        labels = sorted(set(ref_labels + hyp_labels))
-        confusion = {l1: {l2: 0 for l2 in labels} for l1 in labels}
-
-        # Ensure same length for confusion matrix
-        min_len = min(len(ref_labels), len(hyp_labels))
-
-        for i in range(min_len):
-            ref = ref_labels[i]
-            hyp = hyp_labels[i]
-            confusion[ref][hyp] += 1  # INTEGER increment
+        # Sample midpoints
+        for t in self._sample_times(epoch_duration, file_duration):
+            j = self._time_to_index(t, ref_events)
+            k = self._time_to_index(t, hyp_events)
+            rlab = ref_events[j].label if j >= 0 else null_class
+            hlab = hyp_events[k].label if k >= 0 else null_class
+            confusion[rlab][hlab] += 1
 
         # Compute per-label kappa (NEDC lines 499-540)
         per_label_kappa = {}
@@ -81,12 +100,7 @@ class IRAScorer:
         # Compute multi-class kappa (NEDC lines 548-583)
         multi_kappa = self._compute_multi_class_kappa(confusion, labels)
 
-        return IRAResult(
-            confusion_matrix=confusion,
-            per_label_kappa=per_label_kappa,
-            multi_class_kappa=multi_kappa,
-            labels=labels,
-        )
+        return IRAResult(confusion_matrix=confusion, per_label_kappa=per_label_kappa, multi_class_kappa=multi_kappa, labels=labels)
 
     def _compute_label_kappa(
         self, confusion: dict[str, dict[str, int]], label: str, labels: list[str]
