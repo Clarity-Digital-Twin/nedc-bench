@@ -39,6 +39,9 @@ Validate input CSV_BI files; confirm algorithms/pipeline parameters; check serve
 #### Timeouts
 Increase client timeout; check CPU contention and worker count; ensure Redis connectivity for caching.
 
+#### Metrics missing or inconsistent with multiple workers
+- Set `PROMETHEUS_MULTIPROC_DIR` and ensure the directory is writable. The image entrypoint manages cleanup; `/metrics` then aggregates across workers.
+
 ## Debugging Tools
 
 ### Logs
@@ -72,6 +75,9 @@ Set `NEDC_NFC` and `PYTHONPATH` when running scripts manually. The API sets thes
 
 ### Parity mismatches
 Use `uv run python scripts/compare_parity.py` to validate Beta vs Alpha.
+
+### Kubernetes Redis
+Ensure a `redis` Service exists or set `REDIS_URL` to a reachable host. For dev, apply `k8s/redis.yaml`.
 
 ## FAQ
 
