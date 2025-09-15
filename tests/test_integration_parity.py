@@ -48,14 +48,14 @@ class TestIntegrationParity:
         ref_list, hyp_list = list_files
 
         # Run Alpha pipeline
-        wrapper = NEDCWrapper(nedc_root=Path("nedc_eeg_eval/v6.0.0"))
+        NEDCWrapper(nedc_root=Path("nedc_eeg_eval/v6.0.0"))
         with tempfile.TemporaryDirectory() as output_dir:
             output_path = Path(output_dir)
 
             # For integration test, we'll use the orchestrator's Alpha wrapper
             # which properly calls the NEDC tool
-            import subprocess
             import os
+            import subprocess
 
             os.environ["NEDC_NFC"] = str(Path("nedc_eeg_eval/v6.0.0").absolute())
             os.environ["PYTHONPATH"] = str(Path("nedc_eeg_eval/v6.0.0/lib").absolute())
@@ -68,7 +68,7 @@ class TestIntegrationParity:
                 "-o",
                 str(output_path),
             ]
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, check=False, capture_output=True, text=True)
             if result.returncode != 0:
                 raise RuntimeError(f"NEDC failed: {result.stderr}")
 
@@ -106,13 +106,13 @@ class TestIntegrationParity:
         ref_list, hyp_list = list_files
 
         # Run Alpha pipeline with all algorithms
-        wrapper = NEDCWrapper(nedc_root=Path("nedc_eeg_eval/v6.0.0"))
+        NEDCWrapper(nedc_root=Path("nedc_eeg_eval/v6.0.0"))
         with tempfile.TemporaryDirectory() as output_dir:
             output_path = Path(output_dir)
 
             # Run NEDC with all algorithms (default)
-            import subprocess
             import os
+            import subprocess
 
             os.environ["NEDC_NFC"] = str(Path("nedc_eeg_eval/v6.0.0").absolute())
             os.environ["PYTHONPATH"] = str(Path("nedc_eeg_eval/v6.0.0/lib").absolute())
@@ -126,7 +126,7 @@ class TestIntegrationParity:
                 str(output_path),
             ]
 
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, check=False, capture_output=True, text=True)
             if result.returncode != 0:
                 raise RuntimeError(f"NEDC failed: {result.stderr}")
 
@@ -191,11 +191,11 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
         hyp_list.write_text(str(hyp_file))
 
         # Run Alpha
-        wrapper = NEDCWrapper(nedc_root=Path("nedc_eeg_eval/v6.0.0"))
+        NEDCWrapper(nedc_root=Path("nedc_eeg_eval/v6.0.0"))
         with tempfile.TemporaryDirectory() as output_dir:
             output_path = Path(output_dir)
-            import subprocess
             import os
+            import subprocess
 
             os.environ["NEDC_NFC"] = str(Path("nedc_eeg_eval/v6.0.0").absolute())
             os.environ["PYTHONPATH"] = str(Path("nedc_eeg_eval/v6.0.0/lib").absolute())
@@ -209,7 +209,7 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
                 str(output_path),
             ]
 
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, check=False, capture_output=True, text=True)
             if result.returncode == 0:
                 parser = UnifiedOutputParser()
                 alpha_results = parser.parse_summary(
@@ -267,11 +267,11 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
         hyp_list.write_text(str(hyp_file))
 
         # Run Alpha
-        wrapper = NEDCWrapper(nedc_root=Path("nedc_eeg_eval/v6.0.0"))
+        NEDCWrapper(nedc_root=Path("nedc_eeg_eval/v6.0.0"))
         with tempfile.TemporaryDirectory() as output_dir:
             output_path = Path(output_dir)
-            import subprocess
             import os
+            import subprocess
 
             os.environ["NEDC_NFC"] = str(Path("nedc_eeg_eval/v6.0.0").absolute())
             os.environ["PYTHONPATH"] = str(Path("nedc_eeg_eval/v6.0.0/lib").absolute())
@@ -285,7 +285,7 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
                 str(output_path),
             ]
 
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, check=False, capture_output=True, text=True)
             if result.returncode == 0:
                 parser = UnifiedOutputParser()
                 alpha_results = parser.parse_summary(

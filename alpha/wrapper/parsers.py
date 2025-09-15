@@ -110,10 +110,7 @@ class EpochParser(BaseParser):
 
         # Try to narrow to the SUMMARY block for totals
         summary_match = re.search(r"SUMMARY:\s*(.*?)(?=\n\s*\n|\Z)", section_text, re.DOTALL | re.IGNORECASE)
-        if summary_match:
-            summary_text = summary_match.group(1)
-        else:
-            summary_text = section_text
+        summary_text = summary_match.group(1) if summary_match else section_text
 
         # Extract TOTAL counts from summary
         tp = re.findall(r"True Positives\s*\(TP\)\s*:\s*(\d+)", summary_text)

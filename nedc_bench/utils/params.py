@@ -8,8 +8,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
-
 
 try:  # Python 3.11+
     import tomllib as _tomllib  # type: ignore[attr-defined]
@@ -24,7 +22,7 @@ PARAM_REL_PATH = "src/nedc_eeg_eval/nedc_eeg_eval_params_v00.toml"
 class NedcParams:
     """Container for NEDC parameters used in scoring."""
 
-    label_map: Dict[str, str]  # raw_label(lower) -> class(lower)
+    label_map: dict[str, str]  # raw_label(lower) -> class(lower)
     epoch_duration: float
     null_class: str
     guard_width: float
@@ -61,14 +59,14 @@ def load_nedc_params() -> NedcParams:
     # Load label map and normalize to lowercase
     label_map_raw = data.get("MAP", {})
     # Inverted map: raw label -> class
-    label_map: Dict[str, str] = {}
+    label_map: dict[str, str] = {}
     for cls, labels in label_map_raw.items():
         # labels may be a string (comma-separated) or single string
         if isinstance(labels, str):
             parts = [s.strip() for s in labels.split(",") if s.strip()]
         else:
             parts = []
-        for lab in parts if parts else [labels]:
+        for lab in parts or [labels]:
             if isinstance(lab, str):
                 label_map[lab.lower()] = cls.lower()
 
@@ -89,7 +87,7 @@ def load_nedc_params() -> NedcParams:
     )
 
 
-def map_event_label(label: str, mapping: Dict[str, str]) -> str:
+def map_event_label(label: str, mapping: dict[str, str]) -> str:
     """Map a raw event label to its class using provided mapping.
 
     Falls back to lowercased original label if not present in mapping.

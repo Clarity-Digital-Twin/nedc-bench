@@ -11,10 +11,6 @@ from nedc_bench.algorithms.epoch import EpochResult
 from nedc_bench.algorithms.ira import IRAResult
 from nedc_bench.algorithms.overlap import OverlapResult
 from nedc_bench.algorithms.taes import TAESResult
-from nedc_bench.algorithms.dp_alignment import DPAlignmentResult
-from nedc_bench.algorithms.epoch import EpochResult
-from nedc_bench.algorithms.overlap import OverlapResult
-from nedc_bench.algorithms.ira import IRAResult
 
 
 @dataclass
@@ -680,7 +676,7 @@ Ensures numerical equivalence within tolerance
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 from nedc_bench.algorithms.dp_alignment import DPAlignmentResult
 from nedc_bench.algorithms.epoch import EpochResult
@@ -851,7 +847,6 @@ class ParityValidator:
                     )
                 )
 
-
         return ValidationReport(
             algorithm="DP_ALIGNMENT",
             passed=len(discrepancies) == 0,
@@ -868,7 +863,7 @@ class ParityValidator:
         )
 
     # ---------------------- Epoch (integer) ----------------------
-    def _aggregate_tp_fp_fn_tn(self, cm: Dict[str, Dict[str, int]]) -> Dict[str, float]:
+    def _aggregate_tp_fp_fn_tn(self, cm: dict[str, dict[str, int]]) -> dict[str, float]:
         labels = list(cm.keys())
         row_sums = {r: sum(cm[r].values()) for r in labels}
         col_sums = {c: sum(cm[r][c] for r in labels) for c in labels}
@@ -909,13 +904,13 @@ class ParityValidator:
                 pos = "seiz"
             else:
                 # fallback: first non-null label
-                labels = [k for k in cm.keys() if k != "null"]
+                labels = [k for k in cm if k != "null"]
                 pos = labels[0] if labels else next(iter(cm))
             labels = list(cm.keys())
             tp = float(cm[pos][pos])
             fn = float(sum(cm[pos][j] for j in labels if j != pos))
             fp = float(sum(cm[i][pos] for i in labels if i != pos))
-            tn = float(sum(cm[i][j] for i in labels for j in labels if i != pos and j != pos))
+            tn = float(sum(cm[i][j] for i in labels for j in labels if pos not in {i, j}))
 
             # Compute per-label metrics
             metrics = {}

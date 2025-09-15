@@ -7,9 +7,9 @@ SOLID Principles:
 - Interface Segregation: Focused methods for 2x2 and NxN matrices
 - Dependency Inversion: Works with label sequences abstraction
 """
+from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List
 
 from nedc_bench.models.annotations import EventAnnotation
 
@@ -44,16 +44,16 @@ class IRAScorer:
     computes Cohen's kappa per label and overall.
     """
 
-    def _sample_times(self, epoch_duration: float, file_duration: float) -> List[float]:
+    def _sample_times(self, epoch_duration: float, file_duration: float) -> list[float]:
         half = epoch_duration / 2.0
         t = half
-        samples: List[float] = []
+        samples: list[float] = []
         while t <= file_duration + 1e-12:
             samples.append(t)
             t += epoch_duration
         return samples
 
-    def _time_to_index(self, val: float, events: List[EventAnnotation]) -> int:
+    def _time_to_index(self, val: float, events: list[EventAnnotation]) -> int:
         for idx, ev in enumerate(events):
             if (val >= ev.start_time) and (val <= ev.stop_time):
                 return idx
@@ -61,8 +61,8 @@ class IRAScorer:
 
     def score(
         self,
-        ref: List,  # Either labels (List[str]) or events (List[EventAnnotation])
-        hyp: List,
+        ref: list,  # Either labels (List[str]) or events (List[EventAnnotation])
+        hyp: list,
         epoch_duration: float | None = None,
         file_duration: float | None = None,
         null_class: str = "null",
@@ -75,14 +75,14 @@ class IRAScorer:
         # Label mode
         if not ref or isinstance(ref[0], str):
             labels = sorted(set(ref + hyp)) if ref or hyp else []
-            confusion: Dict[str, Dict[str, int]] = {r: {c: 0 for c in labels} for r in labels}
+            confusion: dict[str, dict[str, int]] = {r: {c: 0 for c in labels} for r in labels}
             for rlab, hlab in zip(ref, hyp):
                 confusion[rlab][hlab] += 1
         else:
             # Event mode
             assert epoch_duration is not None and file_duration is not None, "epoch_duration and file_duration required for event mode"
-            ref_events: List[EventAnnotation] = ref  # type: ignore[assignment]
-            hyp_events: List[EventAnnotation] = hyp  # type: ignore[assignment]
+            ref_events: list[EventAnnotation] = ref  # type: ignore[assignment]
+            hyp_events: list[EventAnnotation] = hyp  # type: ignore[assignment]
             labels = sorted(
                 {ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {null_class}
             )

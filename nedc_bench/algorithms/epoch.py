@@ -9,7 +9,6 @@ SOLID Principles:
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
 
 from nedc_bench.models.annotations import EventAnnotation
 
@@ -55,8 +54,8 @@ class EpochScorer:
 
     def score(
         self,
-        ref_events: List[EventAnnotation],
-        hyp_events: List[EventAnnotation],
+        ref_events: list[EventAnnotation],
+        hyp_events: list[EventAnnotation],
         file_duration: float,
     ) -> EpochResult:
         """NEDC epoch scoring (sampling midpoints + joint compression).
@@ -72,11 +71,11 @@ class EpochScorer:
         labels = sorted(
             {ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {self.null_class}
         )
-        confusion: Dict[str, Dict[str, int]] = {r: {c: 0 for c in labels} for r in labels}
+        confusion: dict[str, dict[str, int]] = {r: {c: 0 for c in labels} for r in labels}
 
         # Build raw streams with sentinels
-        reft: List[str] = [self.null_class]
-        hypt: List[str] = [self.null_class]
+        reft: list[str] = [self.null_class]
+        hypt: list[str] = [self.null_class]
 
         for t in samples:
             j = self._time_to_index(t, ref_events)
@@ -94,11 +93,11 @@ class EpochScorer:
         refo, hypo = self._compress_joint(reft, hypt)
 
         # Per-label counts
-        hits: Dict[str, int] = {l: 0 for l in labels}
-        misses: Dict[str, int] = {l: 0 for l in labels}
-        false_alarms: Dict[str, int] = {l: 0 for l in labels}
-        insertions: Dict[str, int] = {}
-        deletions: Dict[str, int] = {}
+        hits: dict[str, int] = {l: 0 for l in labels}
+        misses: dict[str, int] = {l: 0 for l in labels}
+        false_alarms: dict[str, int] = {l: 0 for l in labels}
+        insertions: dict[str, int] = {}
+        deletions: dict[str, int] = {}
 
         for i in range(1, len(refo) - 1):
             rlab, hlab = refo[i], hypo[i]
@@ -125,9 +124,9 @@ class EpochScorer:
             compressed_hyp=hypo,
         )
 
-    def _sample_times(self, file_duration: float) -> List[float]:
+    def _sample_times(self, file_duration: float) -> list[float]:
         """Generate midpoint sample times per NEDC."""
-        samples: List[float] = []
+        samples: list[float] = []
         half = self.epoch_duration / 2.0
         i = 0
         while True:
@@ -138,14 +137,14 @@ class EpochScorer:
             i += 1
         return samples
 
-    def _time_to_index(self, val: float, events: List[EventAnnotation]) -> int:
+    def _time_to_index(self, val: float, events: list[EventAnnotation]) -> int:
         """Return index of event covering time val (inclusive), else -1."""
         for idx, ev in enumerate(events):
             if (val >= ev.start_time) and (val <= ev.stop_time):
                 return idx
         return -1
 
-    def _compress_joint(self, reft: List[str], hypt: List[str]) -> Tuple[List[str], List[str]]:
+    def _compress_joint(self, reft: list[str], hypt: list[str]) -> tuple[list[str], list[str]]:
         """Compress duplicate consecutive pairs across ref/hyp jointly."""
         if not reft or not hypt:
             return [], []

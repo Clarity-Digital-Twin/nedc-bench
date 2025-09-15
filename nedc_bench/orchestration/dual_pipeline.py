@@ -2,6 +2,7 @@
 Dual pipeline orchestrator for Alpha-Beta comparison
 Runs both pipelines and validates parity
 """
+from __future__ import annotations
 
 import os
 import time
@@ -10,14 +11,14 @@ from pathlib import Path
 from typing import Any
 
 from alpha.wrapper import NEDCAlphaWrapper
-from nedc_bench.algorithms.taes import TAESScorer
 from nedc_bench.algorithms.dp_alignment import DPAligner
 from nedc_bench.algorithms.epoch import EpochScorer
-from nedc_bench.algorithms.overlap import OverlapScorer
 from nedc_bench.algorithms.ira import IRAScorer
+from nedc_bench.algorithms.overlap import OverlapScorer
+from nedc_bench.algorithms.taes import TAESScorer
 from nedc_bench.models.annotations import AnnotationFile
-from nedc_bench.validation.parity import ParityValidator, ValidationReport
 from nedc_bench.utils.params import load_nedc_params, map_event_label
+from nedc_bench.validation.parity import ParityValidator, ValidationReport
 
 
 @dataclass
@@ -89,7 +90,7 @@ class BetaPipeline:
             )
         return expanded
 
-    def evaluate_dp(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
+    def evaluate_dp(self, ref_file: Path, hyp_file: Path) -> Any:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
@@ -103,7 +104,7 @@ class BetaPipeline:
         hyp = [e.label for e in hyp_events]
         return DPAligner().align(ref, hyp)
 
-    def evaluate_epoch(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
+    def evaluate_epoch(self, ref_file: Path, hyp_file: Path) -> Any:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
@@ -114,7 +115,7 @@ class BetaPipeline:
         scorer = EpochScorer(epoch_duration=params.epoch_duration, null_class=params.null_class)
         return scorer.score(ref_events, hyp_events, ref_ann.duration)
 
-    def evaluate_overlap(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
+    def evaluate_overlap(self, ref_file: Path, hyp_file: Path) -> Any:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
@@ -125,7 +126,7 @@ class BetaPipeline:
         scorer = OverlapScorer()
         return scorer.score(ref_events, hyp_events)
 
-    def evaluate_ira(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
+    def evaluate_ira(self, ref_file: Path, hyp_file: Path) -> Any:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
