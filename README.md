@@ -257,7 +257,7 @@ echo '../../data/my_data/ref/file.csv_bi' > nedc_eeg_eval/v6.0.0/my_lists/ref.li
 ./run_nedc.sh data/ref.list data/hyp.list
 ```
 
-See `scripts/README.md` for end-to-end examples and `ALPHA_WRAPPER_P0_BUG.md` for details.
+See `scripts/README.md` for end-to-end examples and `docs/archive/bugs/ALPHA_WRAPPER_P0_BUG.md` for details.
 
 ## ❓ FAQ
 - Why not just use NEDC Eval v6 directly?
