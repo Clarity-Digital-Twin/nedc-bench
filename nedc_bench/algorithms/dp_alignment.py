@@ -8,7 +8,7 @@ SOLID Principles:
 - Dependency Inversion: Depend on abstractions (Result dataclass)
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -39,13 +39,13 @@ class DPAlignmentResult:
     false_negatives: int                # Positive-class ("seiz") FN
 
     # Summary totals across all labels (NEDC "sum_*" in summary)
-    sum_true_positives: int
-    sum_false_positives: int
-    sum_false_negatives: int
+    sum_true_positives: int = 0
+    sum_false_positives: int = 0
+    sum_false_negatives: int = 0
 
     # Aligned sequences for debugging
-    aligned_ref: list[str]
-    aligned_hyp: list[str]
+    aligned_ref: list[str] = field(default_factory=list)
+    aligned_hyp: list[str] = field(default_factory=list)
 
 
 class DPAligner:
