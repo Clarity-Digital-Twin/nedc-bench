@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any
-
 from nedc_bench.api.middleware.error_handler import NEDCAPIException  # type: ignore[attr-defined]
 
 

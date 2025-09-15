@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from typing import Any, Dict, List
 
 from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
@@ -14,6 +16,11 @@ class AsyncOrchestrator:
     """Async wrapper around DualPipelineOrchestrator using a thread pool."""
 
     def __init__(self, max_workers: int = 4):
+        # Ensure NEDC environment is available (tests may import before app startup)
+        if "NEDC_NFC" not in os.environ:
+            default_root = Path("nedc_eeg_eval/v6.0.0").absolute()
+            os.environ["NEDC_NFC"] = str(default_root)
+            os.environ.setdefault("PYTHONPATH", str(default_root / "lib"))
         self.orchestrator = DualPipelineOrchestrator()
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
 

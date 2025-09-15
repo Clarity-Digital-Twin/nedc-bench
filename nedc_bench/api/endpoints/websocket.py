@@ -8,7 +8,6 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from nedc_bench.api.services.job_manager import job_manager
 from nedc_bench.api.services.websocket_manager import ws_manager
 
-
 router = APIRouter()
 logger = logging.getLogger(__name__)
 

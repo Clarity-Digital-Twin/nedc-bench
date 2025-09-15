@@ -7,8 +7,9 @@ import pytest
 pytest.importorskip("fastapi")
 pytest.importorskip("aiofiles")
 
-from fastapi.testclient import TestClient  # type: ignore  # noqa: E402
-from nedc_bench.api.main import app  # type: ignore  # noqa: E402
+from fastapi.testclient import TestClient  # type: ignore
+
+from nedc_bench.api.main import app  # type: ignore
 
 
 @pytest.fixture(scope="module")

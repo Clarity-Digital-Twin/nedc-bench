@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import uuid
 from datetime import datetime
 from typing import List, Optional
@@ -10,10 +9,9 @@ from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, Uploa
 
 from nedc_bench.api.models.requests import AlgorithmType, PipelineType
 from nedc_bench.api.models.responses import EvaluationResponse, EvaluationResult
-from nedc_bench.api.services.file_validator import FileValidator, FileValidationError
+from nedc_bench.api.services.file_validator import FileValidator
 from nedc_bench.api.services.job_manager import job_manager
 from nedc_bench.api.services.processor import process_evaluation
-
 
 router = APIRouter()
 
@@ -44,12 +42,21 @@ async def submit_evaluation(
     async with aiofiles.open(hyp_path, "wb") as f:
         await f.write(hyp_bytes)
 
+    # Normalize algorithms and pipeline
+    alg_list = (
+        algorithms
+        if isinstance(algorithms, list)
+        else [algorithms]
+    )
+    alg_values = [a.value if isinstance(a, AlgorithmType) else str(a) for a in alg_list]
+    pipeline_value = pipeline.value if isinstance(pipeline, PipelineType) else str(pipeline)
+
     job = {
         "id": job_id,
         "ref_path": ref_path,
         "hyp_path": hyp_path,
-        "algorithms": [a.value if isinstance(a, AlgorithmType) else a for a in algorithms],
-        "pipeline": pipeline.value if isinstance(pipeline, PipelineType) else pipeline,
+        "algorithms": alg_values,
+        "pipeline": pipeline_value,
         "status": "queued",
         "created_at": datetime.utcnow(),
     }

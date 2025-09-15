@@ -2,16 +2,17 @@ from __future__ import annotations
 
 import logging
 import os
+import pathlib
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+
+from .endpoints import evaluation, health, websocket
 from .middleware.error_handler import error_handler_middleware
 from .middleware.rate_limit import rate_limit_middleware
-from .endpoints import health, evaluation, websocket
-
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -30,7 +31,7 @@ async def lifespan(app: FastAPI):
     nedc_root = os.environ.get("NEDC_NFC")
     if not nedc_root:
         # Default to repo path for tests/dev
-        default_root = os.path.abspath("nedc_eeg_eval/v6.0.0")
+        default_root = pathlib.Path("nedc_eeg_eval/v6.0.0").resolve()
         os.environ["NEDC_NFC"] = default_root
         # Ensure Alpha PYTHONPATH for imports
         os.environ.setdefault("PYTHONPATH", os.path.join(default_root, "lib"))
@@ -72,7 +73,7 @@ app.include_router(websocket.router, prefix="/ws", tags=["websocket"])
 
 # Optional: OpenAPI customization hook
 try:
-    from .docs import custom_openapi  # noqa: WPS433
+    from .docs import custom_openapi
 
     app.openapi = lambda: custom_openapi(app)  # type: ignore[assignment]
 except Exception:  # pragma: no cover - docs customization optional in tests
