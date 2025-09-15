@@ -234,8 +234,8 @@ If you use NEDC-BENCH in your research, please cite both:
   author={{Clarity Digital Twin}},
   year={2025},
   url={https://github.com/Clarity-Digital-Twin/nedc-bench},
-  note={Production wrapper and reimplementation with bug fixes,
-        100% parity validation, and modern infrastructure}
+  note={Production wrapper and reimplementation with 100% parity validation
+        and modern infrastructure}
 }
 ```
 
