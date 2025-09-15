@@ -163,8 +163,10 @@ def run_all_beta_algorithms():
         if algo_name == "epoch":
             # NEDC scales epoch-level FP by epoch duration
             fa_per_24h = (
-                (total_fp * params.epoch_duration) / total_duration * 86400
-            ) if total_duration > 0 else 0
+                ((total_fp * params.epoch_duration) / total_duration * 86400)
+                if total_duration > 0
+                else 0
+            )
         else:
             fa_per_24h = (total_fp / total_duration * 86400) if total_duration > 0 else 0
 

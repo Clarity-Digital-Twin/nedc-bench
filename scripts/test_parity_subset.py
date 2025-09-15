@@ -39,7 +39,7 @@ params = load_nedc_params()
 # Test each algorithm
 for algo_name in ["taes", "epoch", "ovlp", "dp"]:
     print(f"\nTesting {algo_name.upper()}...")
-    
+
     if algo_name == "taes":
         scorer = TAESScorer(target_label="seiz")
     elif algo_name == "epoch":
@@ -48,48 +48,56 @@ for algo_name in ["taes", "epoch", "ovlp", "dp"]:
         scorer = OverlapScorer()
     elif algo_name == "dp":
         scorer = DPAligner()
-    
+
     try:
         ref_ann = AnnotationFile.from_csv_bi(Path(ref_files[0]))
         hyp_ann = AnnotationFile.from_csv_bi(Path(hyp_files[0]))
-        
+
         # Map labels
         for ev in ref_ann.events:
             ev.label = map_event_label(ev.label, params.label_map)
         for ev in hyp_ann.events:
             ev.label = map_event_label(ev.label, params.label_map)
-        
+
         if algo_name == "taes":
             result = scorer.score(ref_ann.events, hyp_ann.events)
-            print(f"  TP={result.true_positives:.2f}, FP={result.false_positives:.2f}, FN={result.false_negatives:.2f}")
+            print(
+                f"  TP={result.true_positives:.2f}, FP={result.false_positives:.2f}, FN={result.false_negatives:.2f}"
+            )
         elif algo_name == "epoch":
             result = scorer.score(ref_ann.events, hyp_ann.events, ref_ann.duration)
             if "seiz" in result.true_positives:
-                print(f"  TP={result.true_positives['seiz']}, FP={result.false_positives['seiz']}, FN={result.false_negatives['seiz']}")
+                print(
+                    f"  TP={result.true_positives['seiz']}, FP={result.false_positives['seiz']}, FN={result.false_negatives['seiz']}"
+                )
         elif algo_name == "ovlp":
             result = scorer.score(ref_ann.events, hyp_ann.events)
-            print(f"  TP={result.hits.get('seiz', 0)}, FP={result.false_alarms.get('seiz', 0)}, FN={result.misses.get('seiz', 0)}")
+            print(
+                f"  TP={result.hits.get('seiz', 0)}, FP={result.false_alarms.get('seiz', 0)}, FN={result.misses.get('seiz', 0)}"
+            )
         elif algo_name == "dp":
             # Convert to sequences
             n_epochs = int(np.ceil(ref_ann.duration / params.epoch_duration))
             ref_seq = [params.null_class] * n_epochs
             hyp_seq = [params.null_class] * n_epochs
-            
+
             for event in ref_ann.events:
                 start_epoch = int(event.start_time / params.epoch_duration)
                 end_epoch = int(np.ceil(event.stop_time / params.epoch_duration))
                 for i in range(start_epoch, min(end_epoch, n_epochs)):
                     ref_seq[i] = event.label
-            
+
             for event in hyp_ann.events:
                 start_epoch = int(event.start_time / params.epoch_duration)
                 end_epoch = int(np.ceil(event.stop_time / params.epoch_duration))
                 for i in range(start_epoch, min(end_epoch, n_epochs)):
                     hyp_seq[i] = event.label
-            
+
             result = scorer.align(ref_seq, hyp_seq)
-            print(f"  TP={result.true_positives}, FP={result.false_positives}, FN={result.false_negatives}")
-        
+            print(
+                f"  TP={result.true_positives}, FP={result.false_positives}, FN={result.false_negatives}"
+            )
+
         print("  SUCCESS")
     except Exception as e:
         print(f"  ERROR: {e}")
