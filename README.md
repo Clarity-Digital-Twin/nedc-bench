@@ -4,6 +4,7 @@
 [![Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen.svg)](https://github.com/Clarity-Digital-Twin/nedc-bench)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Parity](https://img.shields.io/badge/parity-100%25-success.svg)](FINAL_PARITY_RESULTS.md)
 
 ## What is NEDC-BENCH?
 
