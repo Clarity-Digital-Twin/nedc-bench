@@ -13,7 +13,7 @@ def get_alpha_results():
 
     results = {}
 
-    with open(summary_file) as f:
+    with open(summary_file, encoding="utf-8") as f:
         content = f.read()
 
     # Extract results for each algorithm
@@ -97,7 +97,7 @@ def main():
         "IRA": IRAScorer,
     }
 
-    for name, cls in implemented.items():
+    for name in implemented:
         print(f"✅ {name}: Implemented")
 
     print("\n" + "=" * 80)

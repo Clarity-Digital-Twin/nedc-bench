@@ -39,7 +39,7 @@ class TestDurationCalculation:
         file_duration = 1800.0
 
         # Even if last event ends at 1500, file duration is 1800
-        events = [
+        [
             EventAnnotation(start_time=100.0, stop_time=200.0, label="seiz", confidence=1.0),
             EventAnnotation(start_time=1400.0, stop_time=1500.0, label="seiz", confidence=1.0),
         ]
@@ -93,7 +93,6 @@ class TestDurationCalculation:
         """Test files with no events still contribute duration"""
         # A 30-minute recording with no seizures
         file_duration = 1800.0
-        events = []  # No events
 
         # Should still count the 1800 seconds
         assert file_duration == 1800.0

@@ -39,7 +39,7 @@ def run_alpha_on_files(ref_list, hyp_list):
     # Read TAES results
     taes_file = Path(output_dir) / "summary_taes.txt"
     if taes_file.exists():
-        with open(taes_file) as f:
+        with open(taes_file, encoding="utf-8") as f:
             content = f.read()
             # Extract key metrics
             lines = content.strip().split("\n")
@@ -59,9 +59,9 @@ def run_beta_on_files(ref_list, hyp_list):
         from nedc_bench.models.annotations import AnnotationFile
 
         # Read file lists
-        with open(ref_list) as f:
+        with open(ref_list, encoding="utf-8") as f:
             ref_files = [line.strip() for line in f if line.strip()]
-        with open(hyp_list) as f:
+        with open(hyp_list, encoding="utf-8") as f:
             hyp_files = [line.strip() for line in f if line.strip()]
 
         if len(ref_files) != len(hyp_files):
@@ -108,18 +108,18 @@ def main():
     ref_corrected = Path(temp_dir) / "ref.list"
     hyp_corrected = Path(temp_dir) / "hyp.list"
 
-    with open(ref_list) as f:
+    with open(ref_list, encoding="utf-8") as f:
         lines = f.readlines()
-    with open(ref_corrected, "w") as f:
+    with open(ref_corrected, "w", encoding="utf-8") as f:
         for line in lines:
             if line.strip():
                 filename = Path(line.strip()).name
                 new_path = data_root / "ref" / filename
                 f.write(f"{new_path.absolute()}\n")
 
-    with open(hyp_list) as f:
+    with open(hyp_list, encoding="utf-8") as f:
         lines = f.readlines()
-    with open(hyp_corrected, "w") as f:
+    with open(hyp_corrected, "w", encoding="utf-8") as f:
         for line in lines:
             if line.strip():
                 filename = Path(line.strip()).name

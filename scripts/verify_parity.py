@@ -38,9 +38,9 @@ def main():
     ref_list = data_root / "lists" / "ref.list"
     hyp_list = data_root / "lists" / "hyp.list"
 
-    with open(ref_list) as f:
+    with open(ref_list, encoding="utf-8") as f:
         ref_files = [line.strip() for line in f if line.strip()]
-    with open(hyp_list) as f:
+    with open(hyp_list, encoding="utf-8") as f:
         hyp_files = [line.strip() for line in f if line.strip()]
 
     # Fix paths

@@ -17,10 +17,10 @@ def create_corrected_lists(original_ref_list, original_hyp_list, data_root):
     hyp_corrected = Path(temp_dir) / "hyp.list"
 
     # Process reference list
-    with open(original_ref_list) as f:
+    with open(original_ref_list, encoding="utf-8") as f:
         lines = f.readlines()
 
-    with open(ref_corrected, "w") as f:
+    with open(ref_corrected, "w", encoding="utf-8") as f:
         for line in lines:
             if line.strip():
                 # Extract just the filename from the original path
@@ -30,10 +30,10 @@ def create_corrected_lists(original_ref_list, original_hyp_list, data_root):
                 f.write(f"{new_path.absolute()}\n")
 
     # Process hypothesis list
-    with open(original_hyp_list) as f:
+    with open(original_hyp_list, encoding="utf-8") as f:
         lines = f.readlines()
 
-    with open(hyp_corrected, "w") as f:
+    with open(hyp_corrected, "w", encoding="utf-8") as f:
         for line in lines:
             if line.strip():
                 filename = Path(line.strip()).name

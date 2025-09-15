@@ -5,7 +5,6 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
 
 import numpy as np
 
@@ -25,7 +24,7 @@ class AlgorithmResult:
     name: str
 
 
-def get_alpha_metrics() -> Dict[str, AlgorithmResult]:
+def get_alpha_metrics() -> dict[str, AlgorithmResult]:
     """Extract Alpha results from the summary file"""
     return {
         "taes": AlgorithmResult(133.84, 552.77, 941.16, 12.4504, 30.4617, "TAES"),
@@ -180,7 +179,7 @@ def run_all_beta_algorithms():
     return results
 
 
-def compare_results(alpha: Dict[str, AlgorithmResult], beta: Dict[str, AlgorithmResult]):
+def compare_results(alpha: dict[str, AlgorithmResult], beta: dict[str, AlgorithmResult]):
     """Compare Alpha and Beta results"""
     print("\n" + "=" * 80)
     print("PARITY COMPARISON RESULTS")

@@ -30,10 +30,10 @@ data_root = Path(__file__).parent.parent / "data" / "csv_bi_parity" / "csv_bi_ex
 ref_list = data_root / "lists" / "ref.list"
 hyp_list = data_root / "lists" / "hyp.list"
 
-with open(ref_list) as f:
+with open(ref_list, encoding="utf-8") as f:
     ref_files = [line.strip() for line in f if line.strip()][:100]  # Test 100 files
 
-with open(hyp_list) as f:
+with open(hyp_list, encoding="utf-8") as f:
     hyp_files = [line.strip() for line in f if line.strip()][:100]
 
 # Fix paths
