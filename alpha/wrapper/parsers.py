@@ -105,6 +105,33 @@ class EpochParser(BaseParser):
 
         section_text = epoch_section.group(0)
 
+        # Extract confusion matrix first
+        matrix_match = re.search(
+            r"NEDC Epoch Confusion Matrix\s*\n\s*Ref/Hyp:.*?\n(.*?)(?=\n\s*PER LABEL|\n\s*\n)",
+            section_text,
+            re.DOTALL
+        )
+        if matrix_match:
+            confusion = {}
+            matrix_text = matrix_match.group(1)
+            # Parse the matrix rows - format is:
+            # seiz:     1249.00 ( 78.70%)      338.00 ( 21.30%)
+            # bckg:     2303.00 ( 64.53%)     1266.00 ( 35.47%)
+            for line in matrix_text.strip().split('\n'):
+                if ':' in line:
+                    parts = line.split(':')
+                    if len(parts) == 2:
+                        ref_label = parts[0].strip().lower()
+                        # Extract numbers (ignoring percentages)
+                        nums = re.findall(r'(\d+(?:\.\d+)?)\s*\(', parts[1])
+                        if len(nums) >= 2:
+                            confusion[ref_label] = {
+                                'seiz': int(float(nums[0])),
+                                'bckg': int(float(nums[1]))
+                            }
+            if confusion:
+                result["confusion"] = confusion
+
         # Extract metrics from section (these are summary metrics)
         result["sensitivity"] = self.extract_percentage(
             section_text, r"Sensitivity \(TPR, Recall\)"
