@@ -80,7 +80,9 @@ class IRAScorer:
             IRAResult with integer confusion and kappa values.
         """
         # Determine labels
-        labels = sorted({ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {null_class})
+        labels = sorted(
+            {ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {null_class}
+        )
         confusion: Dict[str, Dict[str, int]] = {r: {c: 0 for c in labels} for r in labels}
 
         # Sample midpoints
@@ -100,7 +102,12 @@ class IRAScorer:
         # Compute multi-class kappa (NEDC lines 548-583)
         multi_kappa = self._compute_multi_class_kappa(confusion, labels)
 
-        return IRAResult(confusion_matrix=confusion, per_label_kappa=per_label_kappa, multi_class_kappa=multi_kappa, labels=labels)
+        return IRAResult(
+            confusion_matrix=confusion,
+            per_label_kappa=per_label_kappa,
+            multi_class_kappa=multi_kappa,
+            labels=labels,
+        )
 
     def _compute_label_kappa(
         self, confusion: dict[str, dict[str, int]], label: str, labels: list[str]

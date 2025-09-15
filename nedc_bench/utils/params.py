@@ -17,9 +17,7 @@ except Exception:  # Python 3.10 fallback
     import tomli as _tomllib  # type: ignore[no-redef]
 
 
-PARAM_REL_PATH = (
-    "src/nedc_eeg_eval/nedc_eeg_eval_params_v00.toml"
-)
+PARAM_REL_PATH = "src/nedc_eeg_eval/nedc_eeg_eval_params_v00.toml"
 
 
 @dataclass
@@ -98,4 +96,3 @@ def map_event_label(label: str, mapping: Dict[str, str]) -> str:
     """
     low = label.lower()
     return mapping.get(low, low)
-

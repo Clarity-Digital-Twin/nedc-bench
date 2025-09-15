@@ -69,7 +69,9 @@ class EpochScorer:
         """
         # Generate sample times and initialize confusion matrix labels
         samples = self._sample_times(file_duration)
-        labels = sorted({ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {self.null_class})
+        labels = sorted(
+            {ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {self.null_class}
+        )
         confusion: Dict[str, Dict[str, int]] = {r: {c: 0 for c in labels} for r in labels}
 
         # Build raw streams with sentinels

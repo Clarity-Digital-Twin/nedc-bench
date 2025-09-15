@@ -72,6 +72,25 @@ class DPAlignmentParser(BaseParser):
         result["insertions"] = self.extract_int(section_text, r"Insertions")
         result["deletions"] = self.extract_int(section_text, r"Deletions")
 
+        # Also support per-file detailed lines: "(Hit: H  Sub: S  Ins: I  Del: D  Total: T)"
+        hits = 0
+        subs = 0
+        ins = 0
+        dels = 0
+        for m in re.finditer(
+            r"\(\s*Hit:\s*(\d+)\s+Sub:\s*(\d+)\s+Ins:\s*(\d+)\s+Del:\s*(\d+)\s+", text
+        ):
+            h, s, i, d = m.groups()
+            hits += int(h)
+            subs += int(s)
+            ins += int(i)
+            dels += int(d)
+        if hits or subs or ins or dels:
+            result["hits"] = hits
+            result["substitutions"] = subs
+            result["insertions"] = ins
+            result["deletions"] = dels
+
         return result
 
 
@@ -138,6 +157,23 @@ class OverlapParser(BaseParser):
         result["true_negatives"] = self.extract_int(section_text, r"True Negatives \(TN\)")
         result["false_positives"] = self.extract_int(section_text, r"False Positives \(FP\)")
         result["false_negatives"] = self.extract_int(section_text, r"False Negatives \(FN\)")
+
+        # Also support per-file summary lines with Hit/Miss/False Alarms and aggregate totals
+        # e.g., "(Hit: 21  Miss: 14  False Alarms: 0  Total: 35)"
+        hits = 0
+        misses = 0
+        falses = 0
+        for m in re.finditer(
+            r"\(\s*Hit:\s*(\d+)\s+\s*Miss:\s*(\d+)\s+\s*False\s+Alarms:\s*(\d+)\s+", text
+        ):
+            h, mi, fa = m.groups()
+            hits += int(h)
+            misses += int(mi)
+            falses += int(fa)
+        if hits or misses or falses:
+            result["hits"] = hits
+            result["misses"] = misses
+            result["false_alarms"] = falses
 
         return result
 

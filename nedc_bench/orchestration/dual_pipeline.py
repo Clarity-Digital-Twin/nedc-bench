@@ -55,22 +55,64 @@ class BetaPipeline:
             ev.label = map_event_label(ev.label, label_map)
         return events
 
+    def _expand_with_null(self, events: list, duration: float, null_label: str) -> list:
+        """Expand sparse events by inserting null segments to cover full duration."""
+        if not events:
+            return []
+        # Ensure sorted
+        evs = sorted(events, key=lambda e: e.start_time)
+        expanded: list = []
+        cur = 0.0
+        for ev in evs:
+            if ev.start_time > cur:
+                # insert null
+                expanded.append(
+                    type(ev)(
+                        channel=ev.channel,
+                        start_time=cur,
+                        stop_time=ev.start_time,
+                        label=null_label,
+                        confidence=1.0,
+                    )
+                )
+            expanded.append(ev)
+            cur = ev.stop_time
+        if cur < duration:
+            expanded.append(
+                type(evs[0])(
+                    channel=evs[0].channel,
+                    start_time=cur,
+                    stop_time=duration,
+                    label=null_label,
+                    confidence=1.0,
+                )
+            )
+        return expanded
+
     def evaluate_dp(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
-        ref = [map_event_label(e.label, params.label_map) for e in ref_ann.events]
-        hyp = [map_event_label(e.label, params.label_map) for e in hyp_ann.events]
+        # Expand both annotations to include background segments
+        ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
+        hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
+        # Apply label mapping
+        self._map_events(ref_events, params.label_map)
+        self._map_events(hyp_events, params.label_map)
+        ref = [e.label for e in ref_events]
+        hyp = [e.label for e in hyp_events]
         return DPAligner().align(ref, hyp)
 
     def evaluate_epoch(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
-        self._map_events(ref_ann.events, params.label_map)
-        self._map_events(hyp_ann.events, params.label_map)
+        ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
+        hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
+        self._map_events(ref_events, params.label_map)
+        self._map_events(hyp_events, params.label_map)
         scorer = EpochScorer(epoch_duration=params.epoch_duration, null_class=params.null_class)
-        return scorer.score(ref_ann.events, hyp_ann.events, ref_ann.duration)
+        return scorer.score(ref_events, hyp_events, ref_ann.duration)
 
     def evaluate_overlap(self, ref_file: Path, hyp_file: Path) -> Any:  # noqa: PLR6301
         params = load_nedc_params()
@@ -85,11 +127,13 @@ class BetaPipeline:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
-        self._map_events(ref_ann.events, params.label_map)
-        self._map_events(hyp_ann.events, params.label_map)
+        ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
+        hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
+        self._map_events(ref_events, params.label_map)
+        self._map_events(hyp_events, params.label_map)
         return IRAScorer().score(
-            ref_events=ref_ann.events,
-            hyp_events=hyp_ann.events,
+            ref_events=ref_events,
+            hyp_events=hyp_events,
             epoch_duration=params.epoch_duration,
             file_duration=ref_ann.duration,
             null_class=params.null_class,
@@ -110,7 +154,13 @@ class DualPipelineOrchestrator:
         self.beta_pipeline = BetaPipeline()
         self.validator = ParityValidator(tolerance=tolerance)
 
-    def evaluate(self, ref_file: str, hyp_file: str, algorithm: str = "taes", alpha_result: dict[str, Any] | None = None) -> DualPipelineResult:
+    def evaluate(
+        self,
+        ref_file: str,
+        hyp_file: str,
+        algorithm: str = "taes",
+        alpha_result: dict[str, Any] | None = None,
+    ) -> DualPipelineResult:
         """
         Run both pipelines on single file pair
 

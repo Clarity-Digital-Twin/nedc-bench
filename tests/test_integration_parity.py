@@ -52,15 +52,6 @@ class TestIntegrationParity:
         with tempfile.TemporaryDirectory() as output_dir:
             output_path = Path(output_dir)
 
-            # Run NEDC with specific algorithm
-            algo_flag = {
-                "dp": "-dpalign",
-                "epoch": "-epoch",
-                "overlap": "-ovlp",
-                "taes": "-taes",
-                "ira": "",  # IRA runs with all algorithms
-            }[algorithm]
-
             # For integration test, we'll use the orchestrator's Alpha wrapper
             # which properly calls the NEDC tool
             import subprocess
@@ -74,11 +65,9 @@ class TestIntegrationParity:
                 "nedc_eeg_eval/v6.0.0/bin/nedc_eeg_eval",
                 str(ref_list),
                 str(hyp_list),
-                "-o", str(output_path)
+                "-o",
+                str(output_path),
             ]
-            if algo_flag:
-                cmd.append(algo_flag)
-
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode != 0:
                 raise RuntimeError(f"NEDC failed: {result.stderr}")
@@ -88,10 +77,7 @@ class TestIntegrationParity:
             assert summary_file.exists(), f"Summary file not created for {algorithm}"
 
             parser = UnifiedOutputParser()
-            alpha_results = parser.parse_summary(
-                summary_file.read_text(),
-                output_path
-            )
+            alpha_results = parser.parse_summary(summary_file.read_text(), output_path)
 
         # Run parity check via orchestrator
         ref_file = Path("nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaasf_s001_t000.csv_bi")
@@ -101,13 +87,12 @@ class TestIntegrationParity:
             algorithm=algorithm,
             ref_file=str(ref_file),
             hyp_file=str(hyp_file),
-            alpha_result=alpha_results
+            alpha_result=alpha_results,
         )
 
         # Assert parity (parity_report is a DualPipelineResult)
         assert parity_report.parity_passed, (
             f"Parity failed for {algorithm}:\n"
-            f"Alpha: {json.dumps(parity_report.alpha_result.get(algorithm, {}), indent=2)}\n"
             f"Discrepancies: {parity_report.parity_report.discrepancies if parity_report.parity_report else 'N/A'}"
         )
 
@@ -137,7 +122,8 @@ class TestIntegrationParity:
                 "nedc_eeg_eval/v6.0.0/bin/nedc_eeg_eval",
                 str(ref_list),
                 str(hyp_list),
-                "-o", str(output_path)
+                "-o",
+                str(output_path),
             ]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -149,10 +135,7 @@ class TestIntegrationParity:
             assert summary_file.exists(), "Summary file not created"
 
             parser = UnifiedOutputParser()
-            alpha_results = parser.parse_summary(
-                summary_file.read_text(),
-                output_path
-            )
+            alpha_results = parser.parse_summary(summary_file.read_text(), output_path)
 
         # Test each algorithm
         ref_file = Path("nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaasf_s001_t000.csv_bi")
@@ -164,12 +147,14 @@ class TestIntegrationParity:
                 algorithm=algo,
                 ref_file=str(ref_file),
                 hyp_file=str(hyp_file),
-                alpha_result=alpha_results
+                alpha_result=alpha_results,
             )
 
             results[algo] = {
                 "passed": parity_report.parity_passed,
-                "discrepancies": len(parity_report.parity_report.discrepancies) if parity_report.parity_report else 0
+                "discrepancies": len(parity_report.parity_report.discrepancies)
+                if parity_report.parity_report
+                else 0,
             }
 
             # Each should pass
@@ -220,7 +205,8 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
                 "nedc_eeg_eval/v6.0.0/bin/nedc_eeg_eval",
                 str(ref_list),
                 str(hyp_list),
-                "-o", str(output_path)
+                "-o",
+                str(output_path),
             ]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -229,8 +215,7 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
 
             parser = UnifiedOutputParser()
             alpha_results = parser.parse_summary(
-                (output_path / "summary.txt").read_text(),
-                output_path
+                (output_path / "summary.txt").read_text(), output_path
             )
 
         # Test each algorithm with empty data
@@ -239,7 +224,7 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
                 algorithm=algo,
                 ref_file=str(ref_file),
                 hyp_file=str(hyp_file),
-                alpha_result=alpha_results
+                alpha_result=alpha_results,
             )
 
             # Should still pass parity even with empty data
@@ -289,7 +274,8 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
                 "nedc_eeg_eval/v6.0.0/bin/nedc_eeg_eval",
                 str(ref_list),
                 str(hyp_list),
-                "-o", str(output_path)
+                "-o",
+                str(output_path),
             ]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -298,8 +284,7 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
 
             parser = UnifiedOutputParser()
             alpha_results = parser.parse_summary(
-                (output_path / "summary.txt").read_text(),
-                output_path
+                (output_path / "summary.txt").read_text(), output_path
             )
 
         # Test parity with mismatched labels
@@ -308,11 +293,10 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
                 algorithm=algo,
                 ref_file=str(ref_file),
                 hyp_file=str(hyp_file),
-                alpha_result=alpha_results
+                alpha_result=alpha_results,
             )
 
             # Should still achieve parity (both should handle mismatches the same way)
             assert parity_report.parity_passed, (
-                f"Mismatched label parity failed for {algo}:\n"
-                f"Report: {parity_report.parity_report}"
+                f"Mismatched label parity failed for {algo}:\nReport: {parity_report.parity_report}"
             )

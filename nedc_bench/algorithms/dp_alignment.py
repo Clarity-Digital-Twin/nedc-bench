@@ -190,11 +190,11 @@ class DPAligner:
             hyp_label = aligned_hyp[idx]
 
             # Track insertions/deletions/substitutions (targets tracked on ref side)
-            if ref_label == NULL_CLASS:
+            if ref_label == NULL_CLASS and hyp_label != NULL_CLASS:
                 insertions[hyp_label] = insertions.get(hyp_label, 0) + 1
-            elif hyp_label == NULL_CLASS:
+            elif hyp_label == NULL_CLASS and ref_label != NULL_CLASS:
                 deletions[ref_label] = deletions.get(ref_label, 0) + 1
-            else:
+            elif ref_label != hyp_label:
                 # Substitution matrix by ref->hyp when both not null
                 substitutions.setdefault(ref_label, {})
                 substitutions[ref_label][hyp_label] = substitutions[ref_label].get(hyp_label, 0) + 1
