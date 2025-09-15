@@ -135,7 +135,9 @@ async def load_test(
             error = f.get("error", f"HTTP {f.get('status_code', 'unknown')}")
             error_counts[error] = error_counts.get(error, 0) + 1
 
-        for error, count in sorted(error_counts.items(), key=operator.itemgetter(1), reverse=True)[:5]:
+        for error, count in sorted(error_counts.items(), key=operator.itemgetter(1), reverse=True)[
+            :5
+        ]:
             print(f"  {error}: {count} times")
 
     print("=" * 60)

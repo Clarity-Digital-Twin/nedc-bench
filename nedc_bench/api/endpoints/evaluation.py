@@ -118,13 +118,16 @@ async def get_evaluation_result(job_id: str):
 @router.get("/evaluate", response_model=list[EvaluationResult])
 async def list_evaluations(limit: int = 10, offset: int = 0, status: str | None = None):
     jobs = await job_manager.list_jobs(limit, offset, status)
-    out: list[EvaluationResult] = [EvaluationResult(
-                job_id=job["id"],
-                status=job.get("status", "queued"),
-                created_at=job.get("created_at", datetime.utcnow()),
-                completed_at=job.get("completed_at"),
-                pipeline=job.get("pipeline", PipelineType.DUAL),
-                results=job.get("results"),
-                error=job.get("error"),
-            ) for job in jobs]
+    out: list[EvaluationResult] = [
+        EvaluationResult(
+            job_id=job["id"],
+            status=job.get("status", "queued"),
+            created_at=job.get("created_at", datetime.utcnow()),
+            completed_at=job.get("completed_at"),
+            pipeline=job.get("pipeline", PipelineType.DUAL),
+            results=job.get("results"),
+            error=job.get("error"),
+        )
+        for job in jobs
+    ]
     return out
