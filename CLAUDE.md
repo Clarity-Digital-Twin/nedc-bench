@@ -82,6 +82,18 @@ make todo         # Find all TODOs in codebase
 3. One manual fix was applied: `nedc_file_tools.py` has tomllib/tomli compatibility patch
 4. All scoring algorithms must maintain exact numerical equivalence
 
+#### ⚠️ CRITICAL PATH RESOLUTION ISSUE (Constantly Trips Us Up!)
+**The `run_nedc.sh` script changes directory to `nedc_eeg_eval/v6.0.0/` before running!**
+
+This means:
+- List file paths given to `run_nedc.sh` must be relative to where it WILL look (from NEDC dir)
+- Contents of list files must use `../../data/...` to get back to project data
+- Example: `./run_nedc.sh custom_lists/ref.list custom_lists/hyp.list`
+  - These files must exist at: `nedc_eeg_eval/v6.0.0/custom_lists/*.list`
+  - Their contents: `../../data/csv_bi_parity/csv_bi_export_clean/ref/file.csv_bi`
+
+See `scripts/README.md` for detailed examples. This issue has wasted HOURS of debugging!
+
 ### CSV_BI Annotation Format
 - Located in `nedc_eeg_eval/v6.0.0/data/csv/{ref,hyp}/`
 - Contains: version, patient ID, session, channel, start/stop times, labels, confidence

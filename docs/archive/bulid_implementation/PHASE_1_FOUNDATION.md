@@ -262,3 +262,4 @@ WORKDIR /app
 - Don't modify NEDC code at all
 - Focus on reproducibility
 - Document any quirks found
+\n[Archived] Project planning document; final implementation details in docs/.

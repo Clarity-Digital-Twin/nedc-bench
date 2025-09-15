@@ -8,7 +8,7 @@ SOLID Principles:
 - Dependency Inversion: Depend on abstractions (Result dataclass)
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -34,13 +34,18 @@ class DPAlignmentResult:
     total_substitutions: int
 
     # For parity validation
-    true_positives: int
-    false_positives: int
-    false_negatives: int
+    true_positives: int  # Positive-class ("seiz") TP
+    false_positives: int  # Positive-class ("seiz") FP
+    false_negatives: int  # Positive-class ("seiz") FN
+
+    # Summary totals across all labels (NEDC "sum_*" in summary)
+    sum_true_positives: int = 0
+    sum_false_positives: int = 0
+    sum_false_negatives: int = 0
 
     # Aligned sequences for debugging
-    aligned_ref: list[str]
-    aligned_hyp: list[str]
+    aligned_ref: list[str] = field(default_factory=list)
+    aligned_hyp: list[str] = field(default_factory=list)
 
 
 class DPAligner:
@@ -178,6 +183,7 @@ class DPAligner:
         """
         hits = 0
         hits_per_label: dict[str, int] = {}
+        misses_per_label: dict[str, int] = {}
         substitutions: dict[str, dict[str, int]] = {}
         insertions: dict[str, int] = {}
         deletions: dict[str, int] = {}
@@ -209,8 +215,8 @@ class DPAligner:
                 # Track hits per label for NEDC-style TP calculation
                 hits_per_label[ref_label] = hits_per_label.get(ref_label, 0) + 1
             else:
-                # miss
-                pass
+                # miss for the reference label
+                misses_per_label[ref_label] = misses_per_label.get(ref_label, 0) + 1
 
         # Calculate totals (all integers)
         total_insertions = sum(insertions.values())
@@ -219,17 +225,13 @@ class DPAligner:
             count for ref_label in substitutions for count in substitutions[ref_label].values()
         )
 
-        # NEDC mapping to standard metrics
+        # NEDC mapping to standard metrics (positive-class and summary)
         # In NEDC convention for EEG, "seiz" is the positive class
         # True Positives = hits for positive class (seiz) only
         # False Negatives = deletions + substitutions for positive class
         positive_class = "seiz"
         true_positives = hits_per_label.get(positive_class, 0)
-
-        # False positives = insertions of positive class
         false_positives = insertions.get(positive_class, 0)
-
-        # False negatives = deletions + substitutions FROM positive class
         pos_deletions = deletions.get(positive_class, 0)
         pos_substitutions = (
             sum(substitutions.get(positive_class, {}).values())
@@ -237,6 +239,23 @@ class DPAligner:
             else 0
         )
         false_negatives = pos_deletions + pos_substitutions
+
+        # Summary totals across all labels (matches NEDC "sum_*" logic)
+        sum_true_positives = sum(hits_per_label.values())
+        sum_false_positives = sum(insertions.values())
+        # In NEDC, misses per label equal deletions + substitutions (on ref side)
+        sum_false_negatives = (
+            sum(misses_per_label.values())
+            if misses_per_label
+            else (
+                sum(deletions.values())
+                + sum(
+                    count
+                    for ref_label in substitutions
+                    for count in substitutions[ref_label].values()
+                )
+            )
+        )
 
         return DPAlignmentResult(
             hits=hits,
@@ -249,6 +268,9 @@ class DPAligner:
             true_positives=true_positives,
             false_positives=false_positives,
             false_negatives=false_negatives,
+            sum_true_positives=sum_true_positives,
+            sum_false_positives=sum_false_positives,
+            sum_false_negatives=sum_false_negatives,
             aligned_ref=aligned_ref,
             aligned_hyp=aligned_hyp,
         )

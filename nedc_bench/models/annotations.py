@@ -46,8 +46,9 @@ class EventAnnotation(BaseModel):
 
         return cls(
             channel=parts[0],  # type: ignore[arg-type]
-            start_time=float(parts[1]),
-            stop_time=float(parts[2]),
+            # NEDC rounds to 4 decimal places (MIN_PRECISION=4)
+            start_time=round(float(parts[1]), 4),
+            stop_time=round(float(parts[2]), 4),
             label=parts[3],
             confidence=float(parts[4]),
         )
@@ -111,7 +112,8 @@ class AnnotationFile(BaseModel):
 
         # Extract duration from metadata
         duration_str = metadata.get("duration", "0.0 secs")
-        duration = float(duration_str.replace(" secs", ""))
+        # NEDC rounds to 4 decimal places (MIN_PRECISION=4)
+        duration = round(float(duration_str.replace(" secs", "")), 4)
 
         # Handle 'bname' as alias for 'patient' (NEDC uses both)
         patient = metadata.get("patient") or metadata.get("bname", "unknown")

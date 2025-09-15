@@ -1,0 +1,59 @@
+{
+  "metadata": {
+    "nedc_version": "6.0.0",
+    "python_version": "3.11",
+    "snapshot_date": "2025-01-15",
+    "dataset": "csv_bi_parity/csv_bi_export_clean"
+  },
+  "algorithms": {
+    "taes": {
+      "tp": 133.84137545872733,
+      "fp": 552.7689020231412,
+      "fn": 941.1586245412731,
+      "sensitivity": 12.450360507788584,
+      "fa_per_24h": 30.461710971183077,
+      "parity": "exact"
+    },
+    "epoch": {
+      "tp": 33704.0,
+      "fp": 18816.0,
+      "fn": 250459.0,
+      "sensitivity": 11.860798203847791,
+      "fa_per_24h": 259.22566896219206,
+      "parity": "exact"
+    },
+    "overlap": {
+      "tp": 253.0,
+      "fp": 536.0,
+      "fn": 822.0,
+      "sensitivity": 23.53488372093023,
+      "fa_per_24h": 29.537618742290594,
+      "parity": "exact"
+    },
+    "dp": {
+      "tp": 328.0,
+      "fp": 966.0,
+      "fn": 747.0,
+      "sensitivity": 30.511627906976745,
+      "fa_per_24h": 53.23384273330729,
+      "parity": "exact",
+      "insertions": 423,
+      "deletions": 544,
+      "substitutions": 328
+    },
+    "ira": {
+      "multi_class_kappa": 0.18874384538128447,
+      "per_label_kappa": {
+        "bckg": 0.18874384538128258,
+        "seiz": 0.18874384538128258
+      },
+      "parity": "exact"
+    }
+  },
+  "status": "100% parity achieved",
+  "notes": [
+    "Epoch and IRA required augmentation fix for gap filling",
+    "All algorithms now match NEDC v6.0.0 exactly",
+    "FA/24h computation centralized via utils/metrics.py"
+  ]
+}

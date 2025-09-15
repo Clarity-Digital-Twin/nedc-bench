@@ -174,6 +174,16 @@ unfixable = []
     "T201",    # print() allowed in benchmarks
     "PLR2004", # Magic numbers fine in benchmarks
 ]
+"scripts/*.py" = [
+    "C901",    # Complex main() functions in scripts
+    "PLR0912", # Many branches allowed in scripts
+    "PLR0913", # Many arguments in scripts
+    "PLR0914", # Many local variables in scripts
+    "PLR0915", # Many statements in scripts
+    "PLR2004", # Magic numbers fine in scripts
+    "T201",    # print() allowed in scripts
+    "PLC0415", # Import statements in functions
+]
 "nedc_bench/algorithms/*.py" = [
     "C901",    # Algorithmic complexity
     "PLR0912", # Branches

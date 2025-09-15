@@ -295,3 +295,4 @@ scrape_configs:
       - targets: ['api:8000']
 ```
 
+\n[Archived] Productionization tracked in deployment/runbook docs.

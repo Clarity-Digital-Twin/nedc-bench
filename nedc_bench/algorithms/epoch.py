@@ -34,6 +34,58 @@ class EpochResult:
     compressed_ref: list[str]
     compressed_hyp: list[str]
 
+    @property
+    def true_positives(self) -> dict[str, int]:
+        """Calculate TP for each label from confusion matrix
+
+        TP(label) = confusion_matrix[label][label]
+        i.e., reference label correctly classified as same label
+        """
+        tp = {}
+        for label in self.confusion_matrix:
+            if label in self.confusion_matrix.get(label, {}):
+                tp[label] = self.confusion_matrix[label][label]
+            else:
+                tp[label] = 0
+        return tp
+
+    @property
+    def false_positives(self) -> dict[str, int]:
+        """Calculate FP for each label from confusion matrix
+
+        FP(label) = sum of all confusion_matrix[other_label][label]
+        i.e., other labels incorrectly classified as this label
+        """
+        fp = {}
+        # Get all unique labels from matrix
+        all_labels = set()
+        for ref_label in self.confusion_matrix:
+            all_labels.add(ref_label)
+            all_labels.update(self.confusion_matrix[ref_label])
+
+        for label in all_labels:
+            fp[label] = 0
+            for ref_label in self.confusion_matrix:
+                if ref_label != label:
+                    fp[label] += self.confusion_matrix.get(ref_label, {}).get(label, 0)
+        return fp
+
+    @property
+    def false_negatives(self) -> dict[str, int]:
+        """Calculate FN for each label from confusion matrix
+
+        FN(label) = sum of all confusion_matrix[label][other_label]
+        i.e., this label incorrectly classified as other labels
+        """
+        fn = {}
+        for label in self.confusion_matrix:
+            fn[label] = 0
+            if label in self.confusion_matrix:
+                for hyp_label in self.confusion_matrix[label]:
+                    if hyp_label != label:
+                        fn[label] += self.confusion_matrix[label][hyp_label]
+        return fn
+
 
 class EpochScorer:
     """NEDC-exact epoch-based scoring
@@ -61,11 +113,16 @@ class EpochScorer:
         """NEDC epoch scoring (sampling midpoints + joint compression).
 
         Mirrors nedc_eeg_eval_epoch.py:
+        - Augment annotations with background to fill gaps (CRITICAL for parity!)
         - Sample at epoch_duration/2, 3/2*epoch_duration, ... <= duration
         - Build substitution matrix at sample resolution
         - Add leading/trailing nulls, jointly compress duplicates
         - Derive per-label hits/misses/false alarms and ins/del from compressed streams
         """
+        # CRITICAL: Augment events like NEDC does - fill all gaps with background
+        ref_events = self._augment_events(ref_events, file_duration)
+        hyp_events = self._augment_events(hyp_events, file_duration)
+
         # Generate sample times and initialize confusion matrix labels
         samples = self._sample_times(file_duration)
         labels = sorted(
@@ -125,24 +182,94 @@ class EpochScorer:
         )
 
     def _sample_times(self, file_duration: float) -> list[float]:
-        """Generate midpoint sample times per NEDC."""
+        """Generate midpoint sample times per NEDC.
+
+        NEDC uses inclusive boundary: while curr_time <= stop_time
+        This is critical for exact parity.
+        """
         samples: list[float] = []
         half = self.epoch_duration / 2.0
         i = 0
         while True:
             t = half + i * self.epoch_duration
-            if t > file_duration + 1e-12:
+            # NEDC uses <= for boundary check (inclusive)
+            if t > file_duration:
                 break
             samples.append(t)
             i += 1
         return samples
 
     def _time_to_index(self, val: float, events: list[EventAnnotation]) -> int:
-        """Return index of event covering time val (inclusive), else -1."""
+        """Return index of event covering time val (inclusive), else -1.
+
+        NEDC uses bitwise & operator: (val >= entry[0]) & (val <= entry[1])
+        """
         for idx, ev in enumerate(events):
-            if (val >= ev.start_time) and (val <= ev.stop_time):
+            # Match NEDC exactly with bitwise & (shouldn't matter but for parity...)
+            if (val >= ev.start_time) & (val <= ev.stop_time):
                 return idx
         return -1
+
+    def _augment_events(
+        self, events: list[EventAnnotation], file_duration: float
+    ) -> list[EventAnnotation]:
+        """Augment events with background to fill all gaps (NEDC-style).
+
+        NEDC fills gaps between events with background annotation so that
+        the entire file duration is covered continuously. This is CRITICAL
+        for exact parity - without this, we had a 9 TP difference!
+        """
+        if not events:
+            # If duration is non-positive, return empty to avoid zero-length events
+            if file_duration <= 0.0:
+                return []
+            # Empty annotation - fill entire duration with background
+            return [
+                EventAnnotation(
+                    channel="TERM",
+                    start_time=0.0,
+                    stop_time=file_duration,
+                    label=self.null_class,
+                    confidence=1.0,
+                )
+            ]
+
+        augmented: list[EventAnnotation] = []
+        curr_time = 0.0
+
+        # Sort events by start time
+        sorted_events = sorted(events, key=lambda x: x.start_time)
+
+        for ev in sorted_events:
+            # Fill gap before this event if needed
+            if curr_time < ev.start_time:
+                augmented.append(
+                    EventAnnotation(
+                        channel="TERM",
+                        start_time=curr_time,
+                        stop_time=ev.start_time,
+                        label=self.null_class,
+                        confidence=1.0,
+                    )
+                )
+
+            # Add the actual event
+            augmented.append(ev)
+            curr_time = ev.stop_time
+
+        # Fill gap at end if needed
+        if curr_time < file_duration:
+            augmented.append(
+                EventAnnotation(
+                    channel="TERM",
+                    start_time=curr_time,
+                    stop_time=file_duration,
+                    label=self.null_class,
+                    confidence=1.0,
+                )
+            )
+
+        return augmented
 
     def _compress_joint(self, reft: list[str], hypt: list[str]) -> tuple[list[str], list[str]]:
         """Compress duplicate consecutive pairs across ref/hyp jointly."""

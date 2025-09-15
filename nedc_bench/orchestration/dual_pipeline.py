@@ -99,7 +99,7 @@ class BetaPipeline:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
-        # Expand both annotations to include background segments
+        # Expand to include background segments to mirror NEDC tooling behavior
         ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
         hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
         # Apply label mapping
@@ -113,6 +113,7 @@ class BetaPipeline:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
+        # Use expansion for consistency with prior validated behavior
         ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
         hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
         self._map_events(ref_events, params.label_map)
@@ -124,6 +125,7 @@ class BetaPipeline:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
+        # Expand background segments to mirror NEDC overlap behavior
         ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
         hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
         self._map_events(ref_events, params.label_map)

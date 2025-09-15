@@ -417,3 +417,4 @@ def compare_ira(alpha: dict, beta: IRAResult) -> ValidationReport:
 5. Performance improvements documented
 
 ## THIS PLAN IS 100% VERIFIED AGAINST NEDC SOURCE CODE
+\n[Archived] See docs/FINAL_PARITY_RESULTS.md for final algorithm status.
