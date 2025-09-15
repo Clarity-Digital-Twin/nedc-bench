@@ -16,71 +16,32 @@ tmux new-session -d -s ovlp 'python scripts/run_single_algo_parity.py ovlp'
 tmux new-session -d -s dp 'python scripts/run_single_algo_parity.py dp'
 ```
 
-## TRUE SCORES - BETA COMPLETE!
+## TRUE SCORES – ALPHA AND BETA COMPLETE
 
 ### TAES Algorithm
-- **Status:** ✅ Beta Complete, Alpha TBD
-- **Alpha (NEDC v6.0.0):**
-  - TP: TBD (need to run NEDC properly)
-  - FP: TBD
-  - FN: TBD
-  - Sensitivity: TBD
-  - FA/24h: TBD
-- **Beta (Our Implementation):**
-  - TP: 133.84
-  - FP: 552.77
-  - FN: 941.16
-  - Sensitivity: 12.45%
-  - FA/24h: 30.46
-- **Parity:** TBD (waiting for Alpha)
+- Alpha: TP=133.84, FP=552.77, FN=941.16, Sens=12.45%, FA/24h=30.46
+- Beta:  TP=133.84, FP=552.77, FN=941.16, Sens=12.45%, FA/24h=30.46
+- Parity: ✅ Exact
 
 ### EPOCH Algorithm
-- **Status:** ✅ Beta Complete, Alpha TBD
-- **Alpha (NEDC v6.0.0):**
-  - TP: TBD (need to run NEDC properly)
-  - FP: TBD
-  - FN: TBD
-  - Sensitivity: TBD
-  - FA/24h: TBD
-- **Beta (Our Implementation):**
-  - TP: 33713.00
-  - FP: 18829.00
-  - FN: 250450.00
-  - Sensitivity: 11.86%
-  - FA/24h: 259.40
-- **Parity:** TBD (waiting for Alpha)
+- Alpha: TP=33704.00, FP=18816.00, FN=250459.00, Sens=11.8608%, FA/24h=259.2257
+- Beta:  TP=33713.00, FP=18829.00, FN=250450.00, Sens=11.8640%, FA/24h=259.4048
+- Parity: ⚠️ Near (ΔTP=+9, ΔFP=+13, ΔFN=−9)
 
 ### OVERLAP Algorithm
-- **Status:** ✅ Beta Complete, Alpha TBD
-- **Alpha (NEDC v6.0.0):**
-  - TP: TBD (need to run NEDC properly)
-  - FP: TBD
-  - FN: TBD
-  - Sensitivity: TBD
-  - FA/24h: TBD
-- **Beta (Our Implementation):**
-  - TP: 253.00
-  - FP: 536.00
-  - FN: 822.00
-  - Sensitivity: 23.53%
-  - FA/24h: 29.54
-- **Parity:** TBD (waiting for Alpha)
+- Alpha: TP=253.00, FP=536.00, FN=822.00, Sens=23.5349%, FA/24h=29.5376
+- Beta:  TP=253.00, FP=536.00, FN=822.00, Sens=23.5349%, FA/24h=29.5376
+- Parity: ✅ Exact
 
 ### DP ALIGNMENT Algorithm
-- **Status:** ✅ Beta Complete, Alpha TBD
-- **Alpha (NEDC v6.0.0):**
-  - TP: TBD (need to run NEDC properly)
-  - FP: TBD
-  - FN: TBD
-  - Sensitivity: TBD
-  - FA/24h: TBD
-- **Beta (Our Implementation):**
-  - TP: 328.00
-  - FP: 966.00
-  - FN: 747.00
-  - Sensitivity: 30.51%
-  - FA/24h: 53.23
-- **Parity:** TBD (waiting for Alpha)
+- Alpha: TP=328.00, FP=966.00, FN=747.00, Sens=30.5116%, FA/24h=53.2338
+- Beta:  TP=328.00, FP=966.00, FN=747.00, Sens=30.5116%, FA/24h=53.2338
+- Parity: ✅ Exact
+
+### IRA (Inter‑Rater Agreement)
+- Alpha: Multi‑Class Kappa=0.1887, per‑label kappa(seiz/bckg)=0.1887
+- Beta:  Multi‑Class Kappa=0.1888, per‑label kappa(seiz/bckg)=0.1888
+- Parity: ✅ Exact (≤ 1e‑4 tolerance)
 
 ## COMPARISON WITH HARDCODED VALUES
 
@@ -96,17 +57,13 @@ The hardcoded values in `ultimate_parity_test.py` were:
 
 ## KEY FINDINGS SO FAR
 
-### Beta Results Match the Hardcoded Values!
-Our Beta implementation produces:
-- TAES: 133.84 TP (matches hardcoded 133.84)
-- EPOCH: 33713 TP (close to hardcoded 33704)
-- OVERLAP: 253 TP (matches hardcoded 253)
-- DP: 328 TP (matches hardcoded 328)
-
-This means the hardcoded values WERE from this dataset, but we still need Alpha to confirm parity!
+### Hardcoded values vs true SSOT
+The hardcoded Alpha values in `ultimate_parity_test.py` happen to match this dataset for most algorithms,
+but we no longer trust or use them. The SSOT is derived from running the real NEDC tool and our Beta on
+the same input lists and is stored in `SSOT_ALPHA.json` and `SSOT_BETA.json`.
 
 ## NEXT STEPS
 
-1. **Fix NEDC tool execution** - Need to get Alpha running properly
-2. **Compare Alpha vs Beta** - Once we have true Alpha scores
-3. **Investigate Epoch difference** - 9 TP difference (33713 vs 33704)
+1. ✅ Fix NEDC tool execution (path resolution)
+2. ✅ Compare Alpha vs Beta using SSOT files
+3. 🔎 Investigate Epoch difference – see EPOCH_P0_BUG.md
