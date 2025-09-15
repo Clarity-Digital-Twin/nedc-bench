@@ -17,14 +17,14 @@ class TestEpochScoring:
                 label="seiz",
                 start_time=0.0,
                 stop_time=2.0,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             ),
             EventAnnotation(
                 label="bckg",
                 start_time=2.0,
                 stop_time=5.0,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             )
         ]
@@ -33,14 +33,14 @@ class TestEpochScoring:
                 label="seiz",
                 start_time=0.5,
                 stop_time=2.5,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             ),
             EventAnnotation(
                 label="bckg",
                 start_time=2.5,
                 stop_time=5.0,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             )
         ]
@@ -54,21 +54,21 @@ class TestEpochScoring:
                 label="seiz",
                 start_time=0.0,
                 stop_time=1.0,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             ),
             EventAnnotation(
                 label="seiz",  # Consecutive duplicate
                 start_time=1.0,
                 stop_time=2.0,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             ),
             EventAnnotation(
                 label="bckg",
                 start_time=2.0,
                 stop_time=3.0,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             )
         ]
@@ -77,14 +77,14 @@ class TestEpochScoring:
                 label="seiz",
                 start_time=0.0,
                 stop_time=2.0,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             ),
             EventAnnotation(
                 label="bckg",
                 start_time=2.0,
                 stop_time=3.0,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             )
         ]
@@ -150,7 +150,7 @@ class TestEpochScoring:
                 label="seiz",
                 start_time=0.0,
                 stop_time=2.0,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             )
         ]
@@ -159,14 +159,14 @@ class TestEpochScoring:
                 label="seiz",
                 start_time=1.0,
                 stop_time=3.0,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             ),
             EventAnnotation(
                 label="artf",  # False alarm/insertion
                 start_time=3.0,
                 stop_time=4.0,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             )
         ]
@@ -212,7 +212,7 @@ class TestEpochScoring:
                 label="seiz",
                 start_time=0.5,
                 stop_time=1.5,
-                channel="FP1-F7",
+                channel="TERM",
                 confidence=1.0
             )
         ]
