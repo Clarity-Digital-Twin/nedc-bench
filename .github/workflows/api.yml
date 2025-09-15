@@ -1,0 +1,47 @@
+name: API CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  api-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install API deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[api]"
+      - name: Smoke import app
+        env:
+          NEDC_NFC: ${{ github.workspace }}/nedc_eeg_eval/v6.0.0
+          PYTHONPATH: ${{ github.workspace }}/nedc_eeg_eval/v6.0.0/lib
+        run: |
+          python - << 'PY'
+          from nedc_bench.api.main import app
+          print('App import OK')
+          PY
+      - name: Lint (Ruff)
+        run: |
+          pip install ruff
+          ruff --version
+          ruff check nedc_bench --output-format=github || true
+
+  docker-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: |
+          docker build -f Dockerfile.api -t nedc-bench-api:ci .
+      - name: List images
+        run: docker images | grep nedc-bench-api
+
