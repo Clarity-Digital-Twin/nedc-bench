@@ -19,7 +19,21 @@ class WebSocketManager:
         self._lock = asyncio.Lock()
 
     async def connect(self, job_id: str, websocket: WebSocket) -> None:
+        """Connect and accept WebSocket, replaying last event."""
         await websocket.accept()
+        async with self._lock:
+            self._connections[job_id].add(websocket)
+            last = self._last_event.get(job_id)
+        logger.info("WebSocket connected for job %s", job_id)
+        # Replay last event if available so late subscribers don't miss updates
+        if last is not None:
+            try:
+                await websocket.send_json(last)
+            except Exception as exc:  # pragma: no cover - defensive
+                logger.warning("WebSocket replay failed for %s: %s", job_id, exc)
+
+    async def connect_after_initial(self, job_id: str, websocket: WebSocket) -> None:
+        """Connect WebSocket after initial message sent, replaying last event."""
         async with self._lock:
             self._connections[job_id].add(websocket)
             last = self._last_event.get(job_id)

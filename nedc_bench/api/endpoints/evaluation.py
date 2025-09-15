@@ -73,7 +73,7 @@ async def submit_evaluation(
     return EvaluationResponse(
         job_id=job_id,
         status="queued",
-        created_at=job["created_at"],
+        created_at=cast(datetime, job["created_at"]),
         message="Evaluation job submitted successfully",
     )
 

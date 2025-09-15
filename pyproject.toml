@@ -210,6 +210,12 @@ module = [
 ]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = [
+    "aiofiles.*",
+]
+ignore_missing_imports = true
+
 # ==================== Pytest Configuration ====================
 [tool.pytest.ini_options]
 minversion = "8.0"

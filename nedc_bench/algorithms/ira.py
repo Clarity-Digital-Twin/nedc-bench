@@ -76,9 +76,11 @@ class IRAScorer:
         """
         # Label mode
         if not ref or isinstance(ref[0], str):
-            labels = sorted(set(ref + hyp)) if ref or hyp else []
+            refs = cast(list[str], ref)
+            hyps = cast(list[str], hyp)
+            labels: list[str] = sorted(set(refs + hyps)) if (refs or hyps) else []
             confusion: dict[str, dict[str, int]] = {r: {c: 0 for c in labels} for r in labels}
-            for rlab, hlab in zip(ref, hyp):
+            for rlab, hlab in zip(refs, hyps):
                 confusion[rlab][hlab] += 1
         else:
             # Event mode

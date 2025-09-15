@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, Awaitable, Callable
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +15,7 @@ class JobManager:
         self.jobs: dict[str, dict[str, Any]] = {}
         self.queue: asyncio.Queue[str] = asyncio.Queue()
         self.lock = asyncio.Lock()
+        self._running: bool = False
 
     async def add_job(self, job: dict[str, Any]) -> None:
         async with self.lock:
@@ -51,7 +52,7 @@ class JobManager:
         except asyncio.TimeoutError:
             return None
 
-    async def run_worker(self, processor) -> None:
+    async def run_worker(self, processor: Callable[[str], Awaitable[None]]) -> None:
         """Run the background worker to process jobs."""
         logger.info("Job worker started")
         self._running = True
