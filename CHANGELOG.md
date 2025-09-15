@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2025-01-15
+
 ### Added
 - Complete test suite reorganization mirroring source structure
 - Comprehensive validation tests for Alpha-Beta pipeline parity
 - Golden tests for edge cases and perfect match scenarios
 - Multi-match TAES scenario tests
+- Release management documentation (CHANGELOG.md, RELEASE.md)
+- Release helper script (scripts/release.sh)
 
 ### Changed
 - Test directory structure now parallels nedc_bench/ source tree
@@ -19,12 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved model tests to tests/models/
 - Moved orchestration tests to tests/orchestration/
 - Moved validation tests to tests/validation/
+- **Version 1.0.0** - Production stable release
 
 ### Fixed
 - Import paths updated for new test structure
 - Resolved naming conflict between tests/utils.py and tests/utils/ directory
 
-## [0.1.0] - 2025-01-15
+## [0.1.0] - 2024-12-15
 
 ### Added
 - Initial alpha release of NEDC-BENCH dual-pipeline architecture
@@ -63,6 +68,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Technical analysis documentation (NEDC_EEG_EVAL_ANALYSIS.md)
 - Implementation roadmap (NEDC_BENCH_IMPLEMENTATION_PLAN.md)
 
-[Unreleased]: https://github.com/Clarity-Digital-Twin/nedc-bench/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/Clarity-Digital-Twin/nedc-bench/compare/v0.0.1...v0.1.0
-[0.0.1]: https://github.com/Clarity-Digital-Twin/nedc-bench/releases/tag/v0.0.1
+[Unreleased]: https://github.com/Clarity-Digital-Twin/nedc-bench/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Clarity-Digital-Twin/nedc-bench/compare/v0.1.0...v1.0.0
+[0.1.0]: https://github.com/Clarity-Digital-Twin/nedc-bench/releases/tag/v0.1.0
