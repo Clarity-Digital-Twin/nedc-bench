@@ -15,8 +15,8 @@ DP Alignment treats scoring as a sequence alignment problem:
 
 ### Key Features
 1. **Integer Counts**: All metrics are integers (hits, ins, del, sub)
-2. **Substitution Matrix**: Detailed confusion for label substitutions
-3. **Edit Distance**: Minimum cost to transform sequences
+2. **Substitution Matrix**: Detailed confusion for label substitutions (excludes NULL)
+3. **Edit Distance**: Uses standard edit distance as alignment cost
 4. **Aligned Output**: Shows exact alignment with gaps
 
 ## Implementation Details
@@ -39,11 +39,8 @@ d[i][j] = min(
 
 ### Processing Pipeline
 
-1. **Padding with NULL sentinels**:
-   ```python
-   ref = [NULL_CLASS, *original_ref, NULL_CLASS]
-   hyp = [NULL_CLASS, *original_hyp, NULL_CLASS]
-   ```
+1. **Padding (internal)**:
+   - The implementation pads sequences with a `NULL_CLASS` sentinel at the start and end internally. Do not include `"null"` in your input sequences.
 
 2. **Build cost matrix**:
    ```python
@@ -54,8 +51,8 @@ d[i][j] = min(
        d[i][0] = d[i-1][0] + penalty_del
 
    # Fill interior
-   for i in range(1, m):
-       for j in range(1, n):
+   for j in range(1, n):
+       for i in range(1, m):
            # Compute three costs
            del_cost = d[i-1][j] + penalty_del
            ins_cost = d[i][j-1] + penalty_ins
@@ -101,11 +98,12 @@ The algorithm maintains multiple counting systems:
 - **Substitutions**: label₁ → label₂ transitions
 
 ### NEDC Mappings
+- Positive class is `"seiz"`.
+- The result exposes `true_positives`, `false_positives`, and `false_negatives` directly:
 ```python
-# For positive class ("seiz"):
-TP = hits["seiz"]
-FP = insertions["seiz"]
-FN = deletions["seiz"] + substitutions_from["seiz"]
+TP = result.true_positives      # hits for "seiz"
+FP = result.false_positives     # insertions of "seiz"
+FN = result.false_negatives     # deletions + substitutions from "seiz"
 ```
 
 ## Usage Example
@@ -120,9 +118,9 @@ aligner = DPAligner(
     penalty_sub=1.0
 )
 
-# Define label sequences
-ref_sequence = ["null", "seiz", "seiz", "null", "bckg"]
-hyp_sequence = ["null", "null", "seiz", "seiz", "bckg"]
+# Define label sequences (no NULL sentinels)
+ref_sequence = ["seiz", "seiz", "bckg"]
+hyp_sequence = ["bckg", "seiz", "seiz"]
 
 # Align sequences
 result = aligner.align(ref_sequence, hyp_sequence)
@@ -140,12 +138,12 @@ for r, h in zip(result.aligned_ref, result.aligned_hyp):
 
 ## Substitution Matrix
 
-The algorithm produces a detailed substitution matrix:
+The algorithm produces a detailed substitution matrix (excluding `NULL_CLASS` transitions, which are counted as insertions/deletions):
 
 ```python
 substitutions = {
-    "seiz": {"null": 2, "bckg": 1},  # seiz misclassified as...
-    "bckg": {"seiz": 1}               # bckg misclassified as...
+    "seiz": {"bckg": 1},   # "seiz" misclassified as "bckg"
+    "bckg": {"seiz": 1}    # "bckg" misclassified as "seiz"
 }
 ```
 
@@ -169,18 +167,12 @@ substitutions = {
 - Large sequences (memory intensive)
 - Simple hit/miss counting
 
-## Validation Results
+## Validation
 
-| Metric | Alpha Pipeline | Beta Pipeline | Status |
-|--------|---------------|---------------|--------|
-| Hits | 3 | 3 | ✅ Exact |
-| Insertions | 3 | 3 | ✅ Exact |
-| Deletions | 1 | 1 | ✅ Exact |
-| Substitutions | 0 | 0 | ✅ Exact |
-| Edit Distance | 4 | 4 | ✅ Exact |
+- Parity: Beta matches NEDC v6.0.0 DP alignment exactly on the SSOT parity set. See docs/archive/bugs/FINAL_PARITY_RESULTS.md.
 
 ## Related Documentation
 - [Algorithm Overview](overview.md) - Comparison of all algorithms
 - [Epoch Algorithm](epoch.md) - Alternative sequence scoring
 - Source: `nedc_bench/algorithms/dp_alignment.py`
-- NEDC Reference: `nedc_eeg_eval_dpalign.py` lines 550-711
+- NEDC Reference: `nedc_eeg_eval_dpalign.py` lines 580–711 (v6.0.0)

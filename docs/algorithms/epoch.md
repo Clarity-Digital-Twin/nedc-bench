@@ -14,10 +14,10 @@ Epoch scoring evaluates agreement at fixed time intervals:
 - **Compression step**: Remove consecutive duplicates
 
 ### Key Features
-1. **Integer Counts**: All metrics are integers (e.g., TP=33704)
+1. **Integer Counts**: All metrics are integers (e.g., TP, FP, FN)
 2. **Full Confusion Matrix**: NxN matrix for all label pairs
-3. **Compression**: Consecutive duplicate removal for event-level scoring
-4. **Gap Filling**: Automatic background augmentation
+3. **Compression**: Consecutive duplicate removal via joint compression
+4. **Gap Filling**: Automatic background augmentation to cover full duration
 
 ## Implementation Details
 
@@ -215,19 +215,14 @@ confusion_matrix = {
 - Real-time streaming with irregular events
 - Fractional scoring requirements
 
-## Validation Results
+## Validation
 
-| Metric | Alpha Pipeline | Beta Pipeline | Status |
-|--------|---------------|---------------|--------|
-| True Positives | 33704 | 33704 | ✅ Exact |
-| False Positives | 31989 | 31989 | ✅ Exact |
-| False Negatives | 3992 | 3992 | ✅ Exact |
-| Hits (seiz) | 94 | 94 | ✅ Exact |
-| Misses (seiz) | 26 | 26 | ✅ Exact |
+- Parity: Beta matches NEDC v6.0.0 Epoch scoring exactly on the SSOT parity set. See docs/archive/bugs/FINAL_PARITY_RESULTS.md.
+  - False alarm rate (FA/24h) uses epoch FP scaled by `epoch_duration` as described in docs/algorithms/metrics.md.
 
 ## Related Documentation
 - [Algorithm Overview](overview.md) - Comparison of all algorithms
 - [IRA Algorithm](ira.md) - Similar epoch-based approach
 - [Metrics Calculation](metrics.md) - FA/24h computation
 - Source: `nedc_bench/algorithms/epoch.py`
-- NEDC Reference: `nedc_eeg_eval_epoch.py` lines 385-723
+- NEDC Reference: `nedc_eeg_eval_epoch.py` (v6.0.0), see `compute` (lines ~528–610) and `compute_performance` (lines ~645–723)

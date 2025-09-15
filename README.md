@@ -14,7 +14,7 @@
 
 NEDC-BENCH transforms Temple University's NEDC EEG evaluation suite into a production-ready platform. We maintain a **dual-pipeline architecture** that guarantees scoring parity while offering modern infrastructure for scalable deployment.
 
-**The Problem:** NEDC's evaluation software is excellent for research but challenging to deploy at scale — dependency management, I/O conventions, and operational ergonomics make cloud deployments difficult.
+**The Problem:** NEDC's evaluation software is excellent for research but challenging to deploy — dependency management, I/O conventions, and operational ergonomics make deployment and usage difficult.
 
 **Our Solution:** Best of both worlds — preserve exact scientific behavior while making it effortless to run in production:
 - **100% algorithmic parity** with NEDC v6.0.0 (continuously validated)
