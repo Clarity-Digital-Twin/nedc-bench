@@ -42,17 +42,17 @@ update: ## Update all dependencies to latest versions
 
 # ==================== Testing ====================
 
-test: ## Run all tests with coverage
-	@echo "$(GREEN)Running tests...$(NC)"
-	pytest -v --cov --cov-report=term-missing
+test: ## Run all tests with coverage (project only)
+    @echo "$(GREEN)Running tests...$(NC)"
+    pytest -v --cov=nedc_bench --cov-report=term-missing
 
 test-fast: ## Run tests in parallel (fast)
-	@echo "$(GREEN)Running tests in parallel...$(NC)"
-	pytest -n auto -v
+    @echo "$(GREEN)Running tests in parallel...$(NC)"
+    pytest -n auto -v --cov=nedc_bench --cov-report=term-missing
 
 test-slow: ## Run all tests including slow ones
-	@echo "$(GREEN)Running all tests (including slow)...$(NC)"
-	pytest -v --cov -m ""
+    @echo "$(GREEN)Running all tests (including slow)...$(NC)"
+    pytest -v --cov=nedc_bench -m ""
 
 test-watch: ## Run tests in watch mode
 	@echo "$(GREEN)Starting test watcher...$(NC)"

@@ -266,6 +266,7 @@ class TestCacheIntegration:
 
 
 @pytest.mark.asyncio
+@pytest.mark.integration
 class TestCachePerformance:
     """Test cache performance improvements."""
 

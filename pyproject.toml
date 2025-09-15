@@ -279,6 +279,10 @@ addopts = [
     "--strict-config"
 ]
 markers = [
+    "integration: slow or external-resource tests",
+    "performance: timing-sensitive tests",
+]
+markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks integration tests",
     "benchmark: marks benchmark tests",
