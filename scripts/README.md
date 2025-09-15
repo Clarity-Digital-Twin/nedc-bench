@@ -86,7 +86,7 @@ python scripts/parse_alpha_results.py
 ```bash
 python scripts/compare_parity.py
 ```
-See also: `FINAL_PARITY_RESULTS.md` for current status.
+See also: `docs/FINAL_PARITY_RESULTS.md` for current status.
 
 ## Common Issues
 
