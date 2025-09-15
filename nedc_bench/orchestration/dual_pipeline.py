@@ -134,8 +134,8 @@ class BetaPipeline:
         self._map_events(ref_events, params.label_map)
         self._map_events(hyp_events, params.label_map)
         return IRAScorer().score(
-            ref_events=ref_events,
-            hyp_events=hyp_events,
+            ref_events,
+            hyp_events,
             epoch_duration=params.epoch_duration,
             file_duration=ref_ann.duration,
             null_class=params.null_class,
