@@ -21,6 +21,8 @@ curl http://localhost:8000/api/v1/health
 ## Configuration
 - Set `REDIS_URL` to your cluster DNS (e.g., `redis.default.svc.cluster.local:6379`).
 - NEDC paths are set inside the image (defaults to `/app/nedc_eeg_eval/v6.0.0`).
+ - For multi-worker metrics, `PROMETHEUS_MULTIPROC_DIR` is wired and mounted at `/var/run/prometheus` via `emptyDir`.
+ - `MAX_WORKERS` can be set to increase uvicorn workers per pod (default `1`).
 
 ## Scaling
 - Increase replicas: `kubectl scale deploy/nedc-bench-api --replicas=4`.
@@ -32,6 +34,12 @@ curl http://localhost:8000/api/v1/health
 ## Troubleshooting
 - Inspect pod logs: `kubectl logs -f <pod>`.
 - Readiness failing: verify Redis connectivity and worker status.
+
+## Optional: In-cluster Redis (dev/testing)
+```bash
+kubectl apply -f k8s/redis.yaml
+```
+This deploys a single Redis pod and Service named `redis` that matches the default `REDIS_URL`.
 
 ## Related
 - [Docker Deployment](docker.md)
