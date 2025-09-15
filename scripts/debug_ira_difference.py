@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Debug the IRA kappa difference between Alpha and Beta."""
 
-import json
 import os
 import sys
 from pathlib import Path

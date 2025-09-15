@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Create runtime list files - NO HARDCODING!"""
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 
 def create_runtime_lists(data_dir=None):
@@ -49,14 +49,12 @@ def create_runtime_lists(data_dir=None):
     hyp_list = data_dir / "hyp_runtime.list"
 
     with open(ref_list, "w", encoding="utf-8") as f:
-        for ref_file in ref_files:
-            f.write(f"{ref_file.absolute()}\n")
+        f.writelines(f"{ref_file.absolute()}\n" for ref_file in ref_files)
 
     with open(hyp_list, "w", encoding="utf-8") as f:
-        for hyp_file in hyp_files:
-            f.write(f"{hyp_file.absolute()}\n")
+        f.writelines(f"{hyp_file.absolute()}\n" for hyp_file in hyp_files)
 
-    print(f"Created runtime lists:")
+    print("Created runtime lists:")
     print(f"  {ref_list}")
     print(f"  {hyp_list}")
     print(f"  Files: {len(ref_files)} pairs")

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Run complete Alpha (NEDC v6.0.0) batch with correct path handling."""
 
-import os
-import subprocess
-from pathlib import Path
 import json
+import subprocess
 from datetime import datetime
+from pathlib import Path
 
 
 def create_nedc_list_files():
@@ -58,7 +57,7 @@ def run_alpha():
     cmd = ["./run_nedc.sh", ref_list, hyp_list]
     print(f"Running: {' '.join(cmd)}")
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, check=False, capture_output=True, text=True)
 
     if result.returncode != 0:
         print(f"ERROR: NEDC failed with return code {result.returncode}")

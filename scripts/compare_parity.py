@@ -2,7 +2,6 @@
 """Compare Alpha vs Beta results for parity."""
 
 import json
-from pathlib import Path
 
 
 def compare_results():

@@ -59,7 +59,7 @@ class IRAScorer:
     def _time_to_index(self, val: float, events: list[EventAnnotation]) -> int:
         for idx, ev in enumerate(events):
             # Match NEDC exact boundary semantics using bitwise &
-            if (val >= ev.start_time) & (val <= ev.stop_time):  # noqa: PLR2004
+            if (val >= ev.start_time) & (val <= ev.stop_time):
                 return idx
         return -1
 

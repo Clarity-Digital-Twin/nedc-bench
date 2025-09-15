@@ -2,10 +2,9 @@
 """Compute Beta IRA (kappa) across the dataset and update SSOT_BETA.json."""
 
 import json
-from pathlib import Path
-
 import os
 import sys
+from pathlib import Path
 
 # Ensure local imports work like other scripts
 os.environ["NEDC_NFC"] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")

@@ -206,7 +206,7 @@ class EpochScorer:
         """
         for idx, ev in enumerate(events):
             # Match NEDC exactly with bitwise & (shouldn't matter but for parity...)
-            if (val >= ev.start_time) & (val <= ev.stop_time):  # noqa: PLR2004
+            if (val >= ev.start_time) & (val <= ev.stop_time):
                 return idx
         return -1
 

@@ -12,8 +12,8 @@ Notes:
 """
 
 import json
-from pathlib import Path
 import re
+from pathlib import Path
 
 
 def parse_alpha_results() -> dict:
@@ -43,12 +43,12 @@ def parse_alpha_results() -> dict:
         We parse across blank lines to include TP/FP/FN and False Alarm Rate lines.
         """
         lab_pat = rf"^\s*LABEL:\s*{label}\b.*?\n(.*?)(?=\n\s*LABEL:|\n\s*SUMMARY:|\Z)"
-        m = re.search(lab_pat, sect, re.DOTALL | re.IGNORECASE | re.M)
+        m = re.search(lab_pat, sect, re.DOTALL | re.IGNORECASE | re.MULTILINE)
         block = m.group(1) if m else ""
         return {
             k: v
             for k, v in (
-                re.findall(r"^\s*([A-Za-z \(\)]+):\s+([0-9\.]+)", block, re.M) if block else []
+                re.findall(r"^\s*([A-Za-z \(\)]+):\s+([0-9\.]+)", block, re.MULTILINE) if block else []
             )
         }
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Test if IRA needs the same augmentation fix as Epoch."""
 
-import json
 import os
 import sys
 from pathlib import Path
@@ -104,9 +103,7 @@ def main():
 
         # WITHOUT full augmentation (current approach - only empty files)
         ref_events_without = (
-            ref_ann.events
-            if ref_ann.events
-            else [
+            ref_ann.events or [
                 EventAnnotation(
                     channel="TERM",
                     start_time=0.0,
@@ -117,9 +114,7 @@ def main():
             ]
         )
         hyp_events_without = (
-            hyp_ann.events
-            if hyp_ann.events
-            else [
+            hyp_ann.events or [
                 EventAnnotation(
                     channel="TERM",
                     start_time=0.0,

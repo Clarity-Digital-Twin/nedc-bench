@@ -6,8 +6,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-import numpy as np
-
 os.environ["NEDC_NFC"] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")
 os.environ["PYTHONPATH"] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHONPATH', '')}"
 
@@ -32,7 +30,7 @@ class AlgorithmResult:
     name: str
 
 
-def _process_file_pair(ref_file, hyp_file, algo_name, scorer, params):  # noqa: C901
+def _process_file_pair(ref_file, hyp_file, algo_name, scorer, params):
     """Process a single file pair and return metrics or None on error."""
     try:
         ref_ann = AnnotationFile.from_csv_bi(Path(ref_file))

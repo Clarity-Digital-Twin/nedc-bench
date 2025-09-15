@@ -197,7 +197,7 @@ def main():
     if tp_diff == 0 and fp_diff == 0 and fn_diff == 0:
         print("\n🎉 EXACT PARITY ACHIEVED! The augmentation hypothesis was CORRECT!")
     else:
-        print(f"\n❌ Still have differences. Augmentation alone didn't fix it.")
+        print("\n❌ Still have differences. Augmentation alone didn't fix it.")
         print("   Need to investigate further...")
 
 

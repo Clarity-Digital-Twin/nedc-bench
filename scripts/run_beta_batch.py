@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Run Beta batch - our implementation totals ONLY, no hardcoded bullshit."""
 
+import json
 import os
 import sys
-import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 # Setup paths
 os.environ["NEDC_NFC"] = str(Path(__file__).parent.parent / "nedc_eeg_eval" / "v6.0.0")
@@ -13,10 +13,10 @@ os.environ["PYTHONPATH"] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHO
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scripts.ultimate_parity_test import run_all_beta_algorithms
 from nedc_bench.algorithms.ira import IRAScorer
 from nedc_bench.models.annotations import AnnotationFile
 from nedc_bench.utils.params import load_nedc_params, map_event_label
+from scripts.ultimate_parity_test import run_all_beta_algorithms
 
 
 def main():
