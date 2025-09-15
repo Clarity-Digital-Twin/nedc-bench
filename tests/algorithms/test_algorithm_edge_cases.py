@@ -132,32 +132,38 @@ class TestEpochScoringEdgeCases:
     def test_epoch_empty_sequences(self):
         """Test Epoch with empty sequences"""
         scorer = EpochScorer()
+        duration = 30.0  # 30 second file creates 30 1-second epochs
 
-        # Both empty
-        result = scorer.score([], [])
-        assert result.confusion_matrix == {}
-        assert result.total_hits == 0
+        # Both empty - fills with null class
+        result = scorer.score([], [], duration)
+        # Empty sequences get filled with null epochs
+        assert "null" in result.confusion_matrix
+        assert result.confusion_matrix["null"]["null"] == 30  # 30 null epochs match
+        assert result.total_hits == 30
         assert result.total_misses == 0
         assert result.total_false_alarms == 0
 
-        # Empty ref
-        result = scorer.score([], ["seiz", "bckg"])
-        assert result.total_false_alarms == 2
-        assert result.total_hits == 0
+        # Empty ref with non-empty hyp
+        result = scorer.score([], ["seiz", "bckg"], duration)
+        # ref gets 30 nulls, hyp has 2 labels then 28 nulls
+        assert result.total_hits == 28  # 28 null epochs match
+        assert result.total_false_alarms == 2  # seiz and bckg are false alarms
 
-        # Empty hyp
-        result = scorer.score(["seiz", "bckg"], [])
-        assert result.total_misses == 2
-        assert result.total_hits == 0
+        # Empty hyp with non-empty ref
+        result = scorer.score(["seiz", "bckg"], [], duration)
+        # hyp gets 30 nulls, ref has 2 labels then 28 nulls
+        assert result.total_hits == 28  # 28 null epochs match
+        assert result.total_misses == 2  # seiz and bckg are misses
 
     def test_epoch_single_label_only(self):
         """Test Epoch when only one label exists"""
         scorer = EpochScorer()
+        duration = 30.0
 
         # Only seiz in both
         ref = ["seiz", "seiz", "seiz"]
         hyp = ["seiz", "seiz", "seiz"]
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, duration)
 
         assert "seiz" in result.confusion_matrix
         assert result.confusion_matrix["seiz"]["seiz"] == 3
@@ -169,11 +175,12 @@ class TestEpochScoringEdgeCases:
         """Test Epoch NULL_CLASS handling (lines 276-286)"""
         scorer = EpochScorer()
         scorer.null_class = "null"
+        duration = 30.0
 
         # Test null -> something (insertion)
         ref = ["null", "null", "bckg"]
         hyp = ["seiz", "bckg", "bckg"]
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, duration)
 
         assert "seiz" in result.insertions
         assert result.insertions["seiz"] == 1
@@ -183,7 +190,7 @@ class TestEpochScoringEdgeCases:
         # Test something -> null (deletion)
         ref = ["seiz", "bckg", "seiz"]
         hyp = ["null", "null", "seiz"]
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, duration)
 
         assert "seiz" in result.deletions
         assert result.deletions["seiz"] == 1
@@ -193,11 +200,12 @@ class TestEpochScoringEdgeCases:
     def test_epoch_unaligned_portions(self):
         """Test Epoch with unaligned sequence lengths (lines 288-305)"""
         scorer = EpochScorer()
+        duration = 50.0  # 5 epochs at 10 seconds each
 
         # Ref longer than hyp (deletions)
         ref = ["seiz", "bckg", "seiz", "bckg", "artf"]
         hyp = ["seiz", "bckg"]
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, duration)
 
         # Last 3 elements are deletions
         assert result.total_misses >= 3
@@ -211,7 +219,7 @@ class TestEpochScoringEdgeCases:
         # Hyp longer than ref (insertions)
         ref = ["seiz", "bckg"]
         hyp = ["seiz", "bckg", "seiz", "bckg", "artf"]
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, duration)
 
         # Last 3 elements are insertions
         assert result.total_false_alarms >= 3
@@ -225,10 +233,11 @@ class TestEpochScoringEdgeCases:
     def test_epoch_confusion_matrix_completeness(self):
         """Test confusion matrix has all label combinations"""
         scorer = EpochScorer()
+        duration = 40.0
 
         ref = ["seiz", "bckg", "artf", "seiz"]
         hyp = ["bckg", "artf", "seiz", "seiz"]
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, duration)
 
         # All labels should be in confusion matrix
         labels = ["seiz", "bckg", "artf"]
@@ -242,11 +251,12 @@ class TestEpochScoringEdgeCases:
     def test_epoch_extreme_mismatch(self):
         """Test Epoch with extreme length differences"""
         scorer = EpochScorer()
+        duration = 10000.0  # Long file for 1000 epochs
 
         # 1000 elements vs 1
         ref = ["seiz", "bckg"] * 500  # 1000 elements
         hyp = ["seiz"]  # 1 element
-        result = scorer.score(ref, hyp)
+        result = scorer.score(ref, hyp, duration)
 
         assert result.total_hits == 1
         assert result.total_misses == 999
