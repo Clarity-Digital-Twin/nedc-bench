@@ -4,3 +4,177 @@
   Hyp:  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  bckg  BCKG  bckg 
         (Hit: 21  Sub: 20  Ins: 0  Del: 0  Total: 20)
 
+    1: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaedy_s002_t001.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaedy_s002_t001.csv_bi
+  Ref:  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  bckg  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  bckg  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  bckg  BCKG  bckg 
+        (Hit: 21  Sub: 20  Ins: 0  Del: 0  Total: 20)
+
+    2: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaahge_s001_t001.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaahge_s001_t001.csv_bi
+  Ref:  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg 
+  Hyp:  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg 
+        (Hit: 17  Sub: 16  Ins: 0  Del: 0  Total: 16)
+
+    3: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaahyp_s003_t000.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaahyp_s003_t000.csv_bi
+  Ref:  bckg  SEIZ  bckg  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg 
+        (Hit: 21  Sub: 20  Ins: 0  Del: 0  Total: 20)
+
+    4: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaizz_s003_t001.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaizz_s003_t001.csv_bi
+  Ref:  bckg  SEIZ  seiz  BCKG  bckg  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  seiz  SEIZ  bckg  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  bckg 
+        (Hit: 21  Sub: 20  Ins: 0  Del: 0  Total: 20)
+
+    5: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaajdn_s003_t005.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaajdn_s003_t005.csv_bi
+  Ref:  bckg  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg 
+        (Hit: 18  Sub: 17  Ins: 0  Del: 0  Total: 17)
+
+    6: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaajdn_s003_t007.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaajdn_s003_t007.csv_bi
+  Ref:  bckg  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  bckg 
+        (Hit: 19  Sub: 18  Ins: 0  Del: 0  Total: 18)
+
+    7: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaajqo_s008_t001.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaajqo_s008_t001.csv_bi
+  Ref:  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg 
+  Hyp:  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg 
+        (Hit: 17  Sub: 16  Ins: 0  Del: 0  Total: 16)
+
+    8: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaajqo_s019_t001.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaajqo_s019_t001.csv_bi
+  Ref:  bckg  SEIZ  bckg  SEIZ  bckg  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  BCKG  bckg  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  bckg 
+        (Hit: 36  Sub: 35  Ins: 0  Del: 0  Total: 35)
+
+    9: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaakkm_s009_t000.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaakkm_s009_t000.csv_bi
+  Ref:  bckg  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg 
+  Hyp:  bckg  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  bckg  BCKG  bckg  BCKG  bckg  BCKG  seiz  SEIZ  seiz  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg 
+        (Hit: 19  Sub: 18  Ins: 0  Del: 0  Total: 18)
+
+   10: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaksg_s001_t002.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaksg_s001_t002.csv_bi
+  Ref:  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  bckg  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  bckg  BCKG  bckg  BCKG  bckg 
+        (Hit: 21  Sub: 20  Ins: 0  Del: 0  Total: 20)
+
+   11: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaamtk_s001_t000.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaamtk_s001_t000.csv_bi
+  Ref:  bckg  SEIZ  bckg  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg 
+        (Hit: 45  Sub: 44  Ins: 0  Del: 0  Total: 44)
+
+   12: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaooo_s001_t000.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaooo_s001_t000.csv_bi
+  Ref:  SEIZ  bckg  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  BCKG  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  BCKG  seiz  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  BCKG  bckg  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  SEIZ  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  SEIZ  seiz  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg 
+        (Hit: 20  Sub: 20  Ins: 0  Del: 0  Total: 20)
+
+   13: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaovk_s001_t000.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaovk_s001_t000.csv_bi
+  Ref:  bckg  SEIZ  bckg  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg 
+        (Hit: 30  Sub: 29  Ins: 0  Del: 0  Total: 29)
+
+   14: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaovk_s001_t001.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaovk_s001_t001.csv_bi
+  Ref:  bckg  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  bckg 
+        (Hit: 45  Sub: 44  Ins: 0  Del: 0  Total: 44)
+
+   15: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaapks_s012_t001.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaapks_s012_t001.csv_bi
+  Ref:  bckg  SEIZ  bckg  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  bckg 
+        (Hit: 55  Sub: 54  Ins: 0  Del: 0  Total: 54)
+
+   16: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaapks_s016_t001.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaapks_s016_t001.csv_bi
+  Ref:  bckg  SEIZ  bckg  SEIZ  bckg  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  bckg  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  BCKG  bckg  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  bckg  BCKG  bckg  BCKG  bckg 
+        (Hit: 35  Sub: 34  Ins: 0  Del: 0  Total: 34)
+
+   17: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaapks_s016_t002.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaapks_s016_t002.csv_bi
+  Ref:  bckg  SEIZ  bckg  SEIZ  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  BCKG  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  bckg  BCKG  bckg 
+        (Hit: 21  Sub: 21  Ins: 0  Del: 0  Total: 21)
+
+   18: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaapnl_s002_t001.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaapnl_s002_t001.csv_bi
+  Ref:  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg 
+  Hyp:  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg 
+        (Hit: 30  Sub: 29  Ins: 0  Del: 0  Total: 29)
+
+   19: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaprj_s001_t000.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaprj_s001_t000.csv_bi
+  Ref:  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  bckg  BCKG  bckg 
+        (Hit: 22  Sub: 21  Ins: 0  Del: 0  Total: 21)
+
+   20: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaprj_s002_t001.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaprj_s002_t001.csv_bi
+  Ref:  bckg  SEIZ  bckg  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  bckg 
+        (Hit: 14  Sub: 13  Ins: 0  Del: 0  Total: 13)
+
+   21: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaarvi_s001_t000.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaarvi_s001_t000.csv_bi
+  Ref:  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  SEIZ  bckg  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  bckg  BCKG  seiz  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  seiz  SEIZ  seiz  BCKG  bckg  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  bckg  SEIZ  seiz  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  bckg  BCKG  bckg 
+        (Hit: 18  Sub: 17  Ins: 0  Del: 0  Total: 17)
+
+   22: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaqtx_s012_t005.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaqtx_s012_t005.csv_bi
+  Ref:  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg 
+        (Hit: 28  Sub: 27  Ins: 0  Del: 0  Total: 27)
+
+   23: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaqtx_s012_t006.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaqtx_s012_t006.csv_bi
+  Ref:  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  bckg  BCKG  bckg 
+        (Hit: 20  Sub: 19  Ins: 0  Del: 0  Total: 19)
+
+   24: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaqtx_s012_t007.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaqtx_s012_t007.csv_bi
+  Ref:  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  bckg  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  bckg  BCKG  bckg  BCKG  bckg 
+        (Hit: 45  Sub: 44  Ins: 0  Del: 0  Total: 44)
+
+   25: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaqtx_s012_t008.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaqtx_s012_t008.csv_bi
+  Ref:  bckg  SEIZ  bckg  SEIZ  bckg  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  BCKG  bckg  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg 
+        (Hit: 17  Sub: 16  Ins: 0  Del: 0  Total: 16)
+
+   26: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaqtx_s012_t009.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaqtx_s012_t009.csv_bi
+  Ref:  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg 
+  Hyp:  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg 
+        (Hit: 15  Sub: 14  Ins: 0  Del: 0  Total: 14)
+
+   27: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaasdq_s002_t004.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaasdq_s002_t004.csv_bi
+  Ref:  bckg  SEIZ  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  seiz  BCKG  bckg  SEIZ  seiz  SEIZ  bckg  SEIZ  seiz  SEIZ  bckg  SEIZ  seiz  SEIZ  bckg  SEIZ  seiz  SEIZ  bckg  SEIZ  seiz  SEIZ  bckg  SEIZ  seiz  SEIZ  bckg  SEIZ  seiz  SEIZ  bckg  SEIZ  seiz  SEIZ  bckg 
+  Hyp:  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  seiz  SEIZ  bckg  BCKG  seiz  BCKG  bckg  BCKG  seiz  BCKG  bckg  BCKG  seiz  BCKG  bckg  BCKG  seiz  BCKG  bckg  BCKG  seiz  BCKG  bckg  BCKG  seiz  BCKG  bckg  BCKG  seiz  BCKG  bckg  BCKG  seiz  BCKG  bckg 
+        (Hit: 52  Sub: 51  Ins: 0  Del: 0  Total: 51)
+
+   28: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaates_s007_t000.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaates_s007_t000.csv_bi
+  Ref:  bckg  BCKG  bckg  BCKG  seiz  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  seiz  BCKG  seiz  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  SEIZ  bckg  SEIZ  seiz  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  seiz  SEIZ  seiz  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg 
+        (Hit: 19  Sub: 17  Ins: 0  Del: 0  Total: 17)
+
+   29: /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaates_s007_t002.csv_bi
+       /mnt/c/Users/JJ/Desktop/Clarity-Digital-Twin/nedc-bench/nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaates_s007_t002.csv_bi
+  Ref:  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  seiz  BCKG  seiz  BCKG  bckg  seiz  BCKG  seiz  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  BCKG  seiz  BCKG  seiz  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg  SEIZ  bckg 
+  Hyp:  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  seiz  SEIZ  seiz  SEIZ  bckg  seiz  SEIZ  seiz  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg  SEIZ  seiz  SEIZ  seiz  BCKG  bckg  BCKG  bckg  BCKG  bckg  BCKG  bckg 
+        (Hit: 25  Sub: 22  Ins: 0  Del: 0  Total: 22)
+
