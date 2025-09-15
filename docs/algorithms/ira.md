@@ -52,8 +52,12 @@ def score(ref_events, hyp_events, epoch_duration, file_duration):
     hyp_events = augment_events(hyp_events, file_duration)
 
     # 2. Sample at midpoints
-    samples = [0.5 + i * epoch_duration
-               for i in range(int(file_duration / epoch_duration))]
+    # Inclusive boundary sampling (match NEDC/Epoch):
+    t = epoch_duration / 2.0
+    samples = []
+    while t <= file_duration:
+        samples.append(t)
+        t += epoch_duration
 
     # 3. Build confusion matrix
     for t in samples:
@@ -74,9 +78,11 @@ For each label, create a 2x2 confusion matrix:
 def compute_label_kappa(confusion, label):
     # Build 2x2 matrix
     a = confusion[label][label]           # True positive
-    b = sum(confusion[label][other])      # False negative
-    c = sum(confusion[other][label])      # False positive
-    d = sum(confusion[other][other])      # True negative
+    b = sum(confusion[label][other] for other in labels if other != label)  # False negative
+    c = sum(confusion[other][label] for other in labels if other != label)  # False positive
+    d = sum(confusion[o1][o2]
+            for o1 in labels for o2 in labels
+            if label not in {o1, o2})  # True negative
 
     # Total observations
     n = a + b + c + d
@@ -97,26 +103,26 @@ def compute_label_kappa(confusion, label):
 ### Multi-Class Kappa (NxN Matrix)
 
 ```python
-def compute_multi_class_kappa(confusion):
+def compute_multi_class_kappa(confusion, labels):
     # Row and column sums
-    row_sums = [sum(confusion[r]) for r in labels]
-    col_sums = [sum(confusion[r][c] for r in labels) for c in labels]
+    row_sums = {r: sum(confusion[r][c] for c in labels) for r in labels}
+    col_sums = {c: sum(confusion[r][c] for r in labels) for c in labels}
 
     # Diagonal sum (correct predictions)
-    diagonal = sum(confusion[i][i] for i in labels)
+    diagonal = sum(confusion[l][l] for l in labels)
 
     # Total count
-    n = sum(row_sums)
+    n = sum(row_sums.values())
+    if n == 0:
+        return 0.0
 
     # Sum of products of marginals
-    sum_products = sum(row_sums[i] * col_sums[i] for i in range(len(labels)))
+    sum_products = sum(row_sums[l] * col_sums[l] for l in labels)
 
     # Kappa calculation
     numerator = n * diagonal - sum_products
     denominator = n * n - sum_products
-
-    kappa = numerator / denominator
-    return kappa
+    return (numerator / denominator) if denominator != 0 else (1.0 if numerator == 0 else 0.0)
 ```
 
 ## Usage Example
@@ -179,7 +185,7 @@ kappa = (sum_m - sum_gc) / (sum_n - sum_gc)
 kappa = (sum_n * sum_m - sum_gc) / (sum_n * sum_n - sum_gc)
 ```
 
-This fix changed the multi-class kappa from incorrect values to the exact NEDC result of 0.09917.
+This fix aligns the multi-class kappa formula exactly with NEDC; see docs/archive/bugs/IRA_KAPPA_FIX.md.
 
 ## Performance Characteristics
 
@@ -201,14 +207,9 @@ This fix changed the multi-class kappa from incorrect values to the exact NEDC r
 - Systems without fixed epochs
 - Single-label binary classification
 
-## Validation Results
+## Validation
 
-| Metric | Alpha Pipeline | Beta Pipeline | Status |
-|--------|---------------|---------------|--------|
-| Multi-class κ | 0.09917 | 0.09917 | ✅ Exact |
-| Per-label κ (seiz) | 0.09922 | 0.09922 | ✅ Exact |
-| Per-label κ (null) | 0.09917 | 0.09917 | ✅ Exact |
-| Confusion Matrix | Exact match | Exact match | ✅ Exact |
+- Parity: Beta matches NEDC v6.0.0 IRA exactly on the SSOT parity set (multi-class and per-label kappa). See docs/archive/bugs/FINAL_PARITY_RESULTS.md.
 
 ## Kappa Interpretation Guidelines
 
@@ -225,4 +226,7 @@ This fix changed the multi-class kappa from incorrect values to the exact NEDC r
 - [Algorithm Overview](overview.md) - Comparison of all algorithms
 - [Epoch Algorithm](epoch.md) - Similar sampling approach
 - Source: `nedc_bench/algorithms/ira.py`
-- NEDC Reference: `nedc_eeg_eval_ira.py` lines 385-583
+- NEDC Reference: `nedc_eeg_eval_ira.py` (v6.0.0):
+  - Per-label kappa (lines ~499–540)
+  - Multi-class kappa (lines ~569–583)
+  - Sampling loop (inclusive boundary) in `compute` (lines ~395–417)
