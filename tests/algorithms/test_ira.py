@@ -73,13 +73,14 @@ class TestIRA:
             assert abs(kappa - 1.0) < 1e-10
 
     def test_no_agreement_kappa(self, no_agreement_case):
-        """Test that no agreement yields negative kappa"""
+        """Test that no agreement yields zero or negative kappa"""
         ref, hyp = no_agreement_case
         scorer = IRAScorer()
         result = scorer.score(ref, hyp)
 
-        # Complete disagreement should yield negative kappa
-        assert result.multi_class_kappa < 0
+        # Complete disagreement should yield zero or negative kappa
+        # In this case with 2 classes and complete disagreement, kappa = 0
+        assert result.multi_class_kappa <= 0
 
     def test_confusion_matrix_structure(self, mixed_agreement_case):
         """Test confusion matrix structure and counts"""

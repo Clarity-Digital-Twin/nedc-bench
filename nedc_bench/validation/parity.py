@@ -7,6 +7,10 @@ from dataclasses import dataclass
 from typing import Any
 
 from nedc_bench.algorithms.taes import TAESResult
+from nedc_bench.algorithms.dp_alignment import DPAlignmentResult
+from nedc_bench.algorithms.epoch import EpochResult
+from nedc_bench.algorithms.overlap import OverlapResult
+from nedc_bench.algorithms.ira import IRAResult
 
 
 @dataclass
