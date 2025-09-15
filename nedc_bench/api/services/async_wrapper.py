@@ -41,8 +41,8 @@ class AsyncOrchestrator:
             return {
                 "alpha_result": result.alpha_result,
                 "beta_result": result.beta_result,
-                "parity_passed": result.parity_report.passed,
-                "parity_report": result.parity_report.to_dict(),
+                "parity_passed": result.parity_passed,
+                "parity_report": result.parity_report.to_dict() if result.parity_report else None,
                 "alpha_time": result.execution_time_alpha,
                 "beta_time": result.execution_time_beta,
                 "speedup": result.speedup,

@@ -26,7 +26,7 @@ class FileValidator:
             lines = text.strip().splitlines()
             if not lines:
                 raise FileValidationError("Empty file")
-            if not lines[0].startswith("version ="):
+            if not (lines[0].startswith("version =") or lines[0].startswith("# version =")):
                 raise FileValidationError("Invalid CSV_BI header")
             return True
         except UnicodeDecodeError as exc:

@@ -22,10 +22,7 @@ def sample_files():
     ref_file = Path("nedc_eeg_eval/v6.0.0/data/csv/ref/aaaaaasf_s001_t000.csv_bi")
     hyp_file = Path("nedc_eeg_eval/v6.0.0/data/csv/hyp/aaaaaasf_s001_t000.csv_bi")
     assert ref_file.exists() and hyp_file.exists()
-    return {
-        "reference": ("ref.csv_bi", ref_file.read_bytes(), "application/octet-stream"),
-        "hypothesis": ("hyp.csv_bi", hyp_file.read_bytes(), "application/octet-stream"),
-    }
+    return (ref_file, hyp_file)
 
 
 def test_health_check(client):

@@ -53,6 +53,26 @@ class ValidationReport:
         )
         return "\n".join(lines)
 
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary for JSON serialization"""
+        return {
+            "algorithm": self.algorithm,
+            "passed": self.passed,
+            "discrepancies": [
+                {
+                    "metric": d.metric,
+                    "alpha_value": d.alpha_value,
+                    "beta_value": d.beta_value,
+                    "absolute_difference": d.absolute_difference,
+                    "relative_difference": d.relative_difference,
+                    "tolerance": d.tolerance
+                }
+                for d in self.discrepancies
+            ],
+            "alpha_metrics": self.alpha_metrics,
+            "beta_metrics": self.beta_metrics
+        }
+
 
 class ParityValidator:
     """Validate parity between Alpha and Beta pipeline results"""
@@ -741,29 +761,7 @@ class DiscrepancyReport:
         return self.absolute_difference <= self.tolerance
 
 
-@dataclass
-class ValidationReport:
-    """Complete validation report"""
-
-    algorithm: str
-    passed: bool
-    discrepancies: list[DiscrepancyReport]
-    alpha_metrics: dict[str, Any]
-    beta_metrics: dict[str, Any]
-
-    def __str__(self) -> str:
-        if self.passed:
-            return f"✅ {self.algorithm} Parity PASSED"
-        lines = [
-            f"❌ {self.algorithm} Parity FAILED",
-            f"Found {len(self.discrepancies)} discrepancies:",
-        ]
-        lines.extend(
-            f"  - {d.metric}: Alpha={d.alpha_value:.6f}, Beta={d.beta_value:.6f}, Diff={d.absolute_difference:.2e}"
-            for d in self.discrepancies
-        )
-        return "\n".join(lines)
-
+# Duplicate ValidationReport class removed (was at line 744)
 
 class ParityValidator:
     """Validate parity between Alpha and Beta pipeline results"""
