@@ -65,7 +65,14 @@ def run_all_beta_algorithms():
     }
 
     results = {}
+
+    # Calculate total duration ONCE before processing algorithms
+    print("Calculating total duration...")
     total_duration = 0.0
+    for ref_file in ref_files:
+        ref_ann = AnnotationFile.from_csv_bi(Path(ref_file))
+        total_duration += ref_ann.duration
+    print(f"Total duration: {total_duration:.2f} seconds")
 
     # Process each algorithm
     for algo_name, scorer in scorers.items():
@@ -80,12 +87,6 @@ def run_all_beta_algorithms():
             try:
                 ref_ann = AnnotationFile.from_csv_bi(Path(ref_file))
                 hyp_ann = AnnotationFile.from_csv_bi(Path(hyp_file))
-
-                # Get duration for FA/24h calculation (only on first pass)
-                if algo_name == list(scorers.keys())[0]:  # Only count duration once
-                    if file_count == 0:
-                        total_duration = 0.0
-                    total_duration += ref_ann.duration
 
                 # Score based on algorithm type
                 if algo_name == "taes":
@@ -129,7 +130,6 @@ def run_all_beta_algorithms():
         print(f"  TP={total_tp:.2f}, FP={total_fp:.2f}, FN={total_fn:.2f}")
         print(f"  Sensitivity={sensitivity:.4f}%, FA/24h={fa_per_24h:.4f}")
 
-    print(f"\nTotal duration used: {total_duration:.2f} seconds")
     return results
 
 def compare_results(alpha: Dict[str, AlgorithmResult], beta: Dict[str, AlgorithmResult]):
