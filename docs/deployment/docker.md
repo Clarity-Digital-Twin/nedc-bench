@@ -26,6 +26,16 @@ Notes:
   ```
 - On Linux, if `host.docker.internal` is unavailable, connect Redis via bridge network or use the Compose stack.
 
+Multi-worker metrics:
+- When running with multiple workers, enable Prometheus multiprocess mode:
+  ```bash
+  docker run --rm -p 8000:8000 \
+    -e PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus_multiproc \
+    -e MAX_WORKERS=4 \
+    nedc-bench/api:latest
+  ```
+  The entrypoint will clean the directory on start; `/metrics` will aggregate across workers.
+
 ## Run with Docker Compose
 ```bash
 docker-compose up -d
