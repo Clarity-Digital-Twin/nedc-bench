@@ -83,6 +83,7 @@ reference_repos/
 nedc_eeg_eval/v6.0.0/output/
 output/
 results/
+vlp/
 # BUT KEEP test/results for validation!
 !nedc_eeg_eval/v6.0.0/test/results/
 
