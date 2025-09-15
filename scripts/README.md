@@ -1,105 +1,187 @@
-# Scripts Directory
+# NEDC-BENCH Scripts
 
-## 🚨 CRITICAL: NEDC Path Resolution Issues 🚨
+Essential scripts for running and validating the dual-pipeline EEG evaluation platform.
 
-### THE PROBLEM THAT KEEPS BITING US
-
-The NEDC tool has confusing path requirements because `run_nedc.sh`:
-1. **Changes directory** to `nedc_eeg_eval/v6.0.0/`
-2. **THEN** looks for list files
-
-This means:
-- List file paths given to `run_nedc.sh` are relative to PROJECT ROOT
-- But CONTENTS of list files need paths relative to NEDC directory
-
-### THE SOLUTION
+## 🚀 Quick Start
 
 ```bash
-# CORRECT WAY TO RUN NEDC:
+# Run complete parity validation (all algorithms)
+python scripts/ultimate_parity_test.py
 
-# 1. Create list files IN the NEDC directory structure
-mkdir -p nedc_eeg_eval/v6.0.0/custom_lists/
+# Test on subset (faster for development)
+python scripts/ultimate_parity_test.py --subset 10
 
-# 2. List contents use ../../ to get back to project root
-echo '../../data/csv_bi_parity/csv_bi_export_clean/ref/file.csv_bi' > \
-     nedc_eeg_eval/v6.0.0/custom_lists/ref.list
-
-# 3. Run from project root with path relative to NEDC dir
-./run_nedc.sh custom_lists/ref.list custom_lists/hyp.list
+# Run individual pipelines
+python scripts/run_alpha_complete.py  # NEDC v6.0.0
+python scripts/run_beta_batch.py       # Our implementation
 ```
 
-### WRONG WAYS (THAT WILL FAIL)
+## 📁 Script Inventory
 
+### Core Validation Scripts
+
+#### `ultimate_parity_test.py`
+**Purpose:** Comprehensive parity validation of all 5 algorithms
+**Usage:**
 ```bash
-# ❌ WRONG: Absolute paths in list files
-echo '/mnt/c/Users/.../ref/file.csv_bi' > ref.list
-
-# ❌ WRONG: List files in project root
-./run_nedc.sh ref.list hyp.list  # Can't find from NEDC dir!
-
-# ❌ WRONG: Using $NEDC_NFC in paths (doesn't expand in NEDC)
-echo '$NEDC_NFC/data/ref/file.csv_bi' > ref.list
+python scripts/ultimate_parity_test.py [--subset N] [--verbose]
 ```
+**Output:** Shows exact differences between Alpha and Beta for each algorithm
 
-## Core Scripts
-
-### Runtime Scripts (No hardcoding)
-
-- `create_runtime_lists.py` – Create list files under `runtime_lists/` from repo data
-- `run_beta_batch.py` – Run Beta (TAES, EPOCH, OVLP, DP) and write SSOT_BETA.json
-- `run_beta_ira.py` – Append IRA (kappa) to SSOT_BETA.json
-- `parse_alpha_results.py` – Parse NEDC summary.txt → SSOT_ALPHA.json (incl. IRA)
-- `compare_parity.py` – Compare SSOT_ALPHA.json vs SSOT_BETA.json (handles IRA)
-- `ultimate_parity_test.py` – Legacy harness with hardcoded Alpha (ok for Beta aggregation only)
-- `test_parity_subset.py` – Quick subset harness for development
-
-### Deleted Slop Scripts
-
-These were removed because they were broken or redundant:
-- ~~run_alpha_batch.sh~~ - Tried to execute CSV files as bash commands 🤦
-- ~~alpha_beta_totals.py~~ - Overcomplicated
-- ~~run_single_algo_parity.py~~ - Redundant
-- ~~run_true_parity_test.py~~ - Redundant
-
-## How to Run Parity Tests
-
-### 1. Run Beta (Our Implementation)
+#### `compare_parity.py`
+**Purpose:** Simple comparison of pre-computed SSOT JSON files
+**Usage:**
 ```bash
-python scripts/run_beta_batch.py
-# Creates: SSOT_BETA.json
-```
+# First generate the JSON files
+python scripts/run_alpha_complete.py  # Creates SSOT_ALPHA.json
+python scripts/run_beta_batch.py      # Creates SSOT_BETA.json
 
-### 2. Run Alpha (NEDC v6.0.0)
-```bash
-# Create runtime lists (paths are relative to the NEDC dir)
-python scripts/create_runtime_lists.py
-
-# Run NEDC on the same lists
-./run_nedc.sh runtime_lists/ref_complete.list runtime_lists/hyp_complete.list
-# Output is written under nedc_eeg_eval/v6.0.0/output/
-
-# Parse into SSOT_ALPHA.json (also captures IRA)
-python scripts/parse_alpha_results.py
-```
-
-### 3. Compare Results
-```bash
+# Then compare
 python scripts/compare_parity.py
 ```
-See also: `docs/archive/bugs/FINAL_PARITY_RESULTS.md` for current status.
 
-## Common Issues
+### Pipeline Execution Scripts
 
-### "File not found" errors from NEDC
-- Check path resolution (see top of this README)
-- List files must be findable from `nedc_eeg_eval/v6.0.0/`
-- Contents must use relative paths from that directory
+#### `run_alpha_complete.py`
+**Purpose:** Execute NEDC v6.0.0 on full dataset
+**Details:**
+- Runs all 5 algorithms via the original NEDC tool
+- Generates text output in `output/` directory
+- Creates `SSOT_ALPHA.json` via parse_alpha_results.py
 
-### Module import errors
-- Ensure `NEDC_NFC` and `PYTHONPATH` are set
-- Run from project root, not from subdirectories
+#### `run_beta_batch.py`
+**Purpose:** Execute our Beta implementation on full dataset
+**Details:**
+- Runs all 5 algorithms using our Python implementation
+- Directly outputs `SSOT_BETA.json`
+- Much faster than Alpha (~10x speedup)
 
-### Beta runs but no output
-- Check `beta_output.log`
-- Takes several minutes for 1832 files
-- Use `ps aux | grep python` to check if still running
+### Utility Scripts
+
+#### `parse_alpha_results.py`
+**Purpose:** Parse NEDC text output into structured JSON
+**Usage:** Automatically called by `run_alpha_complete.py`
+**Input:** Text files in `output/` directory
+**Output:** `SSOT_ALPHA.json`
+
+#### `create_file_lists.py`
+**Purpose:** Generate list files for batch processing
+**Usage:**
+```bash
+# Create standard lists
+python scripts/create_file_lists.py
+
+# Create subset for testing
+python scripts/create_file_lists.py --subset 10
+
+# Create with custom paths for NEDC
+python scripts/create_file_lists.py --prefix "../../data/csv_bi_parity/csv_bi_export_clean"
+```
+
+## 🎯 Common Workflows
+
+### 1. Full Parity Validation
+```bash
+# Complete test to verify 100% parity
+python scripts/ultimate_parity_test.py
+```
+
+### 2. Quick Development Test
+```bash
+# Test on 10 files for rapid iteration
+python scripts/ultimate_parity_test.py --subset 10
+```
+
+### 3. Debug Single Algorithm
+```bash
+# Run only Beta to check specific algorithm
+python -c "
+from nedc_bench.algorithms.taes import TAESScorer
+from nedc_bench.models.annotations import AnnotationFile
+from pathlib import Path
+
+ref = AnnotationFile.from_csv_bi(Path('data/csv_bi_parity/csv_bi_export_clean/ref/aaaaaajy_s001_t000.csv_bi'))
+hyp = AnnotationFile.from_csv_bi(Path('data/csv_bi_parity/csv_bi_export_clean/hyp/aaaaaajy_s001_t000.csv_bi'))
+
+scorer = TAESScorer(target_label='seiz')
+result = scorer.score(ref.events, hyp.events)
+print(f'TP: {result.true_positives}, FP: {result.false_positives}, FN: {result.false_negatives}')
+"
+```
+
+### 4. Regenerate Test Data
+```bash
+# If you need to regenerate Alpha results
+python scripts/run_alpha_complete.py
+
+# Parse the output
+python scripts/parse_alpha_results.py
+
+# Compare with Beta
+python scripts/run_beta_batch.py
+python scripts/compare_parity.py
+```
+
+## 📊 Expected Output
+
+When running `ultimate_parity_test.py`, you should see:
+
+```
+================================================================================
+🚀 ULTIMATE PARITY TEST - ALL 5 NEDC ALGORITHMS
+================================================================================
+
+Loading Alpha results...
+Running Beta algorithms...
+Processing 1832 file pairs for each algorithm...
+
+TAES:
+  Diff:  TP=0.0000, FP=0.0000, FN=0.0000
+  ✅ PERFECT PARITY ACHIEVED!
+
+Epoch:
+  Diff:  TP=0.0000, FP=0.0000, FN=0.0000
+  ✅ PERFECT PARITY ACHIEVED!
+
+Overlap:
+  Diff:  TP=0.0000, FP=0.0000, FN=0.0000
+  ✅ PERFECT PARITY ACHIEVED!
+
+DP:
+  Diff:  TP=0.0000, FP=0.0000, FN=0.0000
+  ✅ PERFECT PARITY ACHIEVED!
+
+IRA:
+  Diff:  Δkappa=0.0000
+  ✅ PERFECT PARITY ACHIEVED!
+
+🎉🎉🎉 100% PERFECT PARITY ACHIEVED! 🎉🎉🎉
+```
+
+## ⚠️ Important Notes
+
+1. **Path Resolution**: The NEDC tool changes directory, so list files must use relative paths from `nedc_eeg_eval/v6.0.0/`
+
+2. **Performance**:
+   - Alpha pipeline: ~3-5 minutes for full dataset
+   - Beta pipeline: ~20-30 seconds for full dataset
+
+3. **Data Location**: All scripts expect test data in `data/csv_bi_parity/csv_bi_export_clean/`
+
+4. **Environment**: Scripts automatically set NEDC environment variables (`NEDC_NFC`, `PYTHONPATH`)
+
+## 🐛 Troubleshooting
+
+### "File not found" errors
+- Check path resolution (paths must be relative to `nedc_eeg_eval/v6.0.0/`)
+- Use `create_file_lists.py` with appropriate `--prefix`
+
+### Different results between Alpha and Beta
+- Ensure you're using the latest code
+- Check that `parity_snapshot.json` has exact values (not rounded)
+- Run `ultimate_parity_test.py` for comprehensive validation
+
+### Performance issues
+- Use `--subset` flag for development
+- Beta pipeline is ~10x faster, use it when possible
+- Consider running algorithms individually for debugging

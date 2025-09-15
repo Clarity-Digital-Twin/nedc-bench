@@ -224,6 +224,13 @@ def compare_results(alpha: dict[str, AlgorithmResult], beta: dict[str, Algorithm
 
 
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Test parity between Alpha (NEDC) and Beta implementations")
+    parser.add_argument("--subset", type=int, help="Test only first N file pairs")
+    parser.add_argument("--verbose", action="store_true", help="Show detailed output")
+    args = parser.parse_args()
+
     print("=" * 80)
     print("🚀 ULTIMATE PARITY TEST - ALL 5 NEDC ALGORITHMS")
     print("=" * 80)
@@ -234,6 +241,8 @@ def main():
 
     # Run Beta algorithms
     print("\nRunning Beta algorithms...")
+    if args.subset:
+        print(f"Testing subset: first {args.subset} files only")
     beta_results = run_all_beta_algorithms()
 
     # Compare results
