@@ -74,16 +74,18 @@ class AsyncOrchestrator:
         if pipeline == "beta":
             # Dispatch to specific Beta algorithm
             def _run_beta() -> Any:
+                r = Path(ref_file)
+                h = Path(hyp_file)
                 if algorithm == "taes":
-                    return self.orchestrator.beta_pipeline.evaluate_taes(ref_file, hyp_file)
+                    return self.orchestrator.beta_pipeline.evaluate_taes(r, h)
                 if algorithm == "dp":
-                    return self.orchestrator.beta_pipeline.evaluate_dp(ref_file, hyp_file)
+                    return self.orchestrator.beta_pipeline.evaluate_dp(r, h)
                 if algorithm == "epoch":
-                    return self.orchestrator.beta_pipeline.evaluate_epoch(ref_file, hyp_file)
+                    return self.orchestrator.beta_pipeline.evaluate_epoch(r, h)
                 if algorithm == "overlap":
-                    return self.orchestrator.beta_pipeline.evaluate_overlap(ref_file, hyp_file)
+                    return self.orchestrator.beta_pipeline.evaluate_overlap(r, h)
                 if algorithm == "ira":
-                    return self.orchestrator.beta_pipeline.evaluate_ira(ref_file, hyp_file)
+                    return self.orchestrator.beta_pipeline.evaluate_ira(r, h)
                 raise ValueError(f"Unsupported algorithm: {algorithm}")
 
             beta_res = await loop.run_in_executor(self.executor, _run_beta)

@@ -51,6 +51,27 @@ class JobManager:
         except asyncio.TimeoutError:
             return None
 
+    async def run_worker(self, processor) -> None:
+        """Run the background worker to process jobs."""
+        logger.info("Job worker started")
+        self._running = True
+        while self._running:
+            try:
+                job_id = await self.get_next_job()
+                if job_id:
+                    logger.info("Processing job %s", job_id)
+                    await processor(job_id)
+            except asyncio.CancelledError:
+                logger.info("Job worker cancelled")
+                break
+            except Exception as exc:
+                logger.exception("Worker error: %s", exc)
+                await asyncio.sleep(1)  # Prevent tight loop on errors
+
+    async def shutdown(self) -> None:
+        """Shutdown the worker gracefully."""
+        self._running = False
+
 
 # Singleton instance
 job_manager = JobManager()

@@ -64,5 +64,5 @@ class WebSocketManager:
 ws_manager = WebSocketManager()
 
 
-async def broadcast_progress(job_id: str, message: dict) -> None:
+async def broadcast_progress(job_id: str, message: dict[str, Any]) -> None:
     await ws_manager.broadcast(job_id, message)

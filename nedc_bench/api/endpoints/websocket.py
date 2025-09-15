@@ -41,5 +41,5 @@ async def websocket_endpoint(websocket: WebSocket, job_id: str) -> None:
                 await websocket.send_json({"type": "heartbeat"})
 
     except WebSocketDisconnect:
-        ws_manager.disconnect(job_id, websocket)
+        await ws_manager.disconnect(job_id, websocket)
         logger.info("WebSocket disconnected for job %s", job_id)

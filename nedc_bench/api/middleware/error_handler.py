@@ -3,8 +3,10 @@ from __future__ import annotations
 import logging
 import traceback
 
+from typing import Awaitable, Callable
+
 from fastapi import Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +19,9 @@ class NEDCAPIException(Exception):
         self.error_code = error_code
 
 
-async def error_handler_middleware(request: Request, call_next):
+async def error_handler_middleware(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
     try:
         return await call_next(request)
     except NEDCAPIException as exc:

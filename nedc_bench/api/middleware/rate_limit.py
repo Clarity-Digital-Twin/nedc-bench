@@ -3,7 +3,10 @@ from __future__ import annotations
 import asyncio
 import time
 
+from typing import Awaitable, Callable
+
 from fastapi import HTTPException, Request
+from starlette.responses import Response
 
 
 class RateLimiter:
@@ -30,7 +33,9 @@ class RateLimiter:
 rate_limiter = RateLimiter(requests_per_minute=100)
 
 
-async def rate_limit_middleware(request: Request, call_next):
+async def rate_limit_middleware(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
     client_id = request.client.host if request.client else "anonymous"
     allowed = await rate_limiter.check_rate_limit(client_id)
     if not allowed:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
+from typing import Any
 
 from .async_wrapper import AsyncOrchestrator
 from .job_manager import job_manager
@@ -32,7 +33,7 @@ async def process_evaluation(job_id: str) -> None:
 
     await progress_tracker.init_job(job_id, total_algorithms=len(algorithms))
 
-    results: dict[str, dict] = {}
+    results: dict[str, dict[str, Any]] = {}
     for algo in algorithms:
         await progress_tracker.update_algorithm(job_id, algo, job["pipeline"], "started")
         await broadcast_progress(

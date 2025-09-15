@@ -112,7 +112,9 @@ class NEDCAlphaWrapper:
             if temp_dir:
                 temp_dir.cleanup()
 
-    def evaluate_batch(self, ref_list_file: str, hyp_list_file: str, output_dir: str) -> dict:
+    def evaluate_batch(
+        self, ref_list_file: str, hyp_list_file: str, output_dir: str
+    ) -> dict[str, Any]:
         """
         Run NEDC evaluation on pre-existing list files (original mode).
 

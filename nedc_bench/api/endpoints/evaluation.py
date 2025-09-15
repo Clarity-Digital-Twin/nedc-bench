@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import cast
 
 import aiofiles
-from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from nedc_bench.api.models.requests import AlgorithmType, PipelineType
 from nedc_bench.api.models.responses import EvaluationResponse, EvaluationResult
 from nedc_bench.api.services.file_validator import FileValidator
 from nedc_bench.api.services.job_manager import job_manager
-from nedc_bench.api.services.processor import process_evaluation
 from nedc_bench.api.services.websocket_manager import broadcast_progress
 
 router = APIRouter()
@@ -18,12 +18,11 @@ router = APIRouter()
 
 @router.post("/evaluate", response_model=EvaluationResponse)
 async def submit_evaluation(
-    background_tasks: BackgroundTasks,
     reference: UploadFile = File(..., description="Reference CSV_BI file"),
     hypothesis: UploadFile = File(..., description="Hypothesis CSV_BI file"),
     algorithms: list[AlgorithmType] = Form(default=[AlgorithmType.ALL]),
     pipeline: PipelineType = Form(default=PipelineType.DUAL),
-):
+) -> EvaluationResponse:
     # Read file bytes
     ref_bytes = await reference.read()
     hyp_bytes = await hypothesis.read()
@@ -58,7 +57,6 @@ async def submit_evaluation(
     }
 
     await job_manager.add_job(job)
-    background_tasks.add_task(process_evaluation, job_id)
 
     # Immediately broadcast queued state so late WS subscribers can catch up
     await broadcast_progress(
@@ -68,7 +66,7 @@ async def submit_evaluation(
             "status": "queued",
             "message": "Job queued",
             "job_id": job_id,
-            "created_at": job["created_at"].isoformat(),
+            "created_at": cast(datetime, job["created_at"]).isoformat(),
         },
     )
 
@@ -81,7 +79,7 @@ async def submit_evaluation(
 
 
 @router.get("/evaluate/{job_id}", response_model=EvaluationResult)
-async def get_evaluation_result(job_id: str):
+async def get_evaluation_result(job_id: str) -> EvaluationResult:
     job = await job_manager.get_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
@@ -116,7 +114,7 @@ async def get_evaluation_result(job_id: str):
 
 
 @router.get("/evaluate", response_model=list[EvaluationResult])
-async def list_evaluations(limit: int = 10, offset: int = 0, status: str | None = None):
+async def list_evaluations(limit: int = 10, offset: int = 0, status: str | None = None) -> list[EvaluationResult]:
     jobs = await job_manager.list_jobs(limit, offset, status)
     out: list[EvaluationResult] = [
         EvaluationResult(

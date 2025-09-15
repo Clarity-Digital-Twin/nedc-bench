@@ -408,7 +408,7 @@ class ParityValidator:
         )
 
     def compare_all_algorithms(
-        self, alpha_results: dict[str, dict], beta_results: dict[str, Any]
+        self, alpha_results: dict[str, dict[str, Any]], beta_results: dict[str, Any]
     ) -> dict[str, ValidationReport]:
         """Compare all algorithm results available in both dicts."""
         reports: dict[str, ValidationReport] = {}

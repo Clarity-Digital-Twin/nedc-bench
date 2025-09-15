@@ -17,7 +17,7 @@ from nedc_bench.algorithms.epoch import EpochScorer
 from nedc_bench.algorithms.ira import IRAScorer
 from nedc_bench.algorithms.overlap import OverlapScorer
 from nedc_bench.algorithms.taes import TAESScorer
-from nedc_bench.models.annotations import AnnotationFile
+from nedc_bench.models.annotations import AnnotationFile, EventAnnotation
 from nedc_bench.utils.params import load_nedc_params, map_event_label
 from nedc_bench.validation.parity import ParityValidator, ValidationReport
 
@@ -52,18 +52,20 @@ class BetaPipeline:
         scorer = TAESScorer()
         return scorer.score(ref_annotations.events, hyp_annotations.events)
 
-    def _map_events(self, events: list, label_map: dict[str, str]) -> list:
+    def _map_events(self, events: list[EventAnnotation], label_map: dict[str, str]) -> list[EventAnnotation]:
         for ev in events:
             ev.label = map_event_label(ev.label, label_map)
         return events
 
-    def _expand_with_null(self, events: list, duration: float, null_label: str) -> list:
+    def _expand_with_null(
+        self, events: list[EventAnnotation], duration: float, null_label: str
+    ) -> list[EventAnnotation]:
         """Expand sparse events by inserting null segments to cover full duration."""
         if not events:
             return []
         # Ensure sorted
-        evs = sorted(events, key=lambda e: e.start_time)
-        expanded: list = []
+        evs: list[EventAnnotation] = sorted(events, key=lambda e: e.start_time)
+        expanded: list[EventAnnotation] = []
         cur = 0.0
         for ev in evs:
             if ev.start_time > cur:
@@ -256,11 +258,16 @@ class DualPipelineOrchestrator:
         assert len(ref_files) == len(hyp_files), "List files must have same length"
 
         # Process each pair
-        results = {"file_results": [], "all_passed": True, "total_files": len(ref_files)}
+        file_results: list[dict[str, Any]] = []
+        results: dict[str, Any] = {
+            "file_results": file_results,
+            "all_passed": True,
+            "total_files": len(ref_files),
+        }
 
         for ref_file, hyp_file in zip(ref_files, hyp_files):
             result = self.evaluate(ref_file, hyp_file, algorithm)
-            results["file_results"].append({
+            file_results.append({
                 "ref": ref_file,
                 "hyp": hyp_file,
                 "parity_passed": result.parity_passed,

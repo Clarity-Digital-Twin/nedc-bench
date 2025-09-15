@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import pathlib
 from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,6 +15,8 @@ from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
 from .endpoints import evaluation, health, websocket
 from .middleware.error_handler import error_handler_middleware
 from .middleware.rate_limit import rate_limit_middleware
+from .services.job_manager import job_manager
+from .services.processor import process_evaluation
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +27,7 @@ orchestrator: DualPipelineOrchestrator | None = None
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Manage application lifecycle."""
     global orchestrator
 
@@ -42,10 +46,21 @@ async def lifespan(app: FastAPI):
 
     logger.info("Starting NEDC-BENCH API")
     orchestrator = DualPipelineOrchestrator()
+
+    # Start the job worker task
+    worker_task = asyncio.create_task(job_manager.run_worker(process_evaluation))
+    logger.info("Job worker task started")
+
     try:
         yield
     finally:
         logger.info("Shutting down NEDC-BENCH API")
+        await job_manager.shutdown()
+        worker_task.cancel()
+        try:
+            await worker_task
+        except asyncio.CancelledError:
+            pass
 
 
 app = FastAPI(
@@ -79,6 +94,6 @@ app.include_router(websocket.router, prefix="/ws", tags=["websocket"])
 try:
     from .docs import custom_openapi
 
-    app.openapi = lambda: custom_openapi(app)  # type: ignore[assignment]
+    app.openapi = lambda: custom_openapi(app)  # type: ignore[method-assign]
 except Exception:  # pragma: no cover - docs customization optional in tests
     pass
