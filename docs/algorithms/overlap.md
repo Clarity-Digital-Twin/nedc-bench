@@ -143,9 +143,9 @@ hyp4:                  |--| # Miss (no overlap)
 ```
 
 ### Multiple Events
-- One reference can match multiple hypotheses (only first counts)
-- One hypothesis can match multiple references (only first counts)
-- No fractional credit for multiple overlaps
+- One reference can overlap multiple hypotheses; it counts as a single hit for that reference event.
+- One hypothesis can overlap multiple references; each overlapped reference can count its own hit.
+- No fractional credit or duration weighting for multiple overlaps.
 
 ## Performance Characteristics
 
@@ -176,15 +176,10 @@ hyp4:                  |--| # Miss (no overlap)
 | Speed | Fastest | Medium | Slowest |
 | Precision | Lowest | Highest | Medium |
 
-## Validation Results
+## Validation
 
-| Metric | Alpha Pipeline | Beta Pipeline | Status |
-|--------|---------------|---------------|--------|
-| Hits (seiz) | 3 | 3 | ✅ Exact |
-| Misses (seiz) | 1 | 1 | ✅ Exact |
-| False Alarms (seiz) | 1 | 1 | ✅ Exact |
-| Total Hits | 3 | 3 | ✅ Exact |
-| Total FA | 1 | 1 | ✅ Exact |
+- Parity: Beta matches NEDC v6.0.0 Overlap scoring exactly on the SSOT parity set. See docs/archive/bugs/FINAL_PARITY_RESULTS.md.
+  - False alarm rate (FA/24h) uses event FP counts directly (no epoch scaling). See docs/algorithms/metrics.md.
 
 ## Related Documentation
 - [Algorithm Overview](overview.md) - Comparison of all algorithms
