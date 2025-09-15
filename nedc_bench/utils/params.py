@@ -10,9 +10,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 try:  # Python 3.11+
-    import tomllib as _tomllib  # type: ignore[attr-defined]
-except Exception:  # Python 3.10 fallback
-    import tomli as _tomllib  # type: ignore[no-redef]
+    import tomllib as _tomllib
+except ImportError:  # Python 3.10 fallback
+    import tomli as _tomllib  # type: ignore[import-not-found]
 
 
 PARAM_REL_PATH = "src/nedc_eeg_eval/nedc_eeg_eval_params_v00.toml"
