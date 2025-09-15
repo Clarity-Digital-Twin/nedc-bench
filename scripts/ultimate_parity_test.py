@@ -104,11 +104,10 @@ def run_all_beta_algorithms():
                         total_fn += result.false_negatives["seiz"]
                 elif algo_name == "ovlp":
                     result = scorer.score(ref_ann.events, hyp_ann.events)
-                    # Overlap uses dict structure too
-                    if "seiz" in result.hits:
-                        total_tp += result.hits["seiz"]
-                        total_fp += result.false_alarms["seiz"]
-                        total_fn += result.misses["seiz"]
+                    # Overlap uses dict structure - use .get() for safety
+                    total_tp += result.hits.get("seiz", 0)
+                    total_fp += result.false_alarms.get("seiz", 0)
+                    total_fn += result.misses.get("seiz", 0)
                 elif algo_name == "dp":
                     # DP needs label sequences, not events
                     # For now, skip DP as it needs different input format
