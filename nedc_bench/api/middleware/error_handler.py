@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse, Response
 logger = logging.getLogger(__name__)
 
 
-class NEDCAPIException(Exception):
+class NEDCAPIError(Exception):
     def __init__(self, status_code: int, detail: str, error_code: str):
         super().__init__(detail)
         self.status_code = status_code
@@ -23,7 +23,7 @@ async def error_handler_middleware(
 ) -> Response:
     try:
         return await call_next(request)
-    except NEDCAPIException as exc:
+    except NEDCAPIError as exc:
         logger.warning("API error: %s - %s", exc.error_code, exc.detail)
         return JSONResponse(
             status_code=exc.status_code,

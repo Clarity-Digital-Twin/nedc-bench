@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from nedc_bench.api.middleware.error_handler import NEDCAPIException
+from nedc_bench.api.middleware.error_handler import NEDCAPIError
 
 
-class FileValidationError(NEDCAPIException):
+class FileValidationError(NEDCAPIError):
     def __init__(self, detail: str):
         super().__init__(status_code=400, detail=detail, error_code="FILE_VALIDATION_ERROR")
 
