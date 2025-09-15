@@ -11,6 +11,7 @@ os.environ["PYTHONPATH"] = f"{os.environ['NEDC_NFC']}/lib:{os.environ.get('PYTHO
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import numpy as np
+
 from nedc_bench.algorithms.dp_alignment import DPAligner
 from nedc_bench.algorithms.epoch import EpochScorer
 from nedc_bench.algorithms.overlap import OverlapScorer
