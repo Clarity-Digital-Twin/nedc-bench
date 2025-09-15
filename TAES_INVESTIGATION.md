@@ -114,6 +114,65 @@ This investigation can be closed when:
 - For medical/scientific purposes, this difference is completely negligible
 - All other algorithms show perfect 0.0000% match, suggesting our implementation is solid
 
+## Investigation Results
+
+### Root Cause Identified! ✅
+
+The "difference" was **not in our implementation** but in the test script itself!
+
+#### The Problem
+The `ultimate_parity_test.py` script had hardcoded **rounded** Alpha values:
+```python
+# BEFORE (incorrect):
+"taes": AlgorithmResult(133.84, 552.77, 941.16, 12.4504, 30.4617, "TAES")
+```
+
+But the actual Alpha values have more precision:
+```python
+# ACTUAL values:
+"taes": AlgorithmResult(133.84137545872733, 552.7689020231412, 941.1586245412731, ...)
+```
+
+When Beta calculated exact values and compared them to the rounded hardcoded values, we got differences like:
+- TP difference: 0.00137545872732... ≈ 0.0014
+- FP difference: 0.00109797685877... ≈ 0.0011
+- FN difference: 0.00137545872689... ≈ 0.0014
+
+#### The Solution
+Fixed `ultimate_parity_test.py` to use exact values from `parity_snapshot.json`:
+```python
+# AFTER (correct):
+"taes": AlgorithmResult(
+    133.84137545872733, 552.7689020231412, 941.1586245412731,
+    12.450360507788584, 30.461710971183077, "TAES"
+)
+```
+
+### Verification
+After the fix:
+```
+TAES:
+  Alpha: TP=133.84, FP=552.77, FN=941.16
+  Beta:  TP=133.84, FP=552.77, FN=941.16
+  Diff:  TP=0.0000, FP=0.0000, FN=0.0000  <-- EXACTLY ZERO!
+
+  ✅ PERFECT PARITY ACHIEVED!
+```
+
 ## Conclusion
 
-*To be completed after investigation*
+**There was never a mathematical difference in the TAES implementation!**
+
+Our Beta implementation produces **exactly identical** results to NEDC v6.0.0 Alpha. The perceived difference was purely a testing artifact from using rounded hardcoded values instead of exact values.
+
+### Key Lessons
+1. **Always use exact values** in test comparisons, not rounded approximations
+2. **Pure Python implementations should achieve exact parity** - any difference indicates a bug (either in implementation or testing)
+3. **Floating-point precision matters** - even small rounding in test data can create false positives
+
+### Status
+- ✅ TAES has **100% exact parity** with NEDC v6.0.0
+- ✅ All 5 algorithms now show perfect 0.0000 differences
+- ✅ Investigation complete - no fixes needed to the actual algorithm implementations
+
+The fix has been applied to `scripts/ultimate_parity_test.py` and all algorithms now show perfect parity.

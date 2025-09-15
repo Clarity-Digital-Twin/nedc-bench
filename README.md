@@ -21,7 +21,6 @@ NEDC-BENCH transforms Temple University's NEDC EEG evaluation suite into a produ
 - **REST API & WebSockets** for programmatic access
 - **Docker/Kubernetes ready** with Redis caching and Prometheus metrics
 - **92% test coverage** with 187 tests
-- **Critical bug fixes** for boundary conditions and duration calculations
 
 ## 🧱 Architecture — Dual Pipeline Design
 
@@ -184,13 +183,7 @@ nedc-bench/
 - **XML**: Alternative annotation format
 - **List files**: Batch processing of multiple files
 
-### Critical Bug Fixes
-We discovered and fixed issues not present in NEDC v6.0.0:
-- Duration calculation bugs affecting FA/24h metrics
-- Boundary condition handling in epoch sampling
-- Event augmentation for empty annotations
 
-See `docs/archive/bugs/` for detailed documentation.
 
 ### Caching & Performance
 - Redis caching provides >10x speedup for repeated evaluations

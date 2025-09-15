@@ -74,12 +74,25 @@ def _process_file_pair(ref_file, hyp_file, algo_name, scorer, params):
 
 
 def get_alpha_metrics() -> dict[str, AlgorithmResult]:
-    """Extract Alpha results from the summary file"""
+    """Extract Alpha results from parity_snapshot.json for exact values"""
+    # Use exact values from parity_snapshot.json to avoid rounding errors
     return {
-        "taes": AlgorithmResult(133.84, 552.77, 941.16, 12.4504, 30.4617, "TAES"),
-        "dp": AlgorithmResult(328.00, 966.00, 747.00, 30.5116, 53.2338, "DP Alignment"),
-        "epoch": AlgorithmResult(33704.00, 18816.00, 250459.00, 11.8608, 259.2257, "Epoch"),
-        "ovlp": AlgorithmResult(253.00, 536.00, 822.00, 23.5349, 29.5376, "Overlap"),
+        "taes": AlgorithmResult(
+            133.84137545872733, 552.7689020231412, 941.1586245412731,
+            12.450360507788584, 30.461710971183077, "TAES"
+        ),
+        "dp": AlgorithmResult(
+            328.0, 966.0, 747.0,
+            30.511627906976745, 53.23384273330729, "DP Alignment"
+        ),
+        "epoch": AlgorithmResult(
+            33704.0, 18816.0, 250459.0,
+            11.860798203847791, 259.22566896219206, "Epoch"
+        ),
+        "ovlp": AlgorithmResult(
+            253.0, 536.0, 822.0,
+            23.53488372093023, 29.537618742290594, "Overlap"
+        ),
     }
 
 
