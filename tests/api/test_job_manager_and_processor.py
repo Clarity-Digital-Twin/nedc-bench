@@ -20,6 +20,11 @@ async def test_job_manager_basic_lifecycle() -> None:
 
     # Start worker
     worker = asyncio.create_task(jm.run_worker(proc))
+    # Allow loop to advance until worker sets running flag
+    for _ in range(20):
+        if jm.is_running():
+            break
+        await asyncio.sleep(0.01)
     assert jm.is_running() is True
 
     # Add a job and let worker process

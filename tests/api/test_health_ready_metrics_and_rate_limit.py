@@ -76,24 +76,30 @@ def test_readiness_fails_when_redis_down(client: Any, monkeypatch: Any) -> None:
 
 @pytest.mark.integration
 def test_rate_limit_returns_429(client: Any, monkeypatch: Any) -> None:
-    # Make limiter very small and reset its state
-    rate_limiter.requests_per_minute = 3
-    rate_limiter.requests = {}
+    # Temporarily lower limit, ensure cleanup to avoid affecting other tests
+    old_rpm = rate_limiter.requests_per_minute
+    try:
+        rate_limiter.requests_per_minute = 3
+        rate_limiter.requests = {}
 
-    # Hit a cheap endpoint repeatedly from same client
-    successes = 0
-    status_429 = 0
-    for _ in range(6):
-        r = client.get("/api/v1/health")
-        if r.status_code == 200:
-            successes += 1
-        if r.status_code == 429:
-            status_429 += 1
+        # Hit a cheap endpoint repeatedly from same client
+        successes = 0
+        status_429 = 0
+        for _ in range(6):
+            r = client.get("/api/v1/health")
+            if r.status_code == 200:
+                successes += 1
+            if r.status_code == 429:
+                status_429 += 1
 
-    assert successes >= 1
-    assert status_429 >= 1
-    # Ensure Retry-After header present when limited
-    if status_429:
-        r = client.get("/api/v1/health")
-        if r.status_code == 429:
-            assert r.headers.get("Retry-After") == "60"
+        assert successes >= 1
+        assert status_429 >= 1
+        # Ensure Retry-After header present when limited
+        if status_429:
+            r = client.get("/api/v1/health")
+            if r.status_code == 429:
+                assert r.headers.get("Retry-After") == "60"
+    finally:
+        # Restore generous defaults
+        rate_limiter.requests_per_minute = old_rpm
+        rate_limiter.requests = {}
