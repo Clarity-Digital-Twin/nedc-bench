@@ -43,12 +43,15 @@ echo '$NEDC_NFC/data/ref/file.csv_bi' > ref.list
 
 ## Core Scripts
 
-### Runtime Scripts (No Hardcoding!)
+### Runtime Scripts (No hardcoding)
 
-- **`create_runtime_lists.py`** - Creates list files programmatically from actual CSV_BI files
-- **`run_beta_batch.py`** - Runs our Beta implementation on all files
-- **`ultimate_parity_test.py`** - Main parity testing script (but has hardcoded Alpha values)
-- **`test_parity_subset.py`** - Quick test on 10 files for development
+- `create_runtime_lists.py` – Create list files under `runtime_lists/` from repo data
+- `run_beta_batch.py` – Run Beta (TAES, EPOCH, OVLP, DP) and write SSOT_BETA.json
+- `run_beta_ira.py` – Append IRA (kappa) to SSOT_BETA.json
+- `parse_alpha_results.py` – Parse NEDC summary.txt → SSOT_ALPHA.json (incl. IRA)
+- `compare_parity.py` – Compare SSOT_ALPHA.json vs SSOT_BETA.json (handles IRA)
+- `ultimate_parity_test.py` – Legacy harness with hardcoded Alpha (ok for Beta aggregation only)
+- `test_parity_subset.py` – Quick subset harness for development
 
 ### Deleted Slop Scripts
 
@@ -68,16 +71,22 @@ python scripts/run_beta_batch.py
 
 ### 2. Run Alpha (NEDC v6.0.0)
 ```bash
-# First create proper list files
-python scripts/create_nedc_lists.py  # TODO: Create this!
+# Create runtime lists (paths are relative to the NEDC dir)
+python scripts/create_runtime_lists.py
 
-# Then run NEDC
-./run_nedc.sh nedc_lists/ref.list nedc_lists/hyp.list
-# Output: nedc_eeg_eval/v6.0.0/output/summary.txt
+# Run NEDC on the same lists
+./run_nedc.sh runtime_lists/ref_complete.list runtime_lists/hyp_complete.list
+# Output is written under nedc_eeg_eval/v6.0.0/output/
+
+# Parse into SSOT_ALPHA.json (also captures IRA)
+python scripts/parse_alpha_results.py
 ```
 
 ### 3. Compare Results
-Check `TRUE_ALPHA_BETA_SCORES.md` for comparison.
+```bash
+python scripts/compare_parity.py
+```
+See also: `FINAL_PARITY_RESULTS.md` for current status.
 
 ## Common Issues
 
