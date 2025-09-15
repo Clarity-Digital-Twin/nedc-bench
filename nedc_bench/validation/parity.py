@@ -204,7 +204,7 @@ class ParityValidator:
                         alpha_value=alpha_val,
                         beta_value=beta_val,
                         absolute_difference=abs_diff,
-                        relative_difference=abs_diff / max(abs(a), 1e-16),
+                        relative_difference=abs_diff / max(abs(alpha_val), 1e-16),
                         tolerance=0.0,
                     )
                 )
