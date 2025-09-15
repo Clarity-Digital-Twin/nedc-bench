@@ -10,18 +10,18 @@
 
 > **⚠️ Independent Project**: This is an open-source contribution, not officially maintained by Temple University, NEDC, or their affiliates. We vendor and wrap the original NEDC v6.0.0 software unchanged while providing a modern reimplementation. All algorithmic credit goes to the original authors (Shah et al., 2021).
 
-## What is NEDC-BENCH?
+## 🎯 What is NEDC-BENCH?
 
 NEDC-BENCH transforms Temple University's NEDC EEG evaluation suite into a production-ready platform. We maintain a **dual-pipeline architecture** that guarantees scoring parity while offering modern infrastructure for scalable deployment.
 
 **The Problem:** NEDC's evaluation software is excellent for research but challenging to deploy at scale — dependency management, I/O conventions, and operational ergonomics make cloud deployments difficult.
 
 **Our Solution:** Best of both worlds — preserve exact scientific behavior while making it effortless to run in production:
-- ✅ **100% algorithmic parity** with NEDC v6.0.0 (continuously validated)
-- 🚀 **REST API & WebSockets** for programmatic access
-- 🐳 **Docker/Kubernetes ready** with Redis caching and Prometheus metrics
-- 🧪 **92% test coverage** with 187 tests
-- 🔧 **Critical bug fixes** for boundary conditions and duration calculations
+- **100% algorithmic parity** with NEDC v6.0.0 (continuously validated)
+- **REST API & WebSockets** for programmatic access
+- **Docker/Kubernetes ready** with Redis caching and Prometheus metrics
+- **92% test coverage** with 187 tests
+- **Critical bug fixes** for boundary conditions and duration calculations
 
 ## 🧱 Architecture — Dual Pipeline Design
 
