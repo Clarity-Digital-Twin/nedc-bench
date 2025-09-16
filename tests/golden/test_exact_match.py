@@ -33,12 +33,12 @@ def test_golden_exact_match():
         result = alpha_wrapper.evaluate(ref_file, hyp_file)
 
         # Perfect match should yield 100% for all metrics
-        assert (
-            result["taes"]["sensitivity"] == 1.0
-        ), f"TAES sensitivity: {result['taes']['sensitivity']}"
-        assert (
-            result["taes"]["specificity"] == 1.0
-        ), f"TAES specificity: {result['taes']['specificity']}"
+        assert result["taes"]["sensitivity"] == 1.0, (
+            f"TAES sensitivity: {result['taes']['sensitivity']}"
+        )
+        assert result["taes"]["specificity"] == 1.0, (
+            f"TAES specificity: {result['taes']['specificity']}"
+        )
         assert result["taes"]["f1_score"] == 1.0, f"TAES F1: {result['taes']['f1_score']}"
 
         # Check other algorithms too
