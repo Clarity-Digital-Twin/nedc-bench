@@ -1,0 +1,116 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    user: "1000:1000" # Run as non-root user
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - MAX_WORKERS=${MAX_WORKERS:-4}
+      - NEDC_NFC=/app/nedc_eeg_eval/v6.0.0
+      - PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus_multiproc
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "127.0.0.1:8000:8000" # Bind only to localhost
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - redis
+    restart: unless-stopped
+    read_only: true # Read-only root filesystem
+    tmpfs:
+      - /tmp
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+  redis:
+    image: redis:7-alpine
+    user: "999:999" # Redis user
+    command: >
+      redis-server
+      --appendonly yes
+      --bind 0.0.0.0
+      --protected-mode yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data:rw
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+
+  prometheus:
+    image: prom/prometheus:latest
+    user: "65534:65534" # nobody user
+    ports:
+      - "127.0.0.1:9090:9090" # Bind only to localhost
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus:rw
+    restart: unless-stopped
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  grafana:
+    image: grafana/grafana:latest
+    user: "472:472" # Grafana user
+    ports:
+      - "127.0.0.1:3000:3000" # Bind only to localhost
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-changeme}
+      - GF_INSTALL_PLUGINS=
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_SECURITY_STRICT_TRANSPORT_SECURITY=true
+      - GF_SECURITY_CONTENT_TYPE_NOSNIFF=true
+      - GF_SECURITY_X_CONTENT_TYPE_OPTIONS=true
+      - GF_SECURITY_X_XSS_PROTECTION=true
+    volumes:
+      - grafana_data:/var/lib/grafana:rw
+    restart: unless-stopped
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+volumes:
+  redis_data:
+    driver: local
+  grafana_data:
+    driver: local
+  prometheus_data:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge
+    internal: false # Set to true in production if no external access needed

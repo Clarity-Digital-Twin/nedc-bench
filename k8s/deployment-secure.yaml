@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nedc-bench-api
+  labels:
+    app: nedc-bench
+    component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nedc-bench
+      component: api
+  template:
+    metadata:
+      labels:
+        app: nedc-bench
+        component: api
+    spec:
+      # Security context for the entire pod
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: api
+          image: nedc-bench/api:latest
+          imagePullPolicy: Always # Changed from IfNotPresent for production
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          # Container-level security context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: NEDC_NFC
+              value: "/app/nedc_eeg_eval/v6.0.0"
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: MAX_WORKERS
+              value: "1"
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: nedc-bench-secrets
+                  key: redis-url
+            - name: PROMETHEUS_MULTIPROC_DIR
+              value: "/tmp/prometheus"
+          volumeMounts:
+            - name: prom-multiproc
+              mountPath: /tmp/prometheus
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: prom-multiproc
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nedc-bench-secrets
+type: Opaque
+stringData:
+  redis-url: "redis://redis:6379"
