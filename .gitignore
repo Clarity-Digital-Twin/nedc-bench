@@ -145,3 +145,4 @@ data/csv_bi_parity/
 # - nedc_eeg_eval/v6.0.0/test/results/*.txt (golden outputs)
 # - nedc_eeg_eval/v6.0.0/docs/* (original documentation)
 # - All source code in lib/ and src/
+node_modules/
