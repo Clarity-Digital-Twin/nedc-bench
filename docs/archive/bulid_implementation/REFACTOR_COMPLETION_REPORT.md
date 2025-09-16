@@ -9,41 +9,44 @@
 
 ### From REFACTOR_RISK_ANALYSIS.md (Status: COMPLETED)
 
-| Planned Item | Completed | Evidence |
-|--------------|-----------|----------|
-| Move `nedc_bench/` → `src/nedc_bench/` | ✅ | Directory exists at `src/nedc_bench/` |
-| Move `alpha/` → `src/alpha/` | ✅ | Directory exists at `src/alpha/` |
-| Update Hatch packaging | ✅ | `pyproject.toml:335`: `packages = ["src/nedc_bench", "src/alpha"]` |
-| Update Docker COPY | ✅ | `Dockerfile.api:16`: `COPY src/ ./src/` |
-| Update Makefile mypy | ✅ | `Makefile:70,83`: `mypy -p nedc_bench` |
-| Add pytest pythonpath | ✅ | `pyproject.toml:296`: `pythonpath = ["src"]` |
-| Fix Ruff per-file-ignores | ✅ | All paths updated to `src/nedc_bench/...` |
+| Planned Item                           | Completed | Evidence                                                           |
+| -------------------------------------- | --------- | ------------------------------------------------------------------ |
+| Move `nedc_bench/` → `src/nedc_bench/` | ✅        | Directory exists at `src/nedc_bench/`                              |
+| Move `alpha/` → `src/alpha/`           | ✅        | Directory exists at `src/alpha/`                                   |
+| Update Hatch packaging                 | ✅        | `pyproject.toml:335`: `packages = ["src/nedc_bench", "src/alpha"]` |
+| Update Docker COPY                     | ✅        | `Dockerfile.api:16`: `COPY src/ ./src/`                            |
+| Update Makefile mypy                   | ✅        | `Makefile:70,83`: `mypy -p nedc_bench`                             |
+| Add pytest pythonpath                  | ✅        | `pyproject.toml:296`: `pythonpath = ["src"]`                       |
+| Fix Ruff per-file-ignores              | ✅        | All paths updated to `src/nedc_bench/...`                          |
 
 ### From MIGRATION_PLAN.md
 
-| Task | Status | Verification |
-|------|--------|--------------|
-| Create src/ structure | ✅ | `ls -la src/` confirms structure |
-| Update packaging | ✅ | Hatch builds successfully |
-| Docker builds | ✅ | `docker build -f Dockerfile.api .` succeeds |
-| Tests pass | ✅ | 114 tests passing |
-| Imports unchanged | ✅ | `from nedc_bench` still works |
+| Task                  | Status | Verification                                |
+| --------------------- | ------ | ------------------------------------------- |
+| Create src/ structure | ✅     | `ls -la src/` confirms structure            |
+| Update packaging      | ✅     | Hatch builds successfully                   |
+| Docker builds         | ✅     | `docker build -f Dockerfile.api .` succeeds |
+| Tests pass            | ✅     | 114 tests passing                           |
+| Imports unchanged     | ✅     | `from nedc_bench` still works               |
 
 ## Additional Improvements Completed
 
 1. **Security Enhancements**
+
    - Added secure K8s manifests with non-root users
    - Network policies for pod isolation
    - Resource limits on all containers
    - Read-only root filesystems where possible
 
-2. **Code Quality**
+1. **Code Quality**
+
    - Fixed all line ending issues (CRLF → LF)
    - Added `.gitattributes` for consistent line endings
    - Fixed pre-commit hooks configuration
    - Removed `assert` statements (bandit security)
 
-3. **Documentation**
+1. **Documentation**
+
    - Updated all architecture docs to COMPLETED status
    - Updated README with new project structure
    - All docs reflect src/ layout
@@ -68,6 +71,7 @@
 ## Git Evidence
 
 Recent commits showing completion:
+
 - `a10dd15`: fix: convert remaining files to LF and fix assert
 - `fd781d8`: fix: exclude k8s YAMLs from check-yaml hook
 - `2537c02`: feat: add secure K8s manifests and Docker Compose configs
@@ -77,6 +81,7 @@ Recent commits showing completion:
 ## Final Status
 
 **EVERYTHING from the refactoring plan has been 100% completed:**
+
 - ✅ All files moved to src/ structure
 - ✅ All configuration updated
 - ✅ All tests passing
