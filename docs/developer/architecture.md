@@ -8,19 +8,19 @@
 ## Dual-Pipeline Design
 
 - Alpha (legacy): vendored NEDC code in `nedc_eeg_eval/v6.0.0/` (unchanged); used as the reference implementation.
-- Beta (modern): reimplementation in `nedc_bench/algorithms/` with NEDC-exact semantics and integer/float rules.
-- Orchestration (`nedc_bench/orchestration/`): coordinates Alpha/Beta execution and parity reporting.
+- Beta (modern): reimplementation in `src/nedc_bench/algorithms/` with NEDC-exact semantics and integer/float rules.
+- Orchestration (`src/nedc_bench/orchestration/`): coordinates Alpha/Beta execution and parity reporting.
 
 ## Components
 
-- Algorithms (`nedc_bench/algorithms/`): `taes.py`, `epoch.py`, `dp_alignment.py`, `overlap.py`, `ira.py`.
-- Orchestration (`nedc_bench/orchestration/`): `dual_pipeline.py`, `parallel.py`; `validation/` for parity.
-- API (`nedc_bench/api/`):
+- Algorithms (`src/nedc_bench/algorithms/`): `taes.py`, `epoch.py`, `dp_alignment.py`, `overlap.py`, `ira.py`.
+- Orchestration (`src/nedc_bench/orchestration/`): `dual_pipeline.py`, `parallel.py`; `validation/` for parity.
+- API (`src/nedc_bench/api/`):
   - `main.py`: FastAPI app; sets `NEDC_NFC` default and spawns a job worker in lifespan.
   - `endpoints/`: `evaluation.py`, `health.py`, `websocket.py`, `metrics.py`.
   - `services/`: `job_manager.py`, `processor.py`, `websocket_manager.py`, `cache.py`.
   - `middleware/`: error handler, rate limit.
-- Alpha wrapper (`alpha/`): container and helpers to execute the original tool.
+- Alpha wrapper (`src/alpha/`): container and helpers to execute the original tool.
 
 ## Data Flow (API)
 
