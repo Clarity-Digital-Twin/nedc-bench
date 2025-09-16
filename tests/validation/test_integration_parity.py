@@ -97,9 +97,9 @@ class TestIntegrationParity:
         )
 
         # Verify no discrepancies
-        assert len(parity_report.parity_report.discrepancies) == 0, (
-            f"Found {len(parity_report.parity_report.discrepancies)} discrepancies in {algorithm}"
-        )
+        assert (
+            len(parity_report.parity_report.discrepancies) == 0
+        ), f"Found {len(parity_report.parity_report.discrepancies)} discrepancies in {algorithm}"
 
     def test_all_algorithms_sequential(self, list_files, orchestrator):
         """Test all algorithms in sequence with same data"""
@@ -166,9 +166,9 @@ class TestIntegrationParity:
             )
 
         # Summary assertion
-        assert all(r["passed"] for r in results.values()), (
-            f"Not all algorithms passed parity:\n{json.dumps(results, indent=2)}"
-        )
+        assert all(
+            r["passed"] for r in results.values()
+        ), f"Not all algorithms passed parity:\n{json.dumps(results, indent=2)}"
 
     def test_empty_files_handling(self, tmp_path, orchestrator):
         """Test handling of empty annotation files"""
@@ -330,6 +330,6 @@ montage_file = ./nedc_eeg_eval/params/montage.txt
             )
 
             # Should still achieve parity (both should handle mismatches the same way)
-            assert parity_report.parity_passed, (
-                f"Mismatched label parity failed for {algo}:\nReport: {parity_report.parity_report}"
-            )
+            assert (
+                parity_report.parity_passed
+            ), f"Mismatched label parity failed for {algo}:\nReport: {parity_report.parity_report}"

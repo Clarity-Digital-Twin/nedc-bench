@@ -86,9 +86,8 @@ class IRAScorer:
                 confusion[rlab][hlab] += 1
         else:
             # Event mode
-            assert epoch_duration is not None and file_duration is not None, (
-                "epoch_duration and file_duration required for event mode"
-            )
+            if epoch_duration is None or file_duration is None:
+                raise ValueError("epoch_duration and file_duration required for event mode")
             ref_events = cast(list[EventAnnotation], ref)
             hyp_events = cast(list[EventAnnotation], hyp)
 
