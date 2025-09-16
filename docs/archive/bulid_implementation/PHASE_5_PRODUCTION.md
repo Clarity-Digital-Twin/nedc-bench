@@ -21,7 +21,7 @@ This document replaces previous Phase 5 drafts. It is aligned with the current c
 ## Deliverables
 
 - `docker-compose.yml`: api, redis (redis:7-alpine), prometheus (prom/prometheus:latest), optional grafana (grafana/grafana:latest).
-- `Dockerfile.api`: slim or multi‑stage image; target < ~200MB.
+- `Dockerfile.api`: slim or multi‑stage image; target \< ~200MB.
 - `k8s/`: minimal API `deployment.yaml` and `service.yaml` (HPA optional).
 - `monitoring/prometheus.yml`: scrape config for the API.
 - `docs/runbook.md`: operations guide (deploy, monitor, scale, troubleshoot).
@@ -36,14 +36,14 @@ This document replaces previous Phase 5 drafts. It is aligned with the current c
 
 ## Day 1 — Docker and Compose
 
-1) Optimize `Dockerfile.api` (multi‑stage or slim)
+1. Optimize `Dockerfile.api` (multi‑stage or slim)
 
 - Base: `python:3.11-slim`.
 - Install build tools only in the builder stage; copy only needed artifacts to final.
 - Keep env consistent with repo: `NEDC_NFC=/app/nedc_eeg_eval/v6.0.0`.
 - Run as non‑root user; expose `8000`.
 
-2) Compose stack (api, redis, prometheus, grafana)
+2. Compose stack (api, redis, prometheus, grafana)
 
 ```yaml
 version: '3.8'
@@ -98,30 +98,30 @@ volumes:
 
 ## Day 2 — Performance (Caching and Concurrency)
 
-1) Redis cache (async, typed)
+1. Redis cache (async, typed)
 
 - Implement `RedisCache` (using `redis.asyncio`) with JSON get/set and TTL (e.g., 24h).
 - Key scheme: `sha256(ref|hyp|algorithms|version)` for correctness.
 - Integrate at orchestrator boundary: on cache hit → return; on miss → compute and store.
 
-2) Concurrency (safe and bounded)
+2. Concurrency (safe and bounded)
 
 - For batch evaluations, add a `ParallelEvaluator` using `ProcessPoolExecutor` for CPU‑bound tasks, capped at `cpu_count()`.
 - Do not parallelize internals in a way that alters ordering or floating rounding; keep parity strict.
 
 ## Day 3 — Monitoring & Metrics
 
-1) Instrumentation
+1. Instrumentation
 
 - Add `monitoring/metrics.py` with:
   - `nedc_evaluations_total{algorithm,pipeline,status}` (Counter)
-  - `nedc_evaluation_duration_seconds{algorithm,pipeline}` (Histogram; buckets [0.1, 0.5, 1, 2.5, 5, 10])
+  - `nedc_evaluation_duration_seconds{algorithm,pipeline}` (Histogram; buckets \[0.1, 0.5, 1, 2.5, 5, 10\])
   - `nedc_parity_failures_total{algorithm}` (Counter)
   - `nedc_active_evaluations` (Gauge)
 - Decorate orchestration entry points with a `track_evaluation` decorator.
 - Add `/metrics` endpoint exposing `prometheus_client.generate_latest` as `text/plain`.
 
-2) Prometheus scrape config
+2. Prometheus scrape config
 
 Create `monitoring/prometheus.yml`:
 
@@ -209,18 +209,18 @@ spec:
 
 ## Day 5 — Production Readiness & Docs
 
-1) Health and readiness
+1. Health and readiness
 
 - Ensure `/api/v1/health` returns 200.
 - Implement `/api/v1/ready` to verify Redis connectivity and internal worker readiness.
 
-2) Integration tests (mark as integration)
+2. Integration tests (mark as integration)
 
 - Health/Ready/Metrics endpoints return 200.
 - Caching test shows warm path ≥10x faster than cold path.
 - Rate limiting test verifies 429s under sustained bursts.
 
-3) Documentation
+3. Documentation
 
 - `docs/runbook.md`:
   - Docker Compose: up, logs, metrics, troubleshooting, graceful shutdown.
@@ -244,7 +244,7 @@ spec:
 - Alpha is CI‑only for parity; do not deploy Alpha to production.
 - Maintain mypy strict and ruff clean; restrict per‑file ignores to narrow, justified cases.
 
----
+______________________________________________________________________
 
 ### Appendix: Metrics Decorator (reference)
 
@@ -255,31 +255,48 @@ import time
 from typing import Callable, Awaitable
 
 evaluation_counter = Counter(
-    'nedc_evaluations_total', 'Total number of evaluations', ['algorithm', 'pipeline', 'status']
+    "nedc_evaluations_total",
+    "Total number of evaluations",
+    ["algorithm", "pipeline", "status"],
 )
 evaluation_duration = Histogram(
-    'nedc_evaluation_duration_seconds', 'Evaluation duration (s)', ['algorithm', 'pipeline'],
-    buckets=[0.1, 0.5, 1.0, 2.5, 5.0, 10.0]
+    "nedc_evaluation_duration_seconds",
+    "Evaluation duration (s)",
+    ["algorithm", "pipeline"],
+    buckets=[0.1, 0.5, 1.0, 2.5, 5.0, 10.0],
 )
-parity_failures = Counter('nedc_parity_failures_total', 'Total parity failures', ['algorithm'])
-active_evaluations = Gauge('nedc_active_evaluations', 'Currently running evaluations')
+parity_failures = Counter(
+    "nedc_parity_failures_total", "Total parity failures", ["algorithm"]
+)
+active_evaluations = Gauge("nedc_active_evaluations", "Currently running evaluations")
 
-def track_evaluation(algorithm: str, pipeline: str) -> Callable[[Callable[..., Awaitable]], Callable[..., Awaitable]]:
+
+def track_evaluation(
+    algorithm: str, pipeline: str
+) -> Callable[[Callable[..., Awaitable]], Callable[..., Awaitable]]:
     def decorator(func: Callable[..., Awaitable]):
         async def wrapper(*args, **kwargs):
             active_evaluations.inc()
             start = time.time()
             try:
                 result = await func(*args, **kwargs)
-                evaluation_counter.labels(algorithm=algorithm, pipeline=pipeline, status='success').inc()
+                evaluation_counter.labels(
+                    algorithm=algorithm, pipeline=pipeline, status="success"
+                ).inc()
                 return result
             except Exception:
-                evaluation_counter.labels(algorithm=algorithm, pipeline=pipeline, status='error').inc()
+                evaluation_counter.labels(
+                    algorithm=algorithm, pipeline=pipeline, status="error"
+                ).inc()
                 raise
             finally:
-                evaluation_duration.labels(algorithm=algorithm, pipeline=pipeline).observe(time.time() - start)
+                evaluation_duration.labels(
+                    algorithm=algorithm, pipeline=pipeline
+                ).observe(time.time() - start)
                 active_evaluations.dec()
+
         return wrapper
+
     return decorator
 ```
 
@@ -295,4 +312,4 @@ scrape_configs:
       - targets: ['api:8000']
 ```
 
-\n[Archived] Productionization tracked in deployment/runbook docs.
+\\n\[Archived\] Productionization tracked in deployment/runbook docs.

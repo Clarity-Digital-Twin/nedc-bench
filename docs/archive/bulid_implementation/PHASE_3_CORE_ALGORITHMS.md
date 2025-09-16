@@ -7,6 +7,7 @@ After analyzing the actual NEDC source code, this plan corrects all discrepancie
 ## Key Discoveries from NEDC Source Analysis
 
 ### 1. DP Alignment (nedc_eeg_eval_dpalign.py)
+
 - **Lines 685-708**: Uses INTEGER counts (`int(1)`)
 - **Lines 689-708**: NULL_CLASS handling for insertions/deletions
 - **Dual counting system**: Tracks both hit/miss/fal AND del/ins/sub
@@ -14,6 +15,7 @@ After analyzing the actual NEDC source code, this plan corrects all discrepancie
 - **Lines 646-680**: Backtrack produces aligned sequences
 
 ### 2. Epoch Scoring (nedc_eeg_eval_epoch.py)
+
 - **Lines 600-610**: COMPRESSES consecutive duplicate labels!
 - **Lines 690-723**: Complex confusion matrix with NULL_CLASS
 - **Lines 706-708**: False alarms = substitutions from null_class
@@ -21,6 +23,7 @@ After analyzing the actual NEDC source code, this plan corrects all discrepancie
 - **All counts are INTEGERS**
 
 ### 3. Overlap Scoring (nedc_eeg_eval_ovlp.py)
+
 - **Lines 644-659**: ANY overlap condition: `(event[1] > start) and (event[0] < stop)`
 - **Line 686**: "overlap method does not give us a confusion matrix"
 - **Lines 596-613**: Direct hit/miss/false_alarm counting
@@ -28,12 +31,14 @@ After analyzing the actual NEDC source code, this plan corrects all discrepancie
 - **All counts are INTEGERS**
 
 ### 4. IRA (nedc_eeg_eval_ira.py)
+
 - **Lines 22-24**: Uses epoch-based scoring internally
 - **Lines 499-540**: Per-label kappa using 2x2 matrices
 - **Lines 548-583**: Multi-class kappa from full matrix
 - **Confusion matrix uses INTEGERS, kappa values are FLOATS**
 
 ### 5. TAES (Already Implemented)
+
 - Uses FLOAT counts for fractional scoring
 - Multi-overlap sequencing with +1.0 miss penalty per additional ref
 - ✅ Already achieving perfect parity
@@ -42,13 +47,13 @@ After analyzing the actual NEDC source code, this plan corrects all discrepancie
 
 ### Algorithm Count Types Summary
 
-| Algorithm | Primary Counts | Secondary Values | Key Difference from Original Plan |
-|-----------|---------------|------------------|-----------------------------------|
-| DP | INTEGER | Float metrics | NULL_CLASS handling, dual counting |
-| Epoch | INTEGER | Float metrics | Consecutive duplicate compression |
-| Overlap | INTEGER | Float metrics | NO confusion matrix, ANY overlap |
-| TAES | FLOAT | Float metrics | ✅ Already correct |
-| IRA | INTEGER confusion | FLOAT kappa | Per-label + multi-class kappa |
+| Algorithm | Primary Counts    | Secondary Values | Key Difference from Original Plan  |
+| --------- | ----------------- | ---------------- | ---------------------------------- |
+| DP        | INTEGER           | Float metrics    | NULL_CLASS handling, dual counting |
+| Epoch     | INTEGER           | Float metrics    | Consecutive duplicate compression  |
+| Overlap   | INTEGER           | Float metrics    | NO confusion matrix, ANY overlap   |
+| TAES      | FLOAT             | Float metrics    | ✅ Already correct                 |
+| IRA       | INTEGER confusion | FLOAT kappa      | Per-label + multi-class kappa      |
 
 ### Day 1-2: DP Alignment (NEDC-EXACT)
 
@@ -60,9 +65,11 @@ import numpy as np
 
 NULL_CLASS = "null"  # NEDC's null class marker
 
+
 @dataclass
 class DPAlignmentResult:
     """NEDC DP alignment results with INTEGER counts"""
+
     # Primary counts (all integers per NEDC)
     hits: int  # Exact matches
     substitutions: Dict[str, Dict[str, int]]  # Full substitution matrix
@@ -83,13 +90,16 @@ class DPAlignmentResult:
     aligned_ref: List[str]
     aligned_hyp: List[str]
 
+
 class DPAligner:
     """NEDC-exact Dynamic Programming alignment"""
 
-    def __init__(self,
-                 penalty_del: float = 1.0,
-                 penalty_ins: float = 1.0,
-                 penalty_sub: float = 1.0):
+    def __init__(
+        self,
+        penalty_del: float = 1.0,
+        penalty_ins: float = 1.0,
+        penalty_sub: float = 1.0,
+    ):
         self.penalty_del = penalty_del
         self.penalty_ins = penalty_ins
         self.penalty_sub = penalty_sub
@@ -116,9 +126,11 @@ class DPAligner:
 from dataclasses import dataclass
 from typing import List, Dict, Tuple
 
+
 @dataclass
 class EpochResult:
     """NEDC epoch results with INTEGER confusion matrix"""
+
     confusion_matrix: Dict[str, Dict[str, int]]  # Full NxN matrix
 
     # Per-label counts (all integers)
@@ -132,18 +144,20 @@ class EpochResult:
     compressed_ref: List[str]
     compressed_hyp: List[str]
 
+
 class EpochScorer:
     """NEDC-exact epoch-based scoring"""
 
-    def __init__(self,
-                 epoch_duration: float = 1.0,
-                 null_class: str = "null"):
+    def __init__(self, epoch_duration: float = 1.0, null_class: str = "null"):
         self.epoch_duration = epoch_duration
         self.null_class = null_class
 
-    def score(self, ref_events: List[EventAnnotation],
-              hyp_events: List[EventAnnotation],
-              file_duration: float) -> EpochResult:
+    def score(
+        self,
+        ref_events: List[EventAnnotation],
+        hyp_events: List[EventAnnotation],
+        file_duration: float,
+    ) -> EpochResult:
         """NEDC epoch scoring with compression"""
 
         # Create fixed-window epochs
@@ -167,7 +181,7 @@ class EpochScorer:
 
         compressed = [labels[0]]
         for i in range(1, len(labels)):
-            if labels[i] != labels[i-1]:
+            if labels[i] != labels[i - 1]:
                 compressed.append(labels[i])
         return compressed
 ```
@@ -179,9 +193,11 @@ class EpochScorer:
 from dataclasses import dataclass
 from typing import List, Dict
 
+
 @dataclass
 class OverlapResult:
     """NEDC overlap results - NO confusion matrix!"""
+
     # Direct counts (all integers per NEDC)
     hits: Dict[str, int]  # Per-label hits
     misses: Dict[str, int]  # Per-label misses
@@ -196,11 +212,13 @@ class OverlapResult:
     total_misses: int
     total_false_alarms: int
 
+
 class OverlapScorer:
     """NEDC-exact overlap scoring (ANY overlap, not proportional)"""
 
-    def score(self, ref_events: List[EventAnnotation],
-              hyp_events: List[EventAnnotation]) -> OverlapResult:
+    def score(
+        self, ref_events: List[EventAnnotation], hyp_events: List[EventAnnotation]
+    ) -> OverlapResult:
         """NEDC overlap: binary ANY overlap detection"""
 
         per_label_hits = {}
@@ -214,9 +232,11 @@ class OverlapScorer:
 
             for hyp_event in hyp_events:
                 # NEDC overlap condition (line 652): ANY overlap
-                if (hyp_event.stop_time > ref_event.start_time and
-                    hyp_event.start_time < ref_event.stop_time and
-                    hyp_event.label == label):
+                if (
+                    hyp_event.stop_time > ref_event.start_time
+                    and hyp_event.start_time < ref_event.stop_time
+                    and hyp_event.label == label
+                ):
                     has_overlap = True
                     break
 
@@ -235,9 +255,11 @@ class OverlapScorer:
             has_overlap = False
 
             for ref_event in ref_events:
-                if (hyp_event.stop_time > ref_event.start_time and
-                    hyp_event.start_time < ref_event.stop_time and
-                    ref_event.label == label):
+                if (
+                    hyp_event.stop_time > ref_event.start_time
+                    and hyp_event.start_time < ref_event.stop_time
+                    and ref_event.label == label
+                ):
                     has_overlap = True
                     break
 
@@ -255,7 +277,7 @@ class OverlapScorer:
             deletions=per_label_misses.copy(),  # Line 713
             total_hits=sum(per_label_hits.values()),
             total_misses=sum(per_label_misses.values()),
-            total_false_alarms=sum(per_label_false_alarms.values())
+            total_false_alarms=sum(per_label_false_alarms.values()),
         )
 ```
 
@@ -266,9 +288,11 @@ class OverlapScorer:
 from dataclasses import dataclass
 from typing import Dict, List
 
+
 @dataclass
 class IRAResult:
     """NEDC IRA results with INTEGER confusion, FLOAT kappa"""
+
     # Confusion matrix (INTEGERS)
     confusion_matrix: Dict[str, Dict[str, int]]
 
@@ -281,11 +305,11 @@ class IRAResult:
     # Labels
     labels: List[str]
 
+
 class IRAScorer:
     """NEDC-exact inter-rater agreement"""
 
-    def score(self, ref_labels: List[str],
-              hyp_labels: List[str]) -> IRAResult:
+    def score(self, ref_labels: List[str], hyp_labels: List[str]) -> IRAResult:
         """NEDC IRA using epoch-based approach"""
 
         # Build INTEGER confusion matrix
@@ -308,18 +332,23 @@ class IRAScorer:
             confusion_matrix=confusion,
             per_label_kappa=per_label_kappa,
             multi_class_kappa=multi_kappa,
-            labels=labels
+            labels=labels,
         )
 
-    def _compute_label_kappa(self, confusion: Dict, label: str,
-                            labels: List[str]) -> float:
+    def _compute_label_kappa(
+        self, confusion: Dict, label: str, labels: List[str]
+    ) -> float:
         """Per-label kappa using 2x2 matrix (lines 499-540)"""
         # Build 2x2 matrix
         a = float(confusion[label][label])  # True positive
         b = sum(confusion[label][l2] for l2 in labels if l2 != label)
         c = sum(confusion[l2][label] for l2 in labels if l2 != label)
-        d = sum(confusion[l2][l3] for l2 in labels for l3 in labels
-                if l2 != label and l3 != label)
+        d = sum(
+            confusion[l2][l3]
+            for l2 in labels
+            for l3 in labels
+            if l2 != label and l3 != label
+        )
 
         # Compute probabilities
         denom = a + b + c + d
@@ -336,8 +365,7 @@ class IRAScorer:
             return 1.0 if p_o == p_e else 0.0
         return (p_o - p_e) / (1 - p_e)
 
-    def _compute_multi_class_kappa(self, confusion: Dict,
-                                   labels: List[str]) -> float:
+    def _compute_multi_class_kappa(self, confusion: Dict, labels: List[str]) -> float:
         """Multi-class kappa (lines 548-583)"""
         # Row and column sums
         sum_rows = {l: sum(confusion[l].values()) for l in labels}
@@ -364,6 +392,7 @@ class IRAScorer:
 ```python
 # nedc_bench/validation/parity.py extensions
 
+
 def compare_dp(alpha: dict, beta: DPAlignmentResult) -> ValidationReport:
     """Compare DP results - INTEGER counts must match exactly"""
     assert alpha["hits"] == beta.hits  # EXACT match
@@ -373,12 +402,17 @@ def compare_dp(alpha: dict, beta: DPAlignmentResult) -> ValidationReport:
     # Derived metrics use tolerance
     assert abs(alpha["sensitivity"] - beta.sensitivity) < 1e-10
 
+
 def compare_epoch(alpha: dict, beta: EpochResult) -> ValidationReport:
     """Compare Epoch results - INTEGER confusion matrix"""
     # All confusion matrix entries must match EXACTLY
     for label1 in beta.confusion_matrix:
         for label2 in beta.confusion_matrix[label1]:
-            assert alpha["confusion"][label1][label2] == beta.confusion_matrix[label1][label2]
+            assert (
+                alpha["confusion"][label1][label2]
+                == beta.confusion_matrix[label1][label2]
+            )
+
 
 def compare_overlap(alpha: dict, beta: OverlapResult) -> ValidationReport:
     """Compare Overlap results - INTEGER counts"""
@@ -386,12 +420,16 @@ def compare_overlap(alpha: dict, beta: OverlapResult) -> ValidationReport:
     assert alpha["misses"] == beta.total_misses
     assert alpha["false_alarms"] == beta.total_false_alarms
 
+
 def compare_ira(alpha: dict, beta: IRAResult) -> ValidationReport:
     """Compare IRA - INTEGER confusion, FLOAT kappa"""
     # Confusion matrix - EXACT match
     for label1 in beta.confusion_matrix:
         for label2 in beta.confusion_matrix[label1]:
-            assert alpha["confusion"][label1][label2] == beta.confusion_matrix[label1][label2]
+            assert (
+                alpha["confusion"][label1][label2]
+                == beta.confusion_matrix[label1][label2]
+            )
 
     # Kappa values - use tolerance
     assert abs(alpha["multi_class_kappa"] - beta.multi_class_kappa) < 1e-10
@@ -402,19 +440,21 @@ def compare_ira(alpha: dict, beta: IRAResult) -> ValidationReport:
 ## Summary of Corrections
 
 1. **DP**: Must handle NULL_CLASS, use dual counting system, INTEGER counts
-2. **Epoch**: Must compress consecutive duplicates, handle NULL_CLASS, INTEGER counts
-3. **Overlap**: ANY overlap (not proportional), no confusion matrix, INTEGER counts
-4. **IRA**: INTEGER confusion matrix, FLOAT kappa values only
-5. **TAES**: Already correct with FLOAT counts
+1. **Epoch**: Must compress consecutive duplicates, handle NULL_CLASS, INTEGER counts
+1. **Overlap**: ANY overlap (not proportional), no confusion matrix, INTEGER counts
+1. **IRA**: INTEGER confusion matrix, FLOAT kappa values only
+1. **TAES**: Already correct with FLOAT counts
 
 ## Definition of Done
 
 ✅ Phase 3 is complete when:
+
 1. All 4 algorithms match NEDC source semantics exactly
-2. INTEGER counts match with == (no tolerance)
-3. FLOAT values (kappa, metrics) match with atol=1e-10
-4. All test suites pass with perfect parity
-5. Performance improvements documented
+1. INTEGER counts match with == (no tolerance)
+1. FLOAT values (kappa, metrics) match with atol=1e-10
+1. All test suites pass with perfect parity
+1. Performance improvements documented
 
 ## THIS PLAN IS 100% VERIFIED AGAINST NEDC SOURCE CODE
-\n[Archived] See docs/FINAL_PARITY_RESULTS.md for final algorithm status.
+
+\\n\[Archived\] See docs/FINAL_PARITY_RESULTS.md for final algorithm status.

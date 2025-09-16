@@ -17,6 +17,7 @@ NEDC-BENCH transforms Temple University's NEDC EEG evaluation suite into a produ
 **The Problem:** NEDC's evaluation software is excellent for research but challenging to deploy — dependency management, I/O conventions, and operational ergonomics make deployment and usage difficult.
 
 **Our Solution:** Best of both worlds — preserve exact scientific behavior while making it effortless to run in production:
+
 - **100% algorithmic parity** with NEDC v6.0.0 (continuously validated)
 - **REST API & WebSockets** for programmatic access
 - **Docker/Kubernetes ready** with Redis caching and Prometheus metrics
@@ -45,6 +46,7 @@ NEDC-BENCH transforms Temple University's NEDC EEG evaluation suite into a produ
 ```
 
 ### Five Scoring Algorithms (All Parity-Validated)
+
 - **TAES** — Time-Aligned Event Scoring
 - **DP** — Dynamic Programming Alignment
 - **Overlap** — Any-overlap detection
@@ -52,6 +54,7 @@ NEDC-BENCH transforms Temple University's NEDC EEG evaluation suite into a produ
 - **IRA** — Inter-Rater Agreement (Cohen's κ)
 
 ### When to Use Which Pipeline
+
 - **Alpha (Legacy Wrapper)**: When you need bit-exact reproducibility with NEDC v6.0.0
 - **Beta (Modern Rewrite)**: For production deployments requiring speed and modern APIs
 - **Dual**: To validate parity between pipelines (used in CI/CD)
@@ -59,6 +62,7 @@ NEDC-BENCH transforms Temple University's NEDC EEG evaluation suite into a produ
 ## ⚡ Quick Start
 
 ### Docker Compose (Recommended)
+
 ```bash
 git clone https://github.com/Clarity-Digital-Twin/nedc-bench.git
 cd nedc-bench
@@ -71,6 +75,7 @@ curl http://localhost:8000/api/v1/health
 ```
 
 ### From Source (Python 3.10+)
+
 ```bash
 # Using uv (10-100x faster than pip)
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -88,6 +93,7 @@ make lint  # Check code quality
 ## 🧰 Usage Examples
 
 ### REST API
+
 ```python
 import requests
 
@@ -96,7 +102,7 @@ with open("ref.csv_bi", "rb") as ref, open("hyp.csv_bi", "rb") as hyp:
     response = requests.post(
         "http://localhost:8000/api/v1/evaluate",
         files={"reference": ref, "hypothesis": hyp},
-        data={"algorithms": ["taes", "epoch", "ira"], "pipeline": "dual"}
+        data={"algorithms": ["taes", "epoch", "ira"], "pipeline": "dual"},
     )
     job_id = response.json()["job_id"]
 
@@ -107,9 +113,11 @@ print(f"Parity Check: {'✅ PASS' if result['parity']['match'] else '❌ FAIL'}"
 ```
 
 ### WebSocket Real-time Progress
+
 ```python
 import asyncio
 import websockets
+
 
 async def monitor_job(job_id):
     async with websockets.connect(f"ws://localhost:8000/ws/{job_id}") as ws:
@@ -118,6 +126,7 @@ async def monitor_job(job_id):
 ```
 
 ### Command Line Interface
+
 ```bash
 # Original NEDC wrapper (preserves exact v6.0.0 behavior)
 ./run_nedc.sh nedc_eeg_eval/v6.0.0/data/lists/ref.list \
@@ -132,6 +141,7 @@ python scripts/compare_parity.py      # Compare Alpha vs Beta
 ## 📊 Performance & Validation
 
 ### Parity Testing
+
 ```bash
 # Verify 100% algorithmic match with NEDC v6.0.0
 python scripts/compare_parity.py --verbose
@@ -145,47 +155,49 @@ python scripts/compare_parity.py --verbose
 ```
 
 ### Performance Metrics
-| Component | Metric | Value | Notes |
-|-----------|--------|-------|-------|
-| API Latency | P50 | ~250ms | With Redis cache |
-| API Latency | P99 | ~2.5s | Cold start |
-| Throughput | RPS | ~100 | 4 workers, single node |
-| Cache Hit Rate | % | >90% | After warm-up |
-| Test Coverage | % | 92% | 187 tests |
-| Parity | Match | 100% | All algorithms |
+
+| Component      | Metric | Value  | Notes                  |
+| -------------- | ------ | ------ | ---------------------- |
+| API Latency    | P50    | ~250ms | With Redis cache       |
+| API Latency    | P99    | ~2.5s  | Cold start             |
+| Throughput     | RPS    | ~100   | 4 workers, single node |
+| Cache Hit Rate | %      | >90%   | After warm-up          |
+| Test Coverage  | %      | 92%    | 187 tests              |
+| Parity         | Match  | 100%   | All algorithms         |
 
 ## 🗂️ Project Structure
 
 ```
 nedc-bench/
-├── nedc_bench/           # Modern Beta pipeline (clean-room implementation)
-│   ├── algorithms/       # Reimplemented scoring algorithms
-│   ├── api/              # FastAPI application & endpoints
-│   ├── models/           # Pydantic models for type safety
-│   ├── orchestration/    # Dual-pipeline coordinator
-│   └── validation/       # Parity checking framework
-├── alpha/                # Alpha pipeline wrapper
-│   └── wrapper/          # Minimal wrapper around NEDC v6.0.0
-├── nedc_eeg_eval/        # Original NEDC v6.0.0 (vendored, unchanged)
-│   └── v6.0.0/           # DO NOT MODIFY — reference implementation
-├── scripts/              # Utility scripts for testing & validation
-│   ├── compare_parity.py # Verify algorithmic equivalence
+├── src/
+│   ├── nedc_bench/           # Modern Beta pipeline (clean-room implementation)
+│   │   ├── algorithms/       # Reimplemented scoring algorithms
+│   │   ├── api/              # FastAPI application & endpoints
+│   │   ├── models/           # Pydantic models for type safety
+│   │   ├── orchestration/    # Dual-pipeline coordinator
+│   │   └── validation/       # Parity checking framework
+│   └── alpha/                # Alpha pipeline wrapper
+│       └── wrapper/          # Minimal wrapper around NEDC v6.0.0
+├── nedc_eeg_eval/            # Original NEDC v6.0.0 (vendored, unchanged)
+│   └── v6.0.0/               # DO NOT MODIFY — reference implementation
+├── scripts/                  # Utility scripts for testing & validation
+│   ├── compare_parity.py     # Verify algorithmic equivalence
 │   └── ultimate_parity_test.py # Full validation suite
-├── tests/                # Comprehensive test suite
-├── k8s/                  # Kubernetes manifests
-└── docker-compose.yml    # Full stack with Redis & Prometheus
+├── tests/                    # Comprehensive test suite
+├── k8s/                      # Kubernetes manifests
+└── docker-compose.yml        # Full stack with Redis & Prometheus
 ```
 
 ## 🔬 Technical Details
 
 ### Input Formats
+
 - **CSV_BI**: Temple's annotation format (included examples)
 - **XML**: Alternative annotation format
 - **List files**: Batch processing of multiple files
 
-
-
 ### Caching & Performance
+
 - Redis caching provides >10x speedup for repeated evaluations
 - Prometheus metrics for production monitoring
 - WebSocket support for real-time progress updates
@@ -206,8 +218,8 @@ nedc-bench/
 The Temple University Hospital (TUH) EEG Corpus is the world's largest open EEG dataset. To access:
 
 1. Request access at https://isip.piconepress.com/projects/tuh_eeg/
-2. Email completed form to `help@nedcdata.org`
-3. Use provided credentials for rsync access
+1. Email completed form to `help@nedcdata.org`
+1. Use provided credentials for rsync access
 
 For testing NEDC-BENCH, we include sample data in `nedc_eeg_eval/v6.0.0/data/`.
 
@@ -216,6 +228,7 @@ For testing NEDC-BENCH, we include sample data in `nedc_eeg_eval/v6.0.0/data/`.
 If you use NEDC-BENCH in your research, please cite both:
 
 ### Original Algorithms (Temple University)
+
 ```bibtex
 @incollection{shah2021objective,
   title={Objective Evaluation Metrics for Automatic Classification of EEG Events},
@@ -228,6 +241,7 @@ If you use NEDC-BENCH in your research, please cite both:
 ```
 
 ### This Platform (NEDC-BENCH)
+
 ```bibtex
 @software{nedc_bench2025,
   title={NEDC-BENCH: A Modern Dual-Pipeline Platform for EEG Evaluation},
@@ -245,8 +259,8 @@ We welcome contributions! See [CONTRIBUTING.md](docs/developer/contributing.md) 
 
 ## License
 
-- **New code** (`nedc_bench/`, `alpha/`, `tests/`): Apache 2.0
-- **Original NEDC** (`nedc_eeg_eval/`): No explicit license; © Temple University
+- New code (`src/nedc_bench/`, `src/alpha/`, `tests/`): Apache 2.0
+- Original NEDC (`nedc_eeg_eval/`): No explicit license; © Temple University
 
 ## Support
 
@@ -254,6 +268,6 @@ We welcome contributions! See [CONTRIBUTING.md](docs/developer/contributing.md) 
 - 📚 [Documentation](docs/)
 - 🔬 [Original NEDC](https://www.isip.piconepress.com/)
 
----
+______________________________________________________________________
 
 *NEDC-BENCH bridges neuroscience research and production systems • Built on Temple University's foundational algorithms*

@@ -13,9 +13,8 @@ RUN pip install --no-cache-dir uv \
     && uv pip install --system --no-cache -e ".[api]"
 
 # Copy application code
-COPY nedc_bench/ ./nedc_bench/
+COPY src/ ./src/
 COPY nedc_eeg_eval/ ./nedc_eeg_eval/
-COPY alpha/ ./alpha/
 
 # Entrypoint for runtime configurability
 COPY docker-entrypoint.sh ./docker-entrypoint.sh

@@ -1,11 +1,15 @@
 # Phase 2: TAES Parity — Final Plan (Corrected)
+
 Status: Parity Achieved (counts-first; metrics within atol)
+
 ## Vertical Slice Goal: Beta TAES with Dual-Pipeline Validation
 
 ### Duration
+
 - 5 days (starts after Phase 1 completion)
 
 ### Success Criteria (TDD)
+
 - [ ] Beta TAES algorithm implemented with full type hints
 - [ ] Parity validator compares Alpha vs Beta results
 - [ ] 100% test coverage on Beta TAES
@@ -13,6 +17,7 @@ Status: Parity Achieved (counts-first; metrics within atol)
 - [ ] Performance benchmarks established
 
 ### Where We’re Diverging (and Fixes)
+
 - TAES semantics: Document assumed binary any-overlap; NEDC TAES is fractional (hit/miss/fa per ref). Fix: rewrite SSOT to fractional and multi-overlap sequencing.
 - Counts type: Document/tests assumed integer TP/FP/FN; NEDC reports floats (e.g., TP=46.41). Fix: treat counts as floats end-to-end; drop rounding to int.
 - Alpha parsing: Parser used integer extraction for TAES counts. Fix: parse TP/TN/FP/FN as floats; prefer `summary_taes.txt` where present.
@@ -21,6 +26,7 @@ Status: Parity Achieved (counts-first; metrics within atol)
 - TN handling: Document said TAES doesn’t compute TN. Fix: NEDC reports TN as counterpart hits; record for reporting; exclude from gating parity.
 
 ### Immediate Action Items (Code Changes Required)
+
 - nedc_bench/algorithms/taes.py
   - Make `TAESResult.true_positives/false_positives/false_negatives` floats.
   - Remove integer rounding; implement `calc_hf`, `ovlp_ref_seqs`, `ovlp_hyp_seqs`, and unmatched event handling per NEDC.
@@ -35,6 +41,7 @@ Status: Parity Achieved (counts-first; metrics within atol)
   - Update TAES unit tests to expect fractional counts and sequencing behavior; update parity tests to float counts-first comparisons.
 
 ### Ground Rules (from Phase 1 learnings)
+
 - Code lives under `nedc_bench/` (not `beta/`).
 - Integrate with `alpha/wrapper` `NEDCAlphaWrapper` for Alpha results.
 - Parse real CSV_BI from NEDC v6.0.0; reuse `tests/utils.py` helpers.
@@ -43,6 +50,7 @@ Status: Parity Achieved (counts-first; metrics within atol)
 - Alpha wrapper must parse TAES counts as floats (TP/TN/FP/FN) and prefer `summary_taes.txt` when present for higher precision.
 
 ### TAES Semantics (Single Source of Truth)
+
 - TAES is fractional, not binary. Per reference event, compute fractional contributions:
   - hit = overlap_duration / ref_duration
   - miss = 1 - hit
@@ -54,7 +62,7 @@ Status: Parity Achieved (counts-first; metrics within atol)
 - Per-label tallies are floats:
   - Targets = number of reference events (integer-valued but reported as float).
   - True Positives (TP) = Hits (float), False Negatives (FN) = Misses (float), False Positives (FP) = False Alarms (float).
-  - True Negatives (TN) reported by NEDC correspond to counterpart hits in two-class mapping (e.g., TN[SEIZ] = TP[BCKG]). TN is recorded for reporting, not used for gating parity.
+  - True Negatives (TN) reported by NEDC correspond to counterpart hits in two-class mapping (e.g., TN\[SEIZ\] = TP\[BCKG\]). TN is recorded for reporting, not used for gating parity.
 - Label mapping and case: normalize labels using the NEDC map (lowercased) and collapse to target classes (default: `seiz`, `bckg`). Do not treat raw labels as case-sensitive.
 - Empty sets: if `TP+FN == 0`, sensitivity is `0.0`; if `TP+FP == 0`, precision is `0.0`.
 - Metrics from counts (floats): sensitivity = TP/(TP+FN); precision = TP/(TP+FP); f1 = 2*TP/(2*TP+FP+FN).
@@ -62,40 +70,35 @@ Status: Parity Achieved (counts-first; metrics within atol)
   - NEDC prints per-file H/M/FA to 4 decimals in `summary_taes.txt` and aggregate counts to 2 decimals in `summary.txt`.
   - For parity, round Beta’s aggregated TP/FP/FN to 2 decimals to match Alpha; compare using absolute tolerance 1e-10. Do not use rtol.
 
----
+______________________________________________________________________
 
 ## Day 1: Data Models & CSV_BI Parsing
 
 ### Morning: Pydantic Models with CSV_BI Support
 
 #### Test First (TDD)
+
 ```python
 # tests/test_beta_models.py
 import pytest
 from pathlib import Path
 from nedc_bench.models.annotations import EventAnnotation, AnnotationFile
 
+
 def test_event_annotation_validation():
     """Test event annotation validation"""
     # Valid annotation
     event = EventAnnotation(
-        channel="TERM",
-        start_time=0.0,
-        stop_time=10.0,
-        label="seiz",
-        confidence=1.0
+        channel="TERM", start_time=0.0, stop_time=10.0, label="seiz", confidence=1.0
     )
     assert event.duration == 10.0
 
     # Invalid: stop < start
     with pytest.raises(ValidationError):
         EventAnnotation(
-            channel="TERM",
-            start_time=10.0,
-            stop_time=5.0,
-            label="seiz",
-            confidence=1.0
+            channel="TERM", start_time=10.0, stop_time=5.0, label="seiz", confidence=1.0
         )
+
 
 def test_csv_bi_parsing(test_data_dir):
     """Parse actual CSV_BI format files"""
@@ -116,6 +119,7 @@ def test_csv_bi_parsing(test_data_dir):
 ```
 
 #### Implementation
+
 ```python
 # nedc_bench/models/annotations.py
 from __future__ import annotations
@@ -124,8 +128,10 @@ from pydantic import BaseModel, Field, field_validator
 from typing import List, Literal
 import re
 
+
 class EventAnnotation(BaseModel):
     """Single annotation event matching CSV_BI format"""
+
     channel: Literal["TERM"] = "TERM"  # NEDC v6.0.0 uses TERM channel
     start_time: float = Field(ge=0, description="Start time in seconds")
     stop_time: float = Field(gt=0, description="Stop time in seconds")
@@ -137,19 +143,21 @@ class EventAnnotation(BaseModel):
         """Event duration in seconds"""
         return self.stop_time - self.start_time
 
-    @field_validator('stop_time')
+    @field_validator("stop_time")
     @classmethod
     def validate_times(cls, v: float, info) -> float:
         """Ensure stop_time > start_time"""
-        if 'start_time' in info.data and v <= info.data['start_time']:
-            raise ValueError(f'stop_time ({v}) must be > start_time ({info.data["start_time"]})')
+        if "start_time" in info.data and v <= info.data["start_time"]:
+            raise ValueError(
+                f'stop_time ({v}) must be > start_time ({info.data["start_time"]})'
+            )
         return v
 
     @classmethod
     def from_csv_bi_line(cls, line: str) -> EventAnnotation:
         """Parse from CSV_BI format line"""
         # Format: channel,start_time,stop_time,label,confidence
-        parts = line.strip().split(',')
+        parts = line.strip().split(",")
         if len(parts) != 5:
             raise ValueError(f"Invalid CSV_BI line: {line}")
 
@@ -158,11 +166,13 @@ class EventAnnotation(BaseModel):
             start_time=float(parts[1]),
             stop_time=float(parts[2]),
             label=parts[3],
-            confidence=float(parts[4])
+            confidence=float(parts[4]),
         )
+
 
 class AnnotationFile(BaseModel):
     """Complete annotation file matching CSV_BI structure"""
+
     version: str
     patient: str
     session: str
@@ -178,7 +188,7 @@ class AnnotationFile(BaseModel):
         metadata = {}
         events = []
 
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             for line in f:
                 line = line.strip()
 
@@ -187,15 +197,15 @@ class AnnotationFile(BaseModel):
                     continue
 
                 # Parse metadata comments
-                if line.startswith('#'):
-                    match = re.match(r'#\s*(\w+)\s*=\s*(.+)', line)
+                if line.startswith("#"):
+                    match = re.match(r"#\s*(\w+)\s*=\s*(.+)", line)
                     if match:
                         key, value = match.groups()
                         metadata[key] = value.strip()
                     continue
 
                 # Skip header line
-                if line.startswith('channel,'):
+                if line.startswith("channel,"):
                     continue
 
                 # Parse event line
@@ -207,15 +217,15 @@ class AnnotationFile(BaseModel):
                     print(f"Warning: Skipping malformed line in {file_path}: {e}")
 
         # Extract duration from metadata
-        duration_str = metadata.get('duration', '0.0 secs')
-        duration = float(duration_str.replace(' secs', ''))
+        duration_str = metadata.get("duration", "0.0 secs")
+        duration = float(duration_str.replace(" secs", ""))
 
         return cls(
-            version=metadata.get('version', 'unknown'),
-            patient=metadata.get('patient', 'unknown'),
-            session=metadata.get('session', 'unknown'),
+            version=metadata.get("version", "unknown"),
+            patient=metadata.get("patient", "unknown"),
+            session=metadata.get("session", "unknown"),
             events=events,
-            duration=duration
+            duration=duration,
         )
 ```
 
@@ -225,10 +235,12 @@ class AnnotationFile(BaseModel):
 # tests/test_beta_utils_integration.py
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent))
 
 from tests.utils import create_csv_bi_annotation, create_perfect_match_pair
 from nedc_bench.models.annotations import AnnotationFile
+
 
 def test_integration_with_existing_utils():
     """Beta models work with existing test utilities"""
@@ -258,10 +270,12 @@ def test_integration_with_existing_utils():
 ### Morning: Core TAES Algorithm (Fractional)
 
 #### Test First (TDD)
+
 ```python
 # tests/test_taes_algorithm.py
 from nedc_bench.algorithms.taes import TAESScorer
 from nedc_bench.models.annotations import EventAnnotation
+
 
 def test_taes_exact_match_fractional():
     ref = [
@@ -278,12 +292,14 @@ def test_taes_exact_match_fractional():
     assert result.false_negatives == 0.0
     assert result.f1_score == 1.0
 
+
 def test_taes_partial_overlap_fractional():
     ref = [EventAnnotation(start_time=0, stop_time=10, label="seiz", confidence=1.0)]
     hyp = [EventAnnotation(start_time=5, stop_time=15, label="seiz", confidence=1.0)]
     result = TAESScorer().score(ref, hyp)
     assert abs(result.true_positives - 0.5) <= 1e-12
     assert abs(result.false_negatives - 0.5) <= 1e-12
+
 
 def test_taes_many_to_many_sequences():
     # hyp spans two refs
@@ -299,6 +315,7 @@ def test_taes_many_to_many_sequences():
 ```
 
 #### Implementation Notes
+
 - Use float fields for TP/FP/FN (no integer rounding at any stage).
 - Implement `calc_hf` with the four canonical cases; cap FA at 1.0.
 - Implement `ovlp_ref_seqs` and `ovlp_hyp_seqs` for multi-overlap sequencing per NEDC.
@@ -321,6 +338,7 @@ def test_taes_empty_reference():
     assert result.false_negatives == 0.0
     assert result.sensitivity == 0.0  # 0/0 case
 
+
 def test_taes_empty_hypothesis():
     """Empty hypothesis means all references are FN"""
     ref = [EventAnnotation(start_time=0, stop_time=10, label="seiz", confidence=1.0)]
@@ -332,6 +350,7 @@ def test_taes_empty_hypothesis():
     assert result.false_negatives == 1.0
     assert result.false_positives == 0.0
     assert result.precision == 0.0  # 0/0 case
+
 
 def test_taes_label_mismatch():
     """Different labels should not match"""
@@ -351,6 +370,7 @@ def test_taes_label_mismatch():
 ### Morning: Comparison Infrastructure
 
 #### Test First (TDD)
+
 ```python
 # tests/test_parity_validator.py
 import pytest
@@ -358,6 +378,7 @@ from nedc_bench.validation.parity import ParityValidator, DiscrepancyReport
 from alpha.wrapper import NEDCAlphaWrapper
 import os
 from pathlib import Path
+
 
 def test_parity_exact_match(setup_nedc_env, test_data_dir):
     """Alpha and Beta produce identical results"""
@@ -380,24 +401,26 @@ def test_parity_exact_match(setup_nedc_env, test_data_dir):
 
     # Validate parity (compare fractional counts first, then recompute metrics)
     validator = ParityValidator(tolerance=1e-10)
-    report = validator.compare_taes(alpha_result['taes'], beta_result)
+    report = validator.compare_taes(alpha_result["taes"], beta_result)
 
     assert report.passed
     assert len(report.discrepancies) == 0
 
+
 def test_parity_with_discrepancy():
     """Detect and report discrepancies"""
     alpha_result = {
-        'true_positives': 19.0,
-        'false_positives': 2.0,
-        'false_negatives': 1.0,
-        'sensitivity': 0.95,
-        'precision': 0.9047619048,
-        'f1_score': 0.9275362319,
+        "true_positives": 19.0,
+        "false_positives": 2.0,
+        "false_negatives": 1.0,
+        "sensitivity": 0.95,
+        "precision": 0.9047619048,
+        "f1_score": 0.9275362319,
     }
 
     # Create Beta result with slight difference in FP to trigger discrepancy
     from nedc_bench.algorithms.taes import TAESResult
+
     beta_result = TAESResult(
         true_positives=19.0,
         false_positives=2.1,
@@ -409,10 +432,11 @@ def test_parity_with_discrepancy():
 
     assert not report.passed
     assert len(report.discrepancies) > 0
-    assert any(d.metric == 'precision' for d in report.discrepancies)
+    assert any(d.metric == "precision" for d in report.discrepancies)
 ```
 
 #### Implementation
+
 ```python
 # nedc_bench/validation/parity.py
 """
@@ -424,9 +448,11 @@ from typing import Dict, List, Any, Optional
 import numpy as np
 from nedc_bench.algorithms.taes import TAESResult
 
+
 @dataclass
 class DiscrepancyReport:
     """Single metric discrepancy between pipelines"""
+
     metric: str
     alpha_value: float
     beta_value: float
@@ -439,9 +465,11 @@ class DiscrepancyReport:
         """Check if difference is within acceptable tolerance"""
         return self.absolute_difference <= self.tolerance
 
+
 @dataclass
 class ValidationReport:
     """Complete validation report"""
+
     algorithm: str
     passed: bool
     discrepancies: List[DiscrepancyReport]
@@ -466,6 +494,7 @@ class ValidationReport:
 
         return "\n".join(lines)
 
+
 class ParityValidator:
     """Validate parity between Alpha and Beta pipeline results"""
 
@@ -478,9 +507,9 @@ class ParityValidator:
         """
         self.tolerance = tolerance
 
-    def compare_taes(self,
-                     alpha_result: Dict[str, Any],
-                     beta_result: TAESResult) -> ValidationReport:
+    def compare_taes(
+        self, alpha_result: Dict[str, Any], beta_result: TAESResult
+    ) -> ValidationReport:
         """
         Compare TAES results from both pipelines
 
@@ -495,12 +524,12 @@ class ParityValidator:
 
         # Define metrics to compare (counts-first, then floats)
         metrics_map = {
-            'sensitivity': beta_result.sensitivity,
-            'precision': beta_result.precision,
-            'f1_score': beta_result.f1_score,
-            'true_positives': beta_result.true_positives,
-            'false_positives': beta_result.false_positives,
-            'false_negatives': beta_result.false_negatives
+            "sensitivity": beta_result.sensitivity,
+            "precision": beta_result.precision,
+            "f1_score": beta_result.f1_score,
+            "true_positives": beta_result.true_positives,
+            "false_positives": beta_result.false_positives,
+            "false_negatives": beta_result.false_negatives,
         }
 
         beta_metrics = {}
@@ -516,14 +545,18 @@ class ParityValidator:
             # Compare ints exactly
             if metric_name in ("true_positives", "false_positives", "false_negatives"):
                 if int(alpha_value) != int(beta_value):
-                    discrepancies.append(DiscrepancyReport(
-                        metric=metric_name,
-                        alpha_value=float(alpha_value),
-                        beta_value=float(beta_value),
-                        absolute_difference=abs(float(alpha_value) - float(beta_value)),
-                        relative_difference=0.0,
-                        tolerance=0.0
-                    ))
+                    discrepancies.append(
+                        DiscrepancyReport(
+                            metric=metric_name,
+                            alpha_value=float(alpha_value),
+                            beta_value=float(beta_value),
+                            absolute_difference=abs(
+                                float(alpha_value) - float(beta_value)
+                            ),
+                            relative_difference=0.0,
+                            tolerance=0.0,
+                        )
+                    )
                 continue
 
             # Floats: absolute tolerance only
@@ -533,26 +566,28 @@ class ParityValidator:
                 abs_diff = abs(alpha_float - beta_float)
                 rel_diff = abs_diff / max(abs(alpha_float), 1e-16)
                 if abs_diff > self.tolerance:
-                    discrepancies.append(DiscrepancyReport(
-                        metric=metric_name,
-                        alpha_value=alpha_float,
-                        beta_value=beta_float,
-                        absolute_difference=abs_diff,
-                        relative_difference=rel_diff,
-                        tolerance=self.tolerance
-                    ))
+                    discrepancies.append(
+                        DiscrepancyReport(
+                            metric=metric_name,
+                            alpha_value=alpha_float,
+                            beta_value=beta_float,
+                            absolute_difference=abs_diff,
+                            relative_difference=rel_diff,
+                            tolerance=self.tolerance,
+                        )
+                    )
 
         return ValidationReport(
             algorithm="TAES",
             passed=len(discrepancies) == 0,
             discrepancies=discrepancies,
             alpha_metrics=alpha_result,
-            beta_metrics=beta_metrics
+            beta_metrics=beta_metrics,
         )
 
-    def compare_all_algorithms(self,
-                               alpha_results: Dict[str, Dict],
-                               beta_results: Dict[str, Any]) -> Dict[str, ValidationReport]:
+    def compare_all_algorithms(
+        self, alpha_results: Dict[str, Dict], beta_results: Dict[str, Any]
+    ) -> Dict[str, ValidationReport]:
         """
         Compare all algorithm results
 
@@ -562,10 +597,9 @@ class ParityValidator:
         reports = {}
 
         # TAES comparison
-        if 'taes' in alpha_results and 'taes' in beta_results:
-            reports['taes'] = self.compare_taes(
-                alpha_results['taes'],
-                beta_results['taes']
+        if "taes" in alpha_results and "taes" in beta_results:
+            reports["taes"] = self.compare_taes(
+                alpha_results["taes"], beta_results["taes"]
             )
 
         # Future: Add other algorithms (epoch, overlap, dpalign, ira)
@@ -585,6 +619,7 @@ from nedc_bench.orchestration.dual_pipeline import BetaPipeline
 from alpha.wrapper import NEDCAlphaWrapper
 import os
 from pathlib import Path
+
 
 @pytest.mark.integration
 def test_full_pipeline_parity(setup_nedc_env, test_data_dir):
@@ -609,7 +644,7 @@ def test_full_pipeline_parity(setup_nedc_env, test_data_dir):
         beta_result = beta_pipeline.evaluate_taes(ref_file, hyp_file)
 
         # Validate
-        report = validator.compare_taes(alpha_result['taes'], beta_result)
+        report = validator.compare_taes(alpha_result["taes"], beta_result)
 
         if not report.passed:
             print(f"Failed on {ref_file.name}:")
@@ -624,10 +659,12 @@ def test_full_pipeline_parity(setup_nedc_env, test_data_dir):
 ### Morning: Orchestrator Implementation
 
 #### Test First (TDD)
+
 ```python
 # tests/test_dual_pipeline.py
 import pytest
 from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+
 
 @pytest.mark.integration
 def test_dual_pipeline_execution(setup_nedc_env, test_data_dir):
@@ -638,15 +675,14 @@ def test_dual_pipeline_execution(setup_nedc_env, test_data_dir):
     hyp_file = test_data_dir / "csv" / "hyp" / "00000258_s001.csv_bi"
 
     result = orchestrator.evaluate(
-        ref_file=str(ref_file),
-        hyp_file=str(hyp_file),
-        algorithm="taes"
+        ref_file=str(ref_file), hyp_file=str(hyp_file), algorithm="taes"
     )
 
     assert result.alpha_result is not None
     assert result.beta_result is not None
     assert result.parity_report is not None
     assert result.parity_passed
+
 
 def test_dual_pipeline_with_list_files(setup_nedc_env, test_data_dir):
     """Test with list files like Alpha pipeline"""
@@ -657,9 +693,7 @@ def test_dual_pipeline_with_list_files(setup_nedc_env, test_data_dir):
 
     orchestrator = DualPipelineOrchestrator()
     result = orchestrator.evaluate_lists(
-        ref_list=str(ref_list),
-        hyp_list=str(hyp_list),
-        algorithm="taes"
+        ref_list=str(ref_list), hyp_list=str(hyp_list), algorithm="taes"
     )
 
     assert result.parity_passed
@@ -667,6 +701,7 @@ def test_dual_pipeline_with_list_files(setup_nedc_env, test_data_dir):
 ```
 
 #### Implementation
+
 ```python
 # nedc_bench/orchestration/dual_pipeline.py
 """
@@ -685,9 +720,11 @@ import os
 from nedc_bench.models.annotations import AnnotationFile
 from nedc_bench.validation.parity import ParityValidator, ValidationReport
 
+
 @dataclass
 class DualPipelineResult:
     """Results from dual pipeline execution"""
+
     alpha_result: Dict[str, Any]
     beta_result: Any  # Algorithm-specific result object
     parity_report: ValidationReport
@@ -702,6 +739,7 @@ class DualPipelineResult:
             return self.execution_time_alpha / self.execution_time_beta
         return 0.0
 
+
 class BetaPipeline:
     """Beta pipeline runner"""
 
@@ -712,6 +750,7 @@ class BetaPipeline:
 
         scorer = TAESScorer()
         return scorer.score(ref_annotations.events, hyp_annotations.events)
+
 
 class DualPipelineOrchestrator:
     """Orchestrate execution of both pipelines"""
@@ -727,10 +766,9 @@ class DualPipelineOrchestrator:
         self.beta_pipeline = BetaPipeline()
         self.validator = ParityValidator(tolerance=tolerance)
 
-    def evaluate(self,
-                 ref_file: str,
-                 hyp_file: str,
-                 algorithm: str = "taes") -> DualPipelineResult:
+    def evaluate(
+        self, ref_file: str, hyp_file: str, algorithm: str = "taes"
+    ) -> DualPipelineResult:
         """
         Run both pipelines on single file pair
 
@@ -753,8 +791,7 @@ class DualPipelineOrchestrator:
         start_beta = time.perf_counter()
         if algorithm == "taes":
             beta_result = self.beta_pipeline.evaluate_taes(
-                Path(ref_file),
-                Path(hyp_file)
+                Path(ref_file), Path(hyp_file)
             )
         else:
             raise ValueError(f"Algorithm {algorithm} not yet implemented in Beta")
@@ -763,8 +800,7 @@ class DualPipelineOrchestrator:
         # Validate parity
         if algorithm == "taes":
             parity_report = self.validator.compare_taes(
-                alpha_result['taes'],
-                beta_result
+                alpha_result["taes"], beta_result
             )
         else:
             raise ValueError(f"Parity validation for {algorithm} not implemented")
@@ -775,13 +811,12 @@ class DualPipelineOrchestrator:
             parity_report=parity_report,
             parity_passed=parity_report.passed,
             execution_time_alpha=time_alpha,
-            execution_time_beta=time_beta
+            execution_time_beta=time_beta,
         )
 
-    def evaluate_lists(self,
-                       ref_list: str,
-                       hyp_list: str,
-                       algorithm: str = "taes") -> Dict[str, Any]:
+    def evaluate_lists(
+        self, ref_list: str, hyp_list: str, algorithm: str = "taes"
+    ) -> Dict[str, Any]:
         """
         Run both pipelines on list files
 
@@ -797,36 +832,38 @@ class DualPipelineOrchestrator:
         ref_files = []
         hyp_files = []
 
-        with open(ref_list, 'r') as f:
+        with open(ref_list, "r") as f:
             ref_files = [line.strip() for line in f if line.strip()]
 
-        with open(hyp_list, 'r') as f:
+        with open(hyp_list, "r") as f:
             hyp_files = [line.strip() for line in f if line.strip()]
 
         assert len(ref_files) == len(hyp_files), "List files must have same length"
 
         # Process each pair
         results = {
-            'file_results': [],
-            'all_passed': True,
-            'total_files': len(ref_files)
+            "file_results": [],
+            "all_passed": True,
+            "total_files": len(ref_files),
         }
 
         for ref_file, hyp_file in zip(ref_files, hyp_files):
             result = self.evaluate(ref_file, hyp_file, algorithm)
-            results['file_results'].append({
-                'ref': ref_file,
-                'hyp': hyp_file,
-                'parity_passed': result.parity_passed,
-                'speedup': result.speedup
-            })
+            results["file_results"].append(
+                {
+                    "ref": ref_file,
+                    "hyp": hyp_file,
+                    "parity_passed": result.parity_passed,
+                    "speedup": result.speedup,
+                }
+            )
 
             if not result.parity_passed:
-                results['all_passed'] = False
+                results["all_passed"] = False
                 print(f"❌ Parity failed for {Path(ref_file).name}")
                 print(result.parity_report)
 
-        results['parity_passed'] = results['all_passed']
+        results["parity_passed"] = results["all_passed"]
         return results
 ```
 
@@ -840,9 +877,11 @@ from dataclasses import dataclass
 from typing import List, Dict, Any
 import statistics
 
+
 @dataclass
 class PerformanceMetrics:
     """Performance metrics for algorithm execution"""
+
     algorithm: str
     pipeline: str  # 'alpha' or 'beta'
     execution_times: List[float]
@@ -857,7 +896,11 @@ class PerformanceMetrics:
 
     @property
     def std_dev(self) -> float:
-        return statistics.stdev(self.execution_times) if len(self.execution_times) > 1 else 0.0
+        return (
+            statistics.stdev(self.execution_times)
+            if len(self.execution_times) > 1
+            else 0.0
+        )
 
     @property
     def min_time(self) -> float:
@@ -867,24 +910,20 @@ class PerformanceMetrics:
     def max_time(self) -> float:
         return max(self.execution_times)
 
+
 class PerformanceMonitor:
     """Monitor and compare pipeline performance"""
 
     def __init__(self):
         self.metrics: Dict[str, PerformanceMetrics] = {}
 
-    def record_execution(self,
-                        algorithm: str,
-                        pipeline: str,
-                        execution_time: float):
+    def record_execution(self, algorithm: str, pipeline: str, execution_time: float):
         """Record an execution time"""
         key = f"{algorithm}_{pipeline}"
 
         if key not in self.metrics:
             self.metrics[key] = PerformanceMetrics(
-                algorithm=algorithm,
-                pipeline=pipeline,
-                execution_times=[]
+                algorithm=algorithm, pipeline=pipeline, execution_times=[]
             )
 
         self.metrics[key].execution_times.append(execution_time)
@@ -906,7 +945,9 @@ class PerformanceMonitor:
         lines = ["Performance Report", "=" * 50]
 
         for key, metrics in self.metrics.items():
-            lines.append(f"\n{metrics.algorithm.upper()} - {metrics.pipeline.capitalize()}")
+            lines.append(
+                f"\n{metrics.algorithm.upper()} - {metrics.pipeline.capitalize()}"
+            )
             lines.append(f"  Mean: {metrics.mean_time:.4f}s")
             lines.append(f"  Median: {metrics.median_time:.4f}s")
             lines.append(f"  Std Dev: {metrics.std_dev:.4f}s")
@@ -938,6 +979,7 @@ from pathlib import Path
 from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
 from nedc_bench.orchestration.performance import PerformanceMonitor
 
+
 @pytest.mark.integration
 class TestPhase2Integration:
     """Full Phase 2 integration test suite"""
@@ -963,9 +1005,7 @@ class TestPhase2Integration:
             assert ref_file.stem == hyp_file.stem
 
             result = orchestrator.evaluate(
-                str(ref_file),
-                str(hyp_file),
-                algorithm="taes"
+                str(ref_file), str(hyp_file), algorithm="taes"
             )
 
             # Record performance
@@ -1003,7 +1043,8 @@ class TestPhase2Integration:
 
         # Test malformed CSV_BI
         import tempfile
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv_bi') as f:
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv_bi") as f:
             f.write("invalid,csv,format\n")
             f.flush()
 
@@ -1065,6 +1106,7 @@ class TestPhase2Integration:
 # tests/test_phase2_complete.py
 """Final validation that Phase 2 is complete"""
 
+
 def test_phase2_deliverables():
     """Verify all Phase 2 deliverables exist"""
     from pathlib import Path
@@ -1087,6 +1129,7 @@ def test_phase2_deliverables():
 
     print("✅ All Phase 2 deliverables present")
 
+
 def test_phase2_criteria():
     """Verify success criteria met"""
     import subprocess
@@ -1095,7 +1138,7 @@ def test_phase2_criteria():
     result = subprocess.run(
         ["pytest", "tests/test_taes_*.py", "--cov=nedc_bench.algorithms.taes"],
         capture_output=True,
-        text=True
+        text=True,
     )
 
     # Check for 100% coverage
@@ -1107,26 +1150,32 @@ def test_phase2_criteria():
 ## Summary of Corrections Made
 
 ### 1. TAES Semantics — Binary → Fractional ✅
+
 - Replaced any-overlap/binary semantics with NEDC’s fractional scoring (hit/miss/fa per reference) and explicit multi-overlap sequencing.
 - Counts (TP/FP/FN) are floats; removed integer assumptions and rounding.
 - Clarified TN as counterpart hits in two-class mapping; record for reporting; exclude from gating parity.
 
 ### 2. Alpha Wrapper Parsing — Int → Float ✅
+
 - Update `TAESParser` to parse TP/TN/FP/FN as floats and prefer `summary_taes.txt` where present for higher precision before aggregating.
 - Keep counts-first parity by comparing fractional counts first; recompute metrics centrally from those floats.
 
 ### 3. Rounding & Tolerance Alignment ✅
+
 - Lock rounding to NEDC presentation: 4 decimals per-file, 2 decimals aggregate in summary; compare with absolute tolerance 1e-10.
 
 ### 4. Label Mapping Normalization ✅
+
 - Normalize labels via NEDC map (lowercase) to `seiz`/`bckg` prior to scoring; do not rely on raw case-sensitive labels.
 
 ### 5. Tests & Orchestration ✅
+
 - Update unit tests to assert fractional counts and sequencing behavior.
 - Parity tests compare fractional TP/FP/FN then recomputed metrics; TN optional.
 - Orchestrator unchanged; ensure Beta rounds aggregated counts to 2 decimals before comparison for exact parity.
 
 ## Definition of Done
+
 - Beta TAES fully implements fractional scoring (calc_hf + multi-overlap) with full type hints.
 - 100% unit test coverage on Beta TAES core.
 - Alpha wrapper TAES parser returns floats for TP/TN/FP/FN; Beta parity validator compares fractional counts first, then recomputed metrics; absolute tolerance 1e-10 with rounding alignment.
@@ -1134,7 +1183,8 @@ def test_phase2_criteria():
 - Documentation reflects NEDC semantics and rounding behavior.
 
 ## Next Phase Entry Criteria
+
 - TAES parity proven on all 30 golden files
 - Validation framework operational (reports, tolerances, CI)
 - Dual-pipeline orchestration in place and exercised by tests
-\n[Archived] TAES is at exact parity; see docs/FINAL_PARITY_RESULTS.md.
+  \\n\[Archived\] TAES is at exact parity; see docs/FINAL_PARITY_RESULTS.md.

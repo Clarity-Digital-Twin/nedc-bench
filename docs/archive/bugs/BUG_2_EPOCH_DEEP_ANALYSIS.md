@@ -3,6 +3,7 @@
 ## Problem Statement
 
 The Epoch algorithm test fails with:
+
 ```
 'EpochResult' object has no attribute 'true_positives'
 ```
@@ -18,11 +19,11 @@ class EpochResult:
     confusion_matrix: dict[str, dict[str, int]]
 
     # Per-label counts (NOT TP/FP/FN!)
-    hits: dict[str, int]          # Correct classifications
-    misses: dict[str, int]        # Missed classifications
-    false_alarms: dict[str, int] # False classifications
-    insertions: dict[str, int]    # From NULL_CLASS
-    deletions: dict[str, int]    # To NULL_CLASS
+    hits: dict[str, int]  # Correct classifications
+    misses: dict[str, int]  # Missed classifications
+    false_alarms: dict[str, int]  # False classifications
+    insertions: dict[str, int]  # From NULL_CLASS
+    deletions: dict[str, int]  # To NULL_CLASS
 ```
 
 ### 2. What The Test Expects
@@ -38,6 +39,7 @@ if "seiz" in result.true_positives:  # ❌ Doesn't exist!
 ### 3. How NEDC Calculates TP/FP/FN from Confusion Matrix
 
 From NEDC v6.0.0 summary output:
+
 ```
 NEDC Epoch Confusion Matrix
 Ref/Hyp:    seiz         bckg
@@ -46,6 +48,7 @@ bckg:    18816.00    5968398.00
 ```
 
 The confusion matrix interpretation:
+
 - `matrix[ref][hyp]` = count of epochs with reference label `ref` classified as `hyp`
 - **True Positives (seiz)**: `matrix["seiz"]["seiz"]` = 33704
 - **False Positives (seiz)**: `matrix["bckg"]["seiz"]` = 18816
@@ -55,6 +58,7 @@ The confusion matrix interpretation:
 ### 4. The Relationship Between Confusion Matrix and Hits/Misses/FA
 
 In NEDC terminology:
+
 - **Hits**: Correct classifications for a label = TP
 - **Misses**: Reference events not detected = FN
 - **False Alarms**: Hypothesis events with no reference = FP
@@ -66,13 +70,14 @@ But for epoch scoring, everything comes from the confusion matrix!
 ### How Epoch Scoring Works
 
 1. **Sampling**: Events are sampled at fixed intervals (epoch_duration)
-2. **Classification**: Each epoch gets a label (seiz, bckg, null)
-3. **Compression**: Consecutive duplicates are compressed
-4. **Matrix Building**: Build confusion matrix from compressed sequences
+1. **Classification**: Each epoch gets a label (seiz, bckg, null)
+1. **Compression**: Consecutive duplicates are compressed
+1. **Matrix Building**: Build confusion matrix from compressed sequences
 
 ### The Critical Insight
 
 Epoch scoring is fundamentally different from event-based scoring:
+
 - Events → Epochs → Labels → Confusion Matrix
 - Not direct event-to-event comparison
 
@@ -141,6 +146,7 @@ elif algo_name == "epoch":
 ## Expected Values from Alpha
 
 From the NEDC output:
+
 ```
 EPOCH SCORING:
 - True Positives: 33704
@@ -157,24 +163,27 @@ I'll implement **Option 1** - add properties to EpochResult. This makes the inte
 ## Test Plan
 
 1. Add TP/FP/FN properties to EpochResult
-2. Run single file test to verify calculation
-3. Run full parity test
-4. Verify matches Alpha exactly
+1. Run single file test to verify calculation
+1. Run full parity test
+1. Verify matches Alpha exactly
 
 ## Code Changes Required
 
 1. **File**: `nedc_bench/algorithms/epoch.py`
+
    - Add `@property` methods for true_positives, false_positives, false_negatives
 
-2. **File**: `scripts/ultimate_parity_test.py`
+1. **File**: `scripts/ultimate_parity_test.py`
+
    - Keep existing test code (will work with properties)
 
 ## Verification Metrics
 
 Must match Alpha exactly:
+
 - TP = 33704 (±0.01)
 - FP = 18816 (±0.01)
 - FN = 250459 (±0.01)
 - Sensitivity = 11.8608% (±0.01%)
 - FA/24h = 259.2257 (±0.01)
-\n[Archived] See docs/FINAL_PARITY_RESULTS.md and docs/EPOCH_BUG_FIXED.md for current status.
+  \\n\[Archived\] See docs/FINAL_PARITY_RESULTS.md and docs/EPOCH_BUG_FIXED.md for current status.

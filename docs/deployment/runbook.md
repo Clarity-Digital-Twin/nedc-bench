@@ -30,7 +30,7 @@ This runbook covers day‑2 operations for the NEDC Bench API in Docker Compose 
   - `nedc_evaluation_duration_seconds` (latency)
   - `nedc_parity_failures_total` (should be ~0)
   - `nedc_active_evaluations` (current load)
-  
+
 In production clusters, install Redis, Prometheus, and Grafana via official Helm charts. Keep API manifests in this repo and manage dashboards/alerts alongside your platform configuration.
 
 ## Troubleshooting

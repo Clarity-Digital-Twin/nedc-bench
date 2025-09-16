@@ -1,196 +1,117 @@
-# Migration Plan: Moving to src/ Structure
+# Migration Plan: Move to src/ Layout (Low-Risk Scope)
+
+This plan migrates both `nedc_bench/` to `src/nedc_bench/` and `alpha/` to `src/alpha/`. `nedc_eeg_eval/` remains at repo root. Imports stay the same, CI remains unchanged, and Docker needs a small COPY tweak.
 
 ## Target Structure
 
 ```
 nedc-bench/
-├── nedc_eeg_eval/        # STAYS AT ROOT (vendored, untouched)
+├── nedc_eeg_eval/         # STAYS AT ROOT (vendored, untouched)
 ├── src/
-│   ├── nedc_bench/       # Our clean implementation (beta pipeline)
-│   │   ├── __init__.py
-│   │   ├── algorithms/
-│   │   ├── api/
-│   │   ├── models/
-│   │   ├── orchestration/
-│   │   ├── utils/
-│   │   └── validation/
-│   ├── alpha/            # Legacy NEDC wrapper (alpha pipeline)
-│   │   ├── __init__.py
-│   │   └── wrapper/
-│   └── cli/              # NEW: Command-line interface
-│       ├── __init__.py
-│       └── main.py
-├── tests/                # Stays at root
-├── scripts/              # Stays at root (dev scripts)
-├── data/                 # Stays at root
-└── pyproject.toml        # Updated to reference src/
+│   ├── nedc_bench/        # Our package (moved)
+│       ├── algorithms/
+│       ├── api/
+│       ├── models/
+│       ├── orchestration/
+│       ├── utils/
+│       └── validation/
+│   └── alpha/             # Alpha wrapper (moved)
+├── tests/
+├── scripts/
+└── pyproject.toml         # Updated Hatch wheel target
 ```
 
-## Why This Structure Works
+## Preconditions
 
-1. **Vendored code clearly separated**: `nedc_eeg_eval` at root = "don't touch this"
-1. **Our code in src/**: Standard Python practice
-1. **Clean imports**: `from nedc_bench.algorithms import TAESScorer` (no src prefix needed)
-1. **Easy to package**: Can distribute without vendored code if needed
+- `make lint typecheck test` passes on main
+- `docker build -f Dockerfile.api .` succeeds
 
-## Migration Steps
+## Step-by-step
 
-### Step 1: Create src/ and move our code
+1. Move code
 
 ```bash
-# Create new structure
 mkdir -p src
-
-# Move our implementations
-mv nedc_bench src/
-mv alpha src/
-
-# Verify nothing broke
-make test
+git mv nedc_bench src/
+git mv alpha src/
 ```
 
-### Step 2: Update pyproject.toml
+2. Update packaging (Hatch)
+
+Edit `pyproject.toml`:
 
 ```toml
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["nedc_bench*", "alpha*", "cli*"]
+[tool.hatch.build.targets.wheel]
+packages = [
+  { include = "nedc_bench", from = "src" },
+  { include = "alpha", from = "src" }
+]
 
-[tool.setuptools.package-dir]
-"" = "src"
+[tool.hatch.version]
+path = "src/nedc_bench/__init__.py"
 ```
 
-### Step 3: Fix imports in moved files
+3. Update Dockerfile.api
 
-```python
-# Old import in alpha/wrapper.py:
-sys.path.append(os.path.join(os.path.dirname(__file__), "../nedc_eeg_eval/v6.0.0/lib"))
+Change the application copy step:
 
-# New import:
-sys.path.append(
-    os.path.join(os.path.dirname(__file__), "../../nedc_eeg_eval/v6.0.0/lib")
-)
+```dockerfile
+- COPY nedc_bench/ ./nedc_bench/
++ COPY src/ ./src/
+  COPY nedc_eeg_eval/ ./nedc_eeg_eval/
+  COPY alpha/ ./alpha/
 ```
 
-### Step 4: Add compatibility layer (temporary)
+No change to entrypoint. The package is installed with `-e .[api]` so `nedc_bench` is importable.
 
-```python
-# nedc_bench.py at root (temporary compatibility)
-"""Compatibility layer - will be removed in v2.0"""
-import warnings
+4. Update Makefile (mypy target)
 
-warnings.warn(
-    "Importing from root is deprecated. Use 'from nedc_bench' instead.",
-    DeprecationWarning,
-)
-from src.nedc_bench import *
+Prefer the package target to path sensitivity:
+
+```make
+- mypy nedc_bench/
++ mypy -p nedc_bench
 ```
 
-### Step 5: Create CLI
+5. Optional (local dev convenience)
 
-```python
-# src/cli/main.py
-import typer
-from pathlib import Path
-from nedc_bench.algorithms import TAESScorer, OverlapScorer
-from nedc_bench.models import AnnotationFile
-
-app = typer.Typer(name="nedc-bench", help="Clinical-grade EEG evaluation platform")
-
-
-@app.command()
-def evaluate(
-    reference: Path = typer.Argument(..., help="Reference CSV_BI file"),
-    hypothesis: Path = typer.Argument(..., help="Hypothesis CSV_BI file"),
-    algorithm: str = typer.Option("taes", help="Scoring algorithm"),
-    output_format: str = typer.Option("json", help="Output format"),
-):
-    """Evaluate seizure detection performance"""
-    ref = AnnotationFile.from_csv_bi(reference)
-    hyp = AnnotationFile.from_csv_bi(hypothesis)
-
-    scorer = {
-        "taes": TAESScorer,
-        "overlap": OverlapScorer,
-    }[algorithm]()
-
-    result = scorer.score(ref, hyp)
-    print(result.to_json() if output_format == "json" else result)
-
-
-@app.command()
-def validate(
-    reference: Path = typer.Argument(...),
-    hypothesis: Path = typer.Argument(...),
-    pipeline: str = typer.Option("dual", help="Pipeline to run (alpha/beta/dual)"),
-):
-    """Validate parity between pipelines"""
-    # Implementation here
-    pass
-```
-
-### Step 6: Update entry points
+Allow `pytest` without install by adding to `pyproject.toml`:
 
 ```toml
-# pyproject.toml
-[project.scripts]
-nedc-bench = "cli.main:app"
+[tool.pytest.ini_options]
+pythonpath = ["src"]
 ```
 
-## Benefits After Migration
-
-1. **Clean separation**: Vendored vs our code is obvious
-1. **Standard structure**: New developers recognize src/ pattern
-1. **Better tooling**: Most Python tools expect src/ layout
-1. **CLI included**: `nedc-bench evaluate ref.csv hyp.csv`
-1. **Unchanged functionality**: All existing code still works
-
-## Testing the Migration
+## Validation
 
 ```bash
-# After moving files
-cd /path/to/nedc-bench
-
-# Reinstall in development mode
-pip install -e .
-
-# Run tests to verify nothing broke
+uv pip install -e .
+make lint
+make typecheck
 make test
 
-# Test CLI
-nedc-bench --help
-nedc-bench evaluate data/csv_bi_parity/csv_bi_export_clean/ref/aaaaaajy_s001_t000.csv_bi \
-                    data/csv_bi_parity/csv_bi_export_clean/hyp/aaaaaajy_s001_t000.csv_bi \
-                    --algorithm taes
-
-# Test imports
-python -c "from nedc_bench.algorithms import TAESScorer; print('✓ Import works')"
-python -c "from alpha.wrapper import NEDCAlphaWrapper; print('✓ Import works')"
+docker build -f Dockerfile.api .
 ```
 
-## Rollback Plan
-
-If something goes wrong:
+## Rollback
 
 ```bash
-# Move everything back
-mv src/nedc_bench ./
-mv src/alpha ./
-rm -rf src/
-
-# Restore original pyproject.toml
-git checkout pyproject.toml
-
-# Verify
-make test
+git mv src/nedc_bench ./
+git checkout -- pyproject.toml Dockerfile.api Makefile
 ```
 
-## Timeline
+## Notes
 
-- **Hour 1**: Move files, update pyproject.toml
-- **Hour 2**: Fix any broken imports
-- **Hour 3**: Add CLI
-- **Hour 4**: Test everything
-- **Hour 5**: Update documentation
+- `alpha/` remains at repo root; no path changes needed because Alpha uses env (`NEDC_NFC`, `PYTHONPATH`).
+- Imports remain absolute and unchanged (`from nedc_bench...`).
+- CI workflows require no changes (they already do `uv pip install -e .`).
 
-Total: ~5 hours of work for a much cleaner structure
+## Phase 2 (Optional, later): Move `alpha/`
+
+If/when desired:
+
+- Move `alpha/` → `src/alpha/`
+- Either package `alpha` too (add `{ include = "alpha", from = "src" }`) or export `PYTHONPATH=src` in Docker and dev environments
+- Update Docker copy to include `src/`
+
+Keep this separate from the `nedc_bench` move to minimize risk.

@@ -7,16 +7,19 @@ TAES is the most clinically relevant scoring algorithm in the NEDC suite, design
 ## Algorithm Description
 
 ### Core Concept
+
 TAES evaluates event-level agreement using fractional scoring:
+
 - **Partial credit** for events that partially overlap in time
 - **Multi-overlap sequencing** for complex overlap scenarios
 - **Fractional penalties** based on duration ratios
 
 ### Key Features
+
 1. **Fractional Scoring**: Returns float values (e.g., TP=133.84)
-2. **Duration-Aware**: Penalties proportional to event durations
-3. **Clinical Focus**: Optimized for seizure detection evaluation
-4. **No Confusion Matrix**: Direct hit/miss/FA calculation only
+1. **Duration-Aware**: Penalties proportional to event durations
+1. **Clinical Focus**: Optimized for seizure detection evaluation
+1. **No Confusion Matrix**: Direct hit/miss/FA calculation only
 
 ## Implementation Details
 
@@ -38,29 +41,35 @@ hyp:  <----------------->  # 1 long detection
 ### Processing Logic
 
 1. **For each reference event**:
+
    - Find all overlapping hypotheses with matching label
    - Determine overlap type (hyp extends vs ref extends)
    - Apply appropriate scoring function
 
-2. **Two overlap cases**:
+1. **Two overlap cases**:
 
    **Case A: `ovlp_ref_seqs` (hypothesis extends beyond reference)**
+
    ```
    ref:     <----->
    hyp:  <----------->
    ```
+
    - Calculate fractional hit/FA for primary overlap
    - Add +1.0 miss for each additional ref overlapped
 
    **Case B: `ovlp_hyp_seqs` (reference extends beyond hypothesis)**
+
    ```
    ref:  <----------->
    hyp:     <----->
    ```
+
    - Multiple hyps can contribute to single ref
    - Each hyp adds to hit and reduces miss
 
-3. **Unmatched events**:
+1. **Unmatched events**:
+
    - Any reference event with no overlapping hypothesis adds +1.0 to miss
    - Any hypothesis event with no overlapping reference adds +1.0 to false alarms
 
@@ -107,21 +116,13 @@ scorer = TAESScorer(target_label="seiz")
 # Define events
 reference = [
     EventAnnotation(
-        channel="TERM",
-        start_time=100.0,
-        stop_time=120.0,
-        label="seiz",
-        confidence=1.0
+        channel="TERM", start_time=100.0, stop_time=120.0, label="seiz", confidence=1.0
     )
 ]
 
 hypothesis = [
     EventAnnotation(
-        channel="TERM",
-        start_time=105.0,
-        stop_time=125.0,
-        label="seiz",
-        confidence=0.9
+        channel="TERM", start_time=105.0, stop_time=125.0, label="seiz", confidence=0.9
     )
 ]
 
@@ -135,24 +136,28 @@ print(f"FN: {result.false_negatives:.2f}")  # FN: 0.25
 ## Critical Implementation Notes
 
 ### Bug History
+
 1. **Multi-overlap penalty**: Initially missed the +1.0 penalty for each additional reference
-2. **Flag tracking**: Proper boolean flag management for processed events
-3. **Fractional boundaries**: Exact NEDC calc_hf formula matching
+1. **Flag tracking**: Proper boolean flag management for processed events
+1. **Fractional boundaries**: Exact NEDC calc_hf formula matching
 
 ### Performance Characteristics
+
 - **Time Complexity**: O(n × m) where n=refs, m=hyps
 - **Space Complexity**: O(n + m) for flag arrays
-- **Typical Runtime**: <100ms for clinical datasets
+- **Typical Runtime**: \<100ms for clinical datasets
 
 ## When to Use TAES
 
 ### Recommended for:
+
 - Clinical seizure detection evaluation
 - Variable-duration event scoring
 - Systems where partial detection has value
 - FDA submission and regulatory compliance
 
 ### Not recommended for:
+
 - Fixed-window classification tasks
 - Multi-class confusion analysis
 - Systems requiring integer counts
@@ -164,6 +169,7 @@ print(f"FN: {result.false_negatives:.2f}")  # FN: 0.25
   - False alarm rate (FA/24h) uses event FP counts directly (no epoch scaling). See docs/algorithms/metrics.md.
 
 ## Related Documentation
+
 - [Algorithm Overview](overview.md) - Comparison of all algorithms
 - [Metrics Calculation](metrics.md) - FA/24h computation
 - Source: `nedc_bench/algorithms/taes.py`

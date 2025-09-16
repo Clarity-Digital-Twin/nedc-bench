@@ -1,3 +1,7 @@
+# Phasing Note
+
+This proposal outlines the long-term target structure. The immediate refactor only moves `nedc_bench` to `src/` with no import changes. Domain/application layering will be introduced incrementally after the src move.
+
 # Clean Architecture Proposal for NEDC-BENCH
 
 ## Current State vs. Clean Architecture Vision

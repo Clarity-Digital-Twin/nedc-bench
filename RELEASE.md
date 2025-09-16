@@ -5,12 +5,14 @@ This document outlines the release process for NEDC-BENCH.
 ## Version Numbering
 
 We follow [Semantic Versioning](https://semver.org/):
+
 - **MAJOR.MINOR.PATCH** (e.g., 1.2.3)
 - **MAJOR**: Breaking API changes
 - **MINOR**: New features, backwards compatible
 - **PATCH**: Bug fixes, backwards compatible
 
 ### Pre-release Versions
+
 - **0.x.y**: Pre-1.0 releases indicate the API is not yet stable
 - **Alpha**: 0.1.0 - 0.3.x (early development, frequent changes)
 - **Beta**: 0.4.0 - 0.9.x (feature complete, stabilizing)
@@ -19,6 +21,7 @@ We follow [Semantic Versioning](https://semver.org/):
 ## Current Version
 
 **v1.0.0** - Production Stable
+
 - Status: Production ready
 - API stability: Stable
 - Production ready: Yes
@@ -26,6 +29,7 @@ We follow [Semantic Versioning](https://semver.org/):
 ## Release Checklist
 
 ### 1. Pre-release
+
 - [ ] Update version in `pyproject.toml`
 - [ ] Update CHANGELOG.md with release date
 - [ ] Run full test suite: `make ci`
@@ -33,6 +37,7 @@ We follow [Semantic Versioning](https://semver.org/):
 - [ ] Review and update README if needed
 
 ### 2. Create Release
+
 ```bash
 # 1. Commit version changes
 git add pyproject.toml CHANGELOG.md
@@ -55,43 +60,48 @@ git push origin v0.1.0
 ```
 
 ### 3. GitHub Release
+
 1. Go to GitHub releases page
-2. Click "Create a new release"
-3. Select the tag (e.g., v0.1.0)
-4. Set release title: "v0.1.0 - Alpha Release"
-5. Copy relevant section from CHANGELOG.md
-6. Mark as pre-release if version < 1.0.0
-7. Publish release
+1. Click "Create a new release"
+1. Select the tag (e.g., v0.1.0)
+1. Set release title: "v0.1.0 - Alpha Release"
+1. Copy relevant section from CHANGELOG.md
+1. Mark as pre-release if version \< 1.0.0
+1. Publish release
 
 ### 4. Post-release
+
 - [ ] Verify GitHub release appears correctly
 - [ ] Update version in pyproject.toml to next development version (e.g., 0.2.0-dev)
-- [ ] Add new [Unreleased] section to CHANGELOG.md
+- [ ] Add new \[Unreleased\] section to CHANGELOG.md
 - [ ] Commit: `git commit -m "Bump version to 0.2.0-dev"`
 
 ## Version History
 
-| Version | Date | Status | Notes |
-|---------|------|--------|-------|
-| 0.0.1 | 2024-12-01 | Released | Initial structure |
-| 0.1.0 | 2024-12-15 | Released | Alpha release |
-| 1.0.0 | 2025-09-15 | Current | Production stable |
+| Version | Date       | Status   | Notes             |
+| ------- | ---------- | -------- | ----------------- |
+| 0.0.1   | 2024-12-01 | Released | Initial structure |
+| 0.1.0   | 2024-12-15 | Released | Alpha release     |
+| 1.0.0   | 2025-09-15 | Current  | Production stable |
 
 ## Versioning Guidelines
 
 ### When to increment PATCH (0.1.0 → 0.1.1)
+
 - Bug fixes
 - Documentation updates
 - Minor performance improvements
 - Dependency updates (non-breaking)
 
 ### When to increment MINOR (0.1.0 → 0.2.0)
+
 - New features
 - New algorithms
 - API additions (backwards compatible)
 - Significant performance improvements
 
 ### When to increment MAJOR (0.x.y → 1.0.0)
+
 - Breaking API changes
 - Major architectural changes
 - Removal of deprecated features
@@ -101,5 +111,5 @@ git push origin v0.1.0
 
 - Keep CHANGELOG.md updated with every PR
 - Tag releases match version in pyproject.toml
-- All releases < 1.0.0 are considered pre-release
+- All releases \< 1.0.0 are considered pre-release
 - Version 1.0.0 indicates API stability and production readiness

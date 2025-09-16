@@ -161,10 +161,10 @@ unfixable = []
     "RUF029",  # Async defs in tests may not await
     "I001",    # Allow relaxed import sorting in tests
 ]
-"nedc_bench/api/services/async_wrapper.py" = [
+"src/nedc_bench/api/services/async_wrapper.py" = [
     "C901",  # Allow higher complexity for orchestrator method
 ]
-"alpha/wrapper/parsers.py" = [
+"src/alpha/wrapper/parsers.py" = [
     "PLR6301", # Parser methods inherit from base class
 ]
 "benchmarks/*" = [
@@ -181,40 +181,40 @@ unfixable = []
     "T201",    # print() allowed in scripts
     "PLC0415", # Import statements in functions
 ]
-"nedc_bench/algorithms/*.py" = [
+"src/nedc_bench/algorithms/*.py" = [
     "C901",    # Algorithmic complexity
     "PLR0912", # Branches
     "PLR0915", # Statements
     "PLR0914", # Locals
     "PLR6301", # Staticmethod suggestions
 ]
-"nedc_bench/validation/parity.py" = [
+"src/nedc_bench/validation/parity.py" = [
     "PLR6301", # Staticmethod suggestions
 ]
-"nedc_bench/monitoring/metrics.py" = [
+"src/nedc_bench/monitoring/metrics.py" = [
     "N802",    # Fallback function names mimic prometheus objects
     "PLR6301", # No-op metric methods
     "W391",    # Allow trailing newline leniency here
 ]
-"nedc_bench/api/endpoints/evaluation.py" = [
+"src/nedc_bench/api/endpoints/evaluation.py" = [
     "B008",    # FastAPI dependency injection uses call in defaults
 ]
-"nedc_bench/api/services/websocket_manager.py" = [
+"src/nedc_bench/api/services/websocket_manager.py" = [
     "PERF203", # try/except inside loop acceptable to drop dead connections
 ]
-"nedc_bench/api/services/job_manager.py" = [
+"src/nedc_bench/api/services/job_manager.py" = [
     "PERF203", # try/except inside loop acceptable for worker
 ]
-"nedc_bench/api/endpoints/websocket.py" = [
+"src/nedc_bench/api/endpoints/websocket.py" = [
     "PERF203", # heartbeat try/except timeout pattern acceptable
 ]
-"nedc_bench/orchestration/dual_pipeline.py" = [
+"src/nedc_bench/orchestration/dual_pipeline.py" = [
     "PLR6301", # Helper methods may remain bound
     "PLR0912", # Branching due to algorithm dispatch
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["nedc_bench"]
+known-first-party = ["nedc_bench", "alpha"]
 combine-as-imports = true
 force-single-line = false
 
@@ -245,6 +245,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 follow_imports = "normal"
+mypy_path = "src"
 
 # Ignore vendored NEDC code
 exclude = [
@@ -257,6 +258,7 @@ module = [
     "scipy.*",
     "lxml.*",
     "numpy.*",
+    "tomli.*",
 ]
 ignore_missing_imports = true
 
@@ -292,6 +294,7 @@ markers = [
     "benchmark: marks benchmark tests",
     "gpu: marks tests requiring GPU",
 ]
+pythonpath = ["src"]
 
 [tool.coverage.run]
 source = ["nedc_bench"]
@@ -317,7 +320,7 @@ exclude_lines = [
 
 # ==================== Hatch Configuration ====================
 [tool.hatch.version]
-path = "nedc_bench/__init__.py"
+path = "src/nedc_bench/__init__.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -330,4 +333,4 @@ exclude = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["nedc_bench"]
+packages = ["src/nedc_bench", "src/alpha"]

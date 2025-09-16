@@ -7,6 +7,7 @@
 ## The Bug
 
 We had a persistent 9 TP difference between Alpha (NEDC v6.0.0) and Beta:
+
 - Alpha: TP=33704, FP=18816, FN=250459
 - Beta (before fix): TP=33713, FP=18829, FN=250450
 
@@ -15,23 +16,28 @@ We had a persistent 9 TP difference between Alpha (NEDC v6.0.0) and Beta:
 After deep investigation of the NEDC source code, we found the critical difference:
 
 **NEDC's approach (nedc_eeg_eval_epoch.py):**
+
 1. **Augments annotations** with background events to fill ALL gaps
-2. Ensures continuous coverage from 0 to file_duration
-3. THEN samples at epoch midpoints
+1. Ensures continuous coverage from 0 to file_duration
+1. THEN samples at epoch midpoints
 
 **Our initial approach:**
+
 - We sampled directly and used null_class when no event was found
 - This subtle difference caused the 9 TP mismatch
 
 ## The Fix
 
 We added the `_augment_events()` method to `EpochScorer` that:
+
 1. Fills gaps between events with background annotation
-2. Ensures the entire file duration is covered continuously
-3. Matches NEDC's preprocessing exactly
+1. Ensures the entire file duration is covered continuously
+1. Matches NEDC's preprocessing exactly
 
 ```python
-def _augment_events(self, events: list[EventAnnotation], file_duration: float) -> list[EventAnnotation]:
+def _augment_events(
+    self, events: list[EventAnnotation], file_duration: float
+) -> list[EventAnnotation]:
     """Augment events with background to fill all gaps (NEDC-style)."""
     # Implementation fills gaps with self.null_class events
 ```
@@ -39,14 +45,15 @@ def _augment_events(self, events: list[EventAnnotation], file_duration: float) -
 ## Verification
 
 After applying the fix:
+
 - **Beta: TP=33704, FP=18816, FN=250459**
 - **Perfect match with Alpha!**
 
 ## Key Learnings
 
 1. **Preprocessing matters**: Even subtle differences in data preparation can cause mismatches
-2. **Read the source carefully**: The augmentation step wasn't obvious from the main algorithm
-3. **Test thoroughly**: Our systematic investigation approach led us to the root cause
+1. **Read the source carefully**: The augmentation step wasn't obvious from the main algorithm
+1. **Test thoroughly**: Our systematic investigation approach led us to the root cause
 
 ## Files Modified
 
@@ -57,6 +64,7 @@ After applying the fix:
 ## Conclusion
 
 The NEDC-BENCH project now has **100% algorithmic fidelity** across all 5 algorithms:
+
 - ✅ TAES: Exact parity
 - ✅ EPOCH: Exact parity (FIXED!)
 - ✅ OVERLAP: Exact parity

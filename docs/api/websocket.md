@@ -3,14 +3,17 @@
 Realtime progress and results are streamed over a WebSocket per job id.
 
 ## URL
+
 - `ws://<host>:8000/ws/{job_id}`
 
 ## Connection
+
 - Server accepts the connection immediately.
 - If the job exists, the server sends an initial snapshot before registering for live updates.
 - Heartbeats: the server emits `{ "type": "heartbeat" }` on ~30s idle; clients may send `"ping"` to receive `"pong"`.
 
 ## Event Types
+
 - `initial`:
   - Shape: `{ "type": "initial", "job": { "id": string, "status": string, "created_at": ISO8601 } }`
 - `status`:
@@ -33,20 +36,24 @@ Realtime progress and results are streamed over a WebSocket per job id.
 ## Examples
 
 ### Python (websockets)
+
 ```python
 import asyncio, json, websockets
+
 
 async def tail(job_id: str):
     uri = f"ws://localhost:8000/ws/{job_id}"
     async with websockets.connect(uri) as ws:
         async for raw in ws:
-            evt = json.loads(raw) if raw.startswith('{') else raw
+            evt = json.loads(raw) if raw.startswith("{") else raw
             print(evt)
+
 
 asyncio.run(tail("<JOB_ID>"))
 ```
 
 ### Node.js (ws)
+
 ```js
 import WebSocket from 'ws';
 

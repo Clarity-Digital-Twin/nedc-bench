@@ -1,59 +1,59 @@
 {
-  "metadata": {
-    "nedc_version": "6.0.0",
-    "python_version": "3.11",
-    "snapshot_date": "2025-09-15",
-    "dataset": "csv_bi_parity/csv_bi_export_clean"
-  },
   "algorithms": {
-    "taes": {
-      "tp": 133.84137545872733,
-      "fp": 552.7689020231412,
-      "fn": 941.1586245412731,
-      "sensitivity": 12.450360507788584,
-      "fa_per_24h": 30.461710971183077,
-      "parity": "exact"
+    "dp": {
+      "deletions": 544,
+      "fa_per_24h": 53.23384273330729,
+      "fn": 747.0,
+      "fp": 966.0,
+      "insertions": 423,
+      "parity": "exact",
+      "sensitivity": 30.511627906976745,
+      "substitutions": 328,
+      "tp": 328.0
     },
     "epoch": {
-      "tp": 33704.0,
-      "fp": 18816.0,
-      "fn": 250459.0,
-      "sensitivity": 11.860798203847791,
       "fa_per_24h": 259.22566896219206,
-      "parity": "exact"
-    },
-    "overlap": {
-      "tp": 253.0,
-      "fp": 536.0,
-      "fn": 822.0,
-      "sensitivity": 23.53488372093023,
-      "fa_per_24h": 29.537618742290594,
-      "parity": "exact"
-    },
-    "dp": {
-      "tp": 328.0,
-      "fp": 966.0,
-      "fn": 747.0,
-      "sensitivity": 30.511627906976745,
-      "fa_per_24h": 53.23384273330729,
+      "fn": 250459.0,
+      "fp": 18816.0,
       "parity": "exact",
-      "insertions": 423,
-      "deletions": 544,
-      "substitutions": 328
+      "sensitivity": 11.860798203847791,
+      "tp": 33704.0
     },
     "ira": {
       "multi_class_kappa": 0.18874384538128447,
+      "parity": "exact",
       "per_label_kappa": {
         "bckg": 0.18874384538128258,
         "seiz": 0.18874384538128258
-      },
-      "parity": "exact"
+      }
+    },
+    "overlap": {
+      "fa_per_24h": 29.537618742290594,
+      "fn": 822.0,
+      "fp": 536.0,
+      "parity": "exact",
+      "sensitivity": 23.53488372093023,
+      "tp": 253.0
+    },
+    "taes": {
+      "fa_per_24h": 30.461710971183077,
+      "fn": 941.1586245412731,
+      "fp": 552.7689020231412,
+      "parity": "exact",
+      "sensitivity": 12.450360507788584,
+      "tp": 133.84137545872733
     }
   },
-  "status": "100% parity achieved",
+  "metadata": {
+    "dataset": "csv_bi_parity/csv_bi_export_clean",
+    "nedc_version": "6.0.0",
+    "python_version": "3.11",
+    "snapshot_date": "2025-09-15"
+  },
   "notes": [
     "Epoch and IRA required augmentation fix for gap filling",
     "All algorithms now match NEDC v6.0.0 exactly",
     "FA/24h computation centralized via utils/metrics.py"
-  ]
+  ],
+  "status": "100% parity achieved"
 }

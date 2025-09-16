@@ -67,7 +67,7 @@ benchmark: ## Run performance benchmarks
 lint: ## Run all linters (ruff + mypy)
 	@echo "$(GREEN)Running linters...$(NC)"
 	ruff check .
-	mypy nedc_bench/
+	mypy -p nedc_bench
 
 lint-fix: ## Auto-fix linting issues
 	@echo "$(GREEN)Auto-fixing code issues...$(NC)"
@@ -80,7 +80,7 @@ format: ## Format code with Ruff
 
 typecheck: ## Run type checking with mypy
 	@echo "$(GREEN)Type checking...$(NC)"
-	mypy nedc_bench/ --show-error-codes
+	mypy -p nedc_bench --show-error-codes
 
 pre-commit: ## Run pre-commit hooks on all files
 	@echo "$(GREEN)Running pre-commit hooks...$(NC)"

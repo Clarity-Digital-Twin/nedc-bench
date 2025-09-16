@@ -1,6 +1,7 @@
 # API Reference
 
 For the complete, up-to-date details see:
+
 - Endpoints: `docs/api/endpoints.md`
 - WebSocket: `docs/api/websocket.md`
 - OpenAPI: `docs/api/openapi.md`
@@ -8,6 +9,7 @@ For the complete, up-to-date details see:
 - Examples: `docs/api/examples.md`
 
 ## Key Endpoints
+
 - `POST /api/v1/evaluate` — submit a job. Multipart form with:
   - `reference` (file), `hypothesis` (file)
   - `algorithms` (repeatable form field), `pipeline` (dual|alpha|beta)

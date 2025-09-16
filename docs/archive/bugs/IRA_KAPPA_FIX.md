@@ -7,6 +7,7 @@
 ## The Investigation
 
 We noticed IRA had a tiny difference:
+
 - Alpha: 0.1887 (displayed with 4 decimals in NEDC output)
 - Beta: 0.18878069 (would round to 0.1888)
 
@@ -31,6 +32,7 @@ DIFFERENCES (Beta - Alpha):
 ### 2. The Connection
 
 Both IRA and Epoch:
+
 - Use epoch-based sampling at 0.25s intervals
 - Sample at midpoints (0.125s, 0.375s, 0.625s, ...)
 - Build confusion matrices from sampled labels
@@ -38,6 +40,7 @@ Both IRA and Epoch:
 ### 3. The Missing Piece
 
 NEDC augments annotations to fill ALL gaps with background events:
+
 - If there's a gap between events → fill with background
 - If there's a gap at the start → fill with background
 - If there's a gap at the end → fill with background
@@ -74,12 +77,14 @@ def augment_events_full(events, file_duration, null_class):
 ## Results
 
 ### Before Fix:
+
 - Beta confusion: seiz→seiz=33713, seiz→bckg=250450, bckg→seiz=18829, bckg→bckg=5968385
 - Beta kappa: 0.18878068973076786
 - Alpha kappa: 0.18874384538128447
 - Difference: 0.00003684
 
 ### After Fix:
+
 - Beta confusion: seiz→seiz=33704, seiz→bckg=250459, bckg→seiz=18816, bckg→bckg=5968398
 - Beta kappa: 0.18874384538128447
 - Alpha kappa: 0.18874384538128447
@@ -88,13 +93,14 @@ def augment_events_full(events, file_duration, null_class):
 ## Key Learnings
 
 1. **Small differences matter**: A 0.0001 kappa difference revealed a real bug
-2. **Consistency is critical**: Both Epoch and IRA needed the same augmentation
-3. **NEDC's preprocessing**: Always augments to ensure continuous annotation coverage
-4. **Shared implementations**: When algorithms share techniques (epoch sampling), they need the same fixes
+1. **Consistency is critical**: Both Epoch and IRA needed the same augmentation
+1. **NEDC's preprocessing**: Always augments to ensure continuous annotation coverage
+1. **Shared implementations**: When algorithms share techniques (epoch sampling), they need the same fixes
 
 ## Impact
 
 With this fix:
+
 - IRA now has **EXACT** parity with NEDC v6.0.0
 - The confusion matrices match perfectly (all 4 cells)
 - Both round to 0.1887 when displayed with 4 decimals

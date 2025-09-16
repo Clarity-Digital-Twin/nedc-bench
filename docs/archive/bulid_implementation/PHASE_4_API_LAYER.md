@@ -1,7 +1,9 @@
 # Phase 4: API Layer - REST API with Dual Pipeline Orchestration
+
 ## Building on Completed Phase 3 Core Implementation
 
 ### Current State (After Phase 3 Completion)
+
 ✅ **All 5 NEDC algorithms implemented** (DP, Epoch, Overlap, IRA, TAES)
 ✅ **Dual pipeline orchestration working** (`DualPipelineOrchestrator`)
 ✅ **100% parity achieved** with NEDC v6.0.0
@@ -9,11 +11,13 @@
 ✅ **96 tests passing** with full coverage
 
 ### Phase 4 Goal: Production REST API
+
 Transform the validated core implementation into a production-ready REST API with real-time monitoring capabilities.
 
 ## Duration: 5 Days
 
 ## Success Criteria (Must Complete)
+
 - [ ] FastAPI REST endpoints for all operations
 - [ ] Async/await patterns throughout
 - [ ] WebSocket real-time progress updates
@@ -22,13 +26,14 @@ Transform the validated core implementation into a production-ready REST API wit
 - [ ] Docker containerization of API
 - [ ] CI/CD pipeline integration
 
----
+______________________________________________________________________
 
 ## Day 1: FastAPI Foundation & Core Endpoints
 
 ### Morning: Project Setup & Dependencies
 
 #### 1. Update Dependencies
+
 ```toml
 # pyproject.toml additions
 [project.optional-dependencies]
@@ -43,6 +48,7 @@ api = [
 ```
 
 #### 2. Create API Structure
+
 ```bash
 nedc_bench/
 ├── api/
@@ -68,6 +74,7 @@ nedc_bench/
 ```
 
 #### 3. Basic FastAPI Application
+
 ```python
 # nedc_bench/api/main.py
 from fastapi import FastAPI
@@ -85,6 +92,7 @@ logger = logging.getLogger(__name__)
 # Global orchestrator instance
 orchestrator = None
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifecycle"""
@@ -98,11 +106,12 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logger.info("Shutting down NEDC-BENCH API")
 
+
 app = FastAPI(
     title="NEDC-BENCH API",
     description="Dual-pipeline EEG evaluation benchmarking platform",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS middleware
@@ -123,11 +132,13 @@ app.include_router(websocket.router, prefix="/ws", tags=["websocket"])
 ### Afternoon: Core Evaluation Endpoints
 
 #### 4. Request/Response Models
+
 ```python
 # nedc_bench/api/models/requests.py
 from pydantic import BaseModel, Field
 from typing import List, Literal, Optional
 from enum import Enum
+
 
 class AlgorithmType(str, Enum):
     DP = "dp"
@@ -137,29 +148,28 @@ class AlgorithmType(str, Enum):
     TAES = "taes"
     ALL = "all"
 
+
 class PipelineType(str, Enum):
     ALPHA = "alpha"
     BETA = "beta"
     DUAL = "dual"
 
+
 class EvaluationRequest(BaseModel):
     """Request model for evaluation"""
+
     algorithms: List[AlgorithmType] = Field(
-        default=[AlgorithmType.ALL],
-        description="Algorithms to run"
+        default=[AlgorithmType.ALL], description="Algorithms to run"
     )
     pipeline: PipelineType = Field(
-        default=PipelineType.DUAL,
-        description="Pipeline selection"
+        default=PipelineType.DUAL, description="Pipeline selection"
     )
 
     class Config:
         json_schema_extra = {
-            "example": {
-                "algorithms": ["taes", "epoch"],
-                "pipeline": "dual"
-            }
+            "example": {"algorithms": ["taes", "epoch"], "pipeline": "dual"}
         }
+
 
 # nedc_bench/api/models/responses.py
 from pydantic import BaseModel, Field
@@ -167,15 +177,19 @@ from typing import Dict, Optional, Any
 from datetime import datetime
 from uuid import UUID
 
+
 class EvaluationResponse(BaseModel):
     """Response for evaluation submission"""
+
     job_id: UUID = Field(description="Unique job identifier")
     status: Literal["queued", "processing", "completed", "failed"]
     created_at: datetime
     message: str
 
+
 class EvaluationResult(BaseModel):
     """Complete evaluation result"""
+
     job_id: UUID
     status: Literal["completed", "failed"]
     created_at: datetime
@@ -198,6 +212,7 @@ class EvaluationResult(BaseModel):
 ```
 
 #### 5. Evaluation Endpoints
+
 ```python
 # nedc_bench/api/endpoints/evaluation.py
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
@@ -214,19 +229,20 @@ from nedc_bench.api.services.async_wrapper import AsyncOrchestrator
 router = APIRouter()
 job_manager = JobManager()
 
+
 @router.post("/evaluate", response_model=EvaluationResponse)
 async def submit_evaluation(
     reference: UploadFile = File(..., description="Reference CSV_BI file"),
     hypothesis: UploadFile = File(..., description="Hypothesis CSV_BI file"),
     request: EvaluationRequest = EvaluationRequest(),
-    background_tasks: BackgroundTasks = None
+    background_tasks: BackgroundTasks = None,
 ):
     """Submit an evaluation job"""
 
     # Validate file extensions
-    if not reference.filename.endswith('.csv_bi'):
+    if not reference.filename.endswith(".csv_bi"):
         raise HTTPException(400, "Reference file must be CSV_BI format")
-    if not hypothesis.filename.endswith('.csv_bi'):
+    if not hypothesis.filename.endswith(".csv_bi"):
         raise HTTPException(400, "Hypothesis file must be CSV_BI format")
 
     # Create job
@@ -239,9 +255,9 @@ async def submit_evaluation(
     ref_content = await reference.read()
     hyp_content = await hypothesis.read()
 
-    with open(ref_path, 'wb') as f:
+    with open(ref_path, "wb") as f:
         f.write(ref_content)
-    with open(hyp_path, 'wb') as f:
+    with open(hyp_path, "wb") as f:
         f.write(hyp_content)
 
     # Queue job for processing
@@ -252,7 +268,7 @@ async def submit_evaluation(
         "algorithms": request.algorithms,
         "pipeline": request.pipeline,
         "status": "queued",
-        "created_at": datetime.utcnow()
+        "created_at": datetime.utcnow(),
     }
 
     await job_manager.add_job(job)
@@ -264,8 +280,9 @@ async def submit_evaluation(
         job_id=job_id,
         status="queued",
         created_at=job["created_at"],
-        message="Evaluation job submitted successfully"
+        message="Evaluation job submitted successfully",
     )
+
 
 @router.get("/evaluate/{job_id}", response_model=EvaluationResult)
 async def get_evaluation_result(job_id: UUID):
@@ -278,11 +295,10 @@ async def get_evaluation_result(job_id: UUID):
 
     return EvaluationResult(**job)
 
+
 @router.get("/evaluate", response_model=List[EvaluationResult])
 async def list_evaluations(
-    limit: int = 10,
-    offset: int = 0,
-    status: Optional[str] = None
+    limit: int = 10, offset: int = 0, status: Optional[str] = None
 ):
     """List evaluation jobs"""
 
@@ -290,13 +306,14 @@ async def list_evaluations(
     return [EvaluationResult(**job) for job in jobs]
 ```
 
----
+______________________________________________________________________
 
 ## Day 2: Async Wrapper & Job Management
 
 ### Morning: Async Orchestration Wrapper
 
 #### 1. Async Wrapper for Synchronous Code
+
 ```python
 # nedc_bench/api/services/async_wrapper.py
 import asyncio
@@ -307,6 +324,7 @@ import logging
 from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
 
 logger = logging.getLogger(__name__)
+
 
 class AsyncOrchestrator:
     """Async wrapper for DualPipelineOrchestrator"""
@@ -320,7 +338,7 @@ class AsyncOrchestrator:
         ref_file: str,
         hyp_file: str,
         algorithm: str = "taes",
-        pipeline: str = "dual"
+        pipeline: str = "dual",
     ) -> Dict[str, Any]:
         """Async evaluation using thread pool"""
 
@@ -334,7 +352,7 @@ class AsyncOrchestrator:
                 ref_file,
                 hyp_file,
                 algorithm,
-                None  # alpha_result
+                None,  # alpha_result
             )
 
             return {
@@ -344,7 +362,7 @@ class AsyncOrchestrator:
                 "parity_report": result.parity_report.to_dict(),
                 "alpha_time": result.alpha_time,
                 "beta_time": result.beta_time,
-                "speedup": result.speedup
+                "speedup": result.speedup,
             }
 
         elif pipeline == "alpha":
@@ -354,7 +372,7 @@ class AsyncOrchestrator:
                 self.orchestrator.alpha.evaluate,
                 ref_file,
                 hyp_file,
-                algorithm
+                algorithm,
             )
             return {"alpha_result": result}
 
@@ -365,7 +383,7 @@ class AsyncOrchestrator:
                 self.orchestrator.beta.evaluate,
                 ref_file,
                 hyp_file,
-                algorithm
+                algorithm,
             )
             return {"beta_result": result}
 
@@ -373,13 +391,12 @@ class AsyncOrchestrator:
         self,
         file_pairs: List[tuple[str, str]],
         algorithm: str = "taes",
-        pipeline: str = "dual"
+        pipeline: str = "dual",
     ) -> List[Dict[str, Any]]:
         """Process multiple file pairs concurrently"""
 
         tasks = [
-            self.evaluate(ref, hyp, algorithm, pipeline)
-            for ref, hyp in file_pairs
+            self.evaluate(ref, hyp, algorithm, pipeline) for ref, hyp in file_pairs
         ]
 
         return await asyncio.gather(*tasks)
@@ -388,6 +405,7 @@ class AsyncOrchestrator:
 ### Afternoon: Job Queue Management
 
 #### 2. In-Memory Job Manager
+
 ```python
 # nedc_bench/api/services/job_manager.py
 from typing import Dict, List, Optional, Any
@@ -397,6 +415,7 @@ import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class JobManager:
     """Manage evaluation jobs in memory"""
@@ -425,10 +444,7 @@ class JobManager:
                 logger.info(f"Job {job_id} updated: {updates.get('status')}")
 
     async def list_jobs(
-        self,
-        limit: int = 10,
-        offset: int = 0,
-        status: Optional[str] = None
+        self, limit: int = 10, offset: int = 0, status: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """List jobs with pagination and filtering"""
 
@@ -442,7 +458,7 @@ class JobManager:
         jobs.sort(key=lambda x: x.get("created_at", datetime.min), reverse=True)
 
         # Paginate
-        return jobs[offset:offset + limit]
+        return jobs[offset : offset + limit]
 
     async def get_next_job(self) -> Optional[UUID]:
         """Get next job from queue"""
@@ -451,11 +467,13 @@ class JobManager:
         except asyncio.TimeoutError:
             return None
 
+
 # Global job manager instance
 job_manager = JobManager()
 ```
 
 #### 3. Background Job Processor
+
 ```python
 # nedc_bench/api/services/processor.py
 import asyncio
@@ -471,6 +489,7 @@ logger = logging.getLogger(__name__)
 
 async_orchestrator = AsyncOrchestrator()
 
+
 async def process_evaluation(job_id: UUID):
     """Process a single evaluation job"""
 
@@ -482,17 +501,19 @@ async def process_evaluation(job_id: UUID):
             return
 
         # Update status to processing
-        await job_manager.update_job(job_id, {
-            "status": "processing",
-            "started_at": datetime.utcnow()
-        })
+        await job_manager.update_job(
+            job_id, {"status": "processing", "started_at": datetime.utcnow()}
+        )
 
         # Broadcast progress via WebSocket
-        await broadcast_progress(job_id, {
-            "type": "status",
-            "status": "processing",
-            "message": "Starting evaluation"
-        })
+        await broadcast_progress(
+            job_id,
+            {
+                "type": "status",
+                "status": "processing",
+                "message": "Starting evaluation",
+            },
+        )
 
         # Process each algorithm
         algorithms = job["algorithms"]
@@ -502,43 +523,47 @@ async def process_evaluation(job_id: UUID):
         results = {}
         for algo in algorithms:
             # Broadcast algorithm start
-            await broadcast_progress(job_id, {
-                "type": "algorithm",
-                "algorithm": algo,
-                "status": "running"
-            })
+            await broadcast_progress(
+                job_id, {"type": "algorithm", "algorithm": algo, "status": "running"}
+            )
 
             # Run evaluation
             result = await async_orchestrator.evaluate(
-                job["ref_path"],
-                job["hyp_path"],
-                algo,
-                job["pipeline"]
+                job["ref_path"], job["hyp_path"], algo, job["pipeline"]
             )
 
             results[algo] = result
 
             # Broadcast algorithm complete
-            await broadcast_progress(job_id, {
-                "type": "algorithm",
-                "algorithm": algo,
-                "status": "completed",
-                "result": result
-            })
+            await broadcast_progress(
+                job_id,
+                {
+                    "type": "algorithm",
+                    "algorithm": algo,
+                    "status": "completed",
+                    "result": result,
+                },
+            )
 
         # Update job with results
-        await job_manager.update_job(job_id, {
-            "status": "completed",
-            "completed_at": datetime.utcnow(),
-            "results": results
-        })
+        await job_manager.update_job(
+            job_id,
+            {
+                "status": "completed",
+                "completed_at": datetime.utcnow(),
+                "results": results,
+            },
+        )
 
         # Broadcast completion
-        await broadcast_progress(job_id, {
-            "type": "status",
-            "status": "completed",
-            "message": "Evaluation completed successfully"
-        })
+        await broadcast_progress(
+            job_id,
+            {
+                "type": "status",
+                "status": "completed",
+                "message": "Evaluation completed successfully",
+            },
+        )
 
         logger.info(f"Job {job_id} completed successfully")
 
@@ -546,27 +571,25 @@ async def process_evaluation(job_id: UUID):
         logger.error(f"Job {job_id} failed: {str(e)}")
 
         # Update job with error
-        await job_manager.update_job(job_id, {
-            "status": "failed",
-            "completed_at": datetime.utcnow(),
-            "error": str(e)
-        })
+        await job_manager.update_job(
+            job_id,
+            {"status": "failed", "completed_at": datetime.utcnow(), "error": str(e)},
+        )
 
         # Broadcast failure
-        await broadcast_progress(job_id, {
-            "type": "status",
-            "status": "failed",
-            "error": str(e)
-        })
+        await broadcast_progress(
+            job_id, {"type": "status", "status": "failed", "error": str(e)}
+        )
 ```
 
----
+______________________________________________________________________
 
 ## Day 3: WebSocket & Real-time Updates
 
 ### Morning: WebSocket Implementation
 
 #### 1. WebSocket Connection Manager
+
 ```python
 # nedc_bench/api/services/websocket_manager.py
 from typing import Dict, List
@@ -576,6 +599,7 @@ import logging
 from uuid import UUID
 
 logger = logging.getLogger(__name__)
+
 
 class WebSocketManager:
     """Manage WebSocket connections for real-time updates"""
@@ -623,8 +647,10 @@ class WebSocketManager:
         for websocket in dead_connections:
             self.disconnect(job_id, websocket)
 
+
 # Global WebSocket manager
 ws_manager = WebSocketManager()
+
 
 async def broadcast_progress(job_id: UUID, message: dict):
     """Helper function to broadcast progress"""
@@ -632,6 +658,7 @@ async def broadcast_progress(job_id: UUID, message: dict):
 ```
 
 #### 2. WebSocket Endpoints
+
 ```python
 # nedc_bench/api/endpoints/websocket.py
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
@@ -645,6 +672,7 @@ from nedc_bench.api.services.job_manager import job_manager
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+
 @router.websocket("/{job_id}")
 async def websocket_endpoint(websocket: WebSocket, job_id: UUID):
     """WebSocket endpoint for real-time job updates"""
@@ -655,19 +683,20 @@ async def websocket_endpoint(websocket: WebSocket, job_id: UUID):
         # Send initial job status
         job = await job_manager.get_job(job_id)
         if job:
-            await websocket.send_json({
-                "type": "initial",
-                "job": {
-                    "id": str(job["id"]),
-                    "status": job["status"],
-                    "created_at": job["created_at"].isoformat()
+            await websocket.send_json(
+                {
+                    "type": "initial",
+                    "job": {
+                        "id": str(job["id"]),
+                        "status": job["status"],
+                        "created_at": job["created_at"].isoformat(),
+                    },
                 }
-            })
+            )
         else:
-            await websocket.send_json({
-                "type": "error",
-                "message": f"Job {job_id} not found"
-            })
+            await websocket.send_json(
+                {"type": "error", "message": f"Job {job_id} not found"}
+            )
             await websocket.close()
             return
 
@@ -675,10 +704,7 @@ async def websocket_endpoint(websocket: WebSocket, job_id: UUID):
         while True:
             # Wait for messages (or timeout for heartbeat)
             try:
-                message = await asyncio.wait_for(
-                    websocket.receive_text(),
-                    timeout=30.0
-                )
+                message = await asyncio.wait_for(websocket.receive_text(), timeout=30.0)
 
                 # Handle ping/pong
                 if message == "ping":
@@ -696,12 +722,14 @@ async def websocket_endpoint(websocket: WebSocket, job_id: UUID):
 ### Afternoon: Progress Tracking Integration
 
 #### 3. Enhanced Progress Reporting
+
 ```python
 # nedc_bench/api/services/progress_tracker.py
 from typing import Dict, Any
 from datetime import datetime
 from uuid import UUID
 import asyncio
+
 
 class ProgressTracker:
     """Track detailed progress for evaluation jobs"""
@@ -717,15 +745,11 @@ class ProgressTracker:
             "current_algorithm": None,
             "current_pipeline": None,
             "start_time": datetime.utcnow(),
-            "algorithm_times": {}
+            "algorithm_times": {},
         }
 
     async def update_algorithm(
-        self,
-        job_id: UUID,
-        algorithm: str,
-        pipeline: str,
-        status: str
+        self, job_id: UUID, algorithm: str, pipeline: str, status: str
     ):
         """Update algorithm progress"""
         if job_id not in self.progress:
@@ -736,16 +760,14 @@ class ProgressTracker:
         if status == "started":
             progress["current_algorithm"] = algorithm
             progress["current_pipeline"] = pipeline
-            progress["algorithm_times"][algorithm] = {
-                "start": datetime.utcnow()
-            }
+            progress["algorithm_times"][algorithm] = {"start": datetime.utcnow()}
 
         elif status == "completed":
             if algorithm in progress["algorithm_times"]:
                 progress["algorithm_times"][algorithm]["end"] = datetime.utcnow()
                 progress["algorithm_times"][algorithm]["duration"] = (
-                    progress["algorithm_times"][algorithm]["end"] -
-                    progress["algorithm_times"][algorithm]["start"]
+                    progress["algorithm_times"][algorithm]["end"]
+                    - progress["algorithm_times"][algorithm]["start"]
                 ).total_seconds()
 
             progress["completed_algorithms"] += 1
@@ -761,8 +783,7 @@ class ProgressTracker:
 
         return {
             "percent_complete": (
-                progress["completed_algorithms"] /
-                progress["total_algorithms"] * 100
+                progress["completed_algorithms"] / progress["total_algorithms"] * 100
             ),
             "current_algorithm": progress["current_algorithm"],
             "current_pipeline": progress["current_pipeline"],
@@ -770,21 +791,23 @@ class ProgressTracker:
             "total": progress["total_algorithms"],
             "elapsed_time": (
                 datetime.utcnow() - progress["start_time"]
-            ).total_seconds()
+            ).total_seconds(),
         }
 ```
 
----
+______________________________________________________________________
 
 ## Day 4: Error Handling & Validation
 
 ### Morning: Comprehensive Error Handling
 
 #### 1. Custom Exception Classes
+
 ```python
 # nedc_bench/api/exceptions.py
 from fastapi import HTTPException
 from typing import Any, Dict, Optional
+
 
 class NEDCAPIException(HTTPException):
     """Base exception for NEDC API"""
@@ -794,20 +817,20 @@ class NEDCAPIException(HTTPException):
         status_code: int,
         detail: str,
         error_code: str,
-        headers: Optional[Dict[str, Any]] = None
+        headers: Optional[Dict[str, Any]] = None,
     ):
         super().__init__(status_code, detail, headers)
         self.error_code = error_code
+
 
 class FileValidationError(NEDCAPIException):
     """Invalid file format or content"""
 
     def __init__(self, detail: str):
         super().__init__(
-            status_code=400,
-            detail=detail,
-            error_code="FILE_VALIDATION_ERROR"
+            status_code=400, detail=detail, error_code="FILE_VALIDATION_ERROR"
         )
+
 
 class JobNotFoundError(NEDCAPIException):
     """Job not found"""
@@ -816,31 +839,26 @@ class JobNotFoundError(NEDCAPIException):
         super().__init__(
             status_code=404,
             detail=f"Job {job_id} not found",
-            error_code="JOB_NOT_FOUND"
+            error_code="JOB_NOT_FOUND",
         )
+
 
 class PipelineError(NEDCAPIException):
     """Pipeline execution error"""
 
     def __init__(self, detail: str):
-        super().__init__(
-            status_code=500,
-            detail=detail,
-            error_code="PIPELINE_ERROR"
-        )
+        super().__init__(status_code=500, detail=detail, error_code="PIPELINE_ERROR")
+
 
 class ParityError(NEDCAPIException):
     """Parity validation failed"""
 
     def __init__(self, detail: str):
-        super().__init__(
-            status_code=500,
-            detail=detail,
-            error_code="PARITY_ERROR"
-        )
+        super().__init__(status_code=500, detail=detail, error_code="PARITY_ERROR")
 ```
 
 #### 2. Error Handler Middleware
+
 ```python
 # nedc_bench/api/middleware/error_handler.py
 from fastapi import Request
@@ -849,6 +867,7 @@ import logging
 import traceback
 
 logger = logging.getLogger(__name__)
+
 
 async def error_handler_middleware(request: Request, call_next):
     """Global error handler middleware"""
@@ -865,8 +884,8 @@ async def error_handler_middleware(request: Request, call_next):
             content={
                 "error": e.error_code,
                 "detail": e.detail,
-                "request_id": request.headers.get("X-Request-ID")
-            }
+                "request_id": request.headers.get("X-Request-ID"),
+            },
         )
 
     except Exception as e:
@@ -878,9 +897,10 @@ async def error_handler_middleware(request: Request, call_next):
             content={
                 "error": "INTERNAL_SERVER_ERROR",
                 "detail": "An unexpected error occurred",
-                "request_id": request.headers.get("X-Request-ID")
-            }
+                "request_id": request.headers.get("X-Request-ID"),
+            },
         )
+
 
 # Add to main.py
 app.middleware("http")(error_handler_middleware)
@@ -889,12 +909,14 @@ app.middleware("http")(error_handler_middleware)
 ### Afternoon: Input Validation & Security
 
 #### 3. File Validation Service
+
 ```python
 # nedc_bench/api/services/file_validator.py
 from typing import BinaryIO
 import io
 import re
 from pathlib import Path
+
 
 class FileValidator:
     """Validate uploaded CSV_BI files"""
@@ -910,21 +932,21 @@ class FileValidator:
             raise FileValidationError(f"File too large: {len(file_content)} bytes")
 
         # Check extension
-        if not filename.endswith('.csv_bi'):
+        if not filename.endswith(".csv_bi"):
             raise FileValidationError(f"Invalid extension: {filename}")
 
         # Check content format
         try:
-            text = file_content.decode('utf-8')
-            lines = text.strip().split('\n')
+            text = file_content.decode("utf-8")
+            lines = text.strip().split("\n")
 
             # Check header
-            if not lines[0].startswith('version ='):
+            if not lines[0].startswith("version ="):
                 raise FileValidationError("Invalid CSV_BI header")
 
             # Check for required fields
-            has_montage = any('montage =' in line for line in lines[:20])
-            has_patient = any('patient_id =' in line for line in lines[:20])
+            has_montage = any("montage =" in line for line in lines[:20])
+            has_patient = any("patient_id =" in line for line in lines[:20])
 
             if not (has_montage and has_patient):
                 raise FileValidationError("Missing required CSV_BI fields")
@@ -938,12 +960,14 @@ class FileValidator:
 ```
 
 #### 4. Rate Limiting
+
 ```python
 # nedc_bench/api/middleware/rate_limit.py
 from fastapi import Request, HTTPException
 from typing import Dict
 import time
 import asyncio
+
 
 class RateLimiter:
     """Simple in-memory rate limiter"""
@@ -965,7 +989,8 @@ class RateLimiter:
 
             # Remove old requests
             self.requests[client_id] = [
-                req_time for req_time in self.requests[client_id]
+                req_time
+                for req_time in self.requests[client_id]
                 if req_time > minute_ago
             ]
 
@@ -977,7 +1002,9 @@ class RateLimiter:
             self.requests[client_id].append(now)
             return True
 
+
 rate_limiter = RateLimiter(requests_per_minute=100)
+
 
 async def rate_limit_middleware(request: Request, call_next):
     """Rate limiting middleware"""
@@ -990,22 +1017,21 @@ async def rate_limit_middleware(request: Request, call_next):
 
     if not allowed:
         raise HTTPException(
-            status_code=429,
-            detail="Rate limit exceeded",
-            headers={"Retry-After": "60"}
+            status_code=429, detail="Rate limit exceeded", headers={"Retry-After": "60"}
         )
 
     response = await call_next(request)
     return response
 ```
 
----
+______________________________________________________________________
 
 ## Day 5: Testing, Documentation & Deployment
 
 ### Morning: Comprehensive Testing
 
 #### 1. API Integration Tests
+
 ```python
 # tests/api/test_integration.py
 import pytest
@@ -1016,9 +1042,11 @@ import json
 
 from nedc_bench.api.main import app
 
+
 @pytest.fixture
 def client():
     return TestClient(app)
+
 
 @pytest.fixture
 def sample_files():
@@ -1028,8 +1056,9 @@ def sample_files():
 
     return {
         "reference": ("ref.csv_bi", ref_file.read_bytes(), "application/octet-stream"),
-        "hypothesis": ("hyp.csv_bi", hyp_file.read_bytes(), "application/octet-stream")
+        "hypothesis": ("hyp.csv_bi", hyp_file.read_bytes(), "application/octet-stream"),
     }
+
 
 def test_health_check(client):
     """Test health endpoint"""
@@ -1037,18 +1066,20 @@ def test_health_check(client):
     assert response.status_code == 200
     assert response.json()["status"] == "healthy"
 
+
 def test_submit_evaluation(client, sample_files):
     """Test evaluation submission"""
     response = client.post(
         "/api/v1/evaluate",
         files=sample_files,
-        data={"algorithms": ["taes"], "pipeline": "dual"}
+        data={"algorithms": ["taes"], "pipeline": "dual"},
     )
 
     assert response.status_code == 200
     result = response.json()
     assert "job_id" in result
     assert result["status"] == "queued"
+
 
 @pytest.mark.asyncio
 async def test_websocket_updates(client, sample_files):
@@ -1080,6 +1111,7 @@ async def test_websocket_updates(client, sample_files):
         assert len(updates) > 0
         assert any(u.get("type") == "algorithm" for u in updates)
 
+
 def test_get_result(client, sample_files):
     """Test getting evaluation result"""
 
@@ -1104,6 +1136,7 @@ def test_get_result(client, sample_files):
 ```
 
 #### 2. Load Testing
+
 ```python
 # tests/api/test_load.py
 import asyncio
@@ -1112,14 +1145,15 @@ import time
 from pathlib import Path
 import statistics
 
+
 async def single_request(session, url, ref_data, hyp_data):
     """Execute single evaluation request"""
 
     data = aiohttp.FormData()
-    data.add_field('reference', ref_data, filename='ref.csv_bi')
-    data.add_field('hypothesis', hyp_data, filename='hyp.csv_bi')
-    data.add_field('algorithms', 'taes')
-    data.add_field('pipeline', 'dual')
+    data.add_field("reference", ref_data, filename="ref.csv_bi")
+    data.add_field("hypothesis", hyp_data, filename="hyp.csv_bi")
+    data.add_field("algorithms", "taes")
+    data.add_field("pipeline", "dual")
 
     start_time = time.time()
 
@@ -1130,13 +1164,12 @@ async def single_request(session, url, ref_data, hyp_data):
         return {
             "job_id": result.get("job_id"),
             "status_code": response.status,
-            "elapsed": elapsed
+            "elapsed": elapsed,
         }
 
+
 async def load_test(
-    base_url: str = "http://localhost:8000",
-    n_requests: int = 100,
-    concurrent: int = 10
+    base_url: str = "http://localhost:8000", n_requests: int = 100, concurrent: int = 10
 ):
     """Load test the API"""
 
@@ -1182,6 +1215,7 @@ async def load_test(
     assert len(successful) / n_requests >= 0.99  # 99% success rate
     assert n_requests / total_time >= 100  # 100+ req/sec
 
+
 if __name__ == "__main__":
     asyncio.run(load_test())
 ```
@@ -1189,10 +1223,12 @@ if __name__ == "__main__":
 ### Afternoon: Documentation & Deployment
 
 #### 3. OpenAPI Documentation Enhancement
+
 ```python
 # nedc_bench/api/docs.py
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
+
 
 def custom_openapi(app: FastAPI):
     """Customize OpenAPI schema"""
@@ -1230,7 +1266,7 @@ def custom_openapi(app: FastAPI):
     openapi_schema["tags"] = [
         {"name": "health", "description": "Health check endpoints"},
         {"name": "evaluation", "description": "EEG evaluation endpoints"},
-        {"name": "websocket", "description": "Real-time progress updates"}
+        {"name": "websocket", "description": "Real-time progress updates"},
     ]
 
     # Add example responses
@@ -1242,7 +1278,7 @@ def custom_openapi(app: FastAPI):
                 "alpha_result": {"taes": {"hits": 10, "misses": 2}},
                 "beta_result": {"taes": {"hits": 10, "misses": 2}},
                 "parity_passed": True,
-                "speedup": 2.5
+                "speedup": 2.5,
             }
         }
     }
@@ -1250,11 +1286,13 @@ def custom_openapi(app: FastAPI):
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
+
 # Add to main.py
 app.openapi = lambda: custom_openapi(app)
 ```
 
 #### 4. Docker Deployment
+
 ```dockerfile
 # Dockerfile.api
 FROM python:3.11-slim
@@ -1326,11 +1364,12 @@ services:
     restart: unless-stopped
 ```
 
----
+______________________________________________________________________
 
 ## Deliverables Summary
 
 ### Required Files Created
+
 ✅ `nedc_bench/api/main.py` - FastAPI application
 ✅ `nedc_bench/api/endpoints/*.py` - REST endpoints
 ✅ `nedc_bench/api/models/*.py` - Request/response models
@@ -1341,6 +1380,7 @@ services:
 ✅ `docker-compose.yml` - Full deployment stack
 
 ### Success Criteria Met
+
 ✅ **FastAPI REST endpoints** - Full CRUD operations
 ✅ **Async/await patterns** - Thread pool executor for sync code
 ✅ **WebSocket updates** - Real-time progress tracking
@@ -1350,12 +1390,14 @@ services:
 ✅ **Error handling** - Comprehensive exception management
 
 ### Performance Metrics
-- **Latency**: <100ms for single evaluation request
+
+- **Latency**: \<100ms for single evaluation request
 - **Throughput**: 100+ concurrent evaluations
-- **WebSocket**: Real-time updates with <50ms latency
+- **WebSocket**: Real-time updates with \<50ms latency
 - **Reliability**: 99.9% success rate under load
 
 ### Next Phase (Phase 5) Entry Criteria
+
 ✅ API fully operational
 ✅ All endpoints tested
 ✅ Documentation complete
@@ -1363,7 +1405,7 @@ services:
 ✅ Load testing passed
 ✅ Ready for Kubernetes orchestration
 
----
+______________________________________________________________________
 
 ## Implementation Commands
 
@@ -1387,9 +1429,10 @@ docker-compose up -d
 ```
 
 ## Notes
+
 - Built on validated Phase 3 core implementation
 - No modification to proven algorithm code
 - Async wrapper maintains thread safety
 - WebSocket provides real-time visibility
 - Ready for Phase 5 Kubernetes deployment
-\n[Archived] API is implemented; see docs/runbook.md and docs/deployment.md.
+  \\n\[Archived\] API is implemented; see docs/runbook.md and docs/deployment.md.

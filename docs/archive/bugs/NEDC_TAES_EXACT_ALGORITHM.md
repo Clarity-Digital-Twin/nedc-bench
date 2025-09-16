@@ -5,16 +5,19 @@
 ### Core Algorithm Flow
 
 1. **For each reference event:**
+
    - Find ALL overlapping hypothesis events with same label
    - Call `compute_partial` for each ref-hyp pair
 
-2. **In `compute_partial(ref[i], hyp[j])`:**
+1. **In `compute_partial(ref[i], hyp[j])`:**
 
    **Case A: hyp.stop >= ref.stop** (Hyp spans beyond ref)
+
    ```
    ref:     <----->
    hyp:  <---------->  (continues)
    ```
+
    - Call `ovlp_ref_seqs`:
      - Calculate fractional hit/fa for THIS ref via `calc_hf`
      - miss = 1 - hit for THIS ref
@@ -23,10 +26,12 @@
        - Mark those refs as processed
 
    **Case B: ref.stop > hyp.stop** (Ref spans beyond hyp)
+
    ```
    ref:  <---------->
    hyp:     <----->
    ```
+
    - Call `ovlp_hyp_seqs`:
      - Calculate fractional hit/fa for THIS hyp via `calc_hf`
      - miss = 1 - hit
@@ -39,12 +44,14 @@
 ### The Key Insight: Why Long Hypotheses Score Poorly
 
 When a hypothesis spans multiple references (common with seizure detection):
+
 ```
 refs: <--> <--> <--> <--> <-->  (5 separate seizures)
 hyp:  <---------------------->  (1 long detection)
 ```
 
 NEDC scoring:
+
 - First ref: fractional hit (e.g., 0.8), miss = 0.2
 - Refs 2-5: Each adds +1.0 to miss!
 - Total: hit = 0.8, miss = 0.2 + 4.0 = 4.2
@@ -57,8 +64,8 @@ def score_taes_exact(refs, hyps):
     """EXACT NEDC TAES implementation"""
 
     # 1. Filter by target label
-    refs = [r for r in refs if r.label == 'seiz']
-    hyps = [h for h in hyps if h.label == 'seiz']
+    refs = [r for r in refs if r.label == "seiz"]
+    hyps = [h for h in hyps if h.label == "seiz"]
 
     # 2. Track processed flags
     ref_flags = [True] * len(refs)
@@ -104,6 +111,7 @@ def score_taes_exact(refs, hyps):
 
     return total_hit, total_miss, total_fa
 
+
 def ovlp_ref_seqs(refs, hyps, r_idx, h_idx, ref_flags, hyp_flags):
     """When hyp spans multiple refs"""
 
@@ -122,6 +130,7 @@ def ovlp_ref_seqs(refs, hyps, r_idx, h_idx, ref_flags, hyp_flags):
             ref_flags[i] = False
 
     return hit, miss, fa
+
 
 def ovlp_hyp_seqs(refs, hyps, r_idx, h_idx, ref_flags, hyp_flags):
     """When ref is hit by multiple hyps"""
@@ -151,11 +160,13 @@ def ovlp_hyp_seqs(refs, hyps, r_idx, h_idx, ref_flags, hyp_flags):
 The current Beta implementation sums fractional hits independently for each ref. This is WRONG!
 
 **Beta (incorrect):**
+
 - Ref 1 overlapped: hit += 0.5, miss += 0.5
 - Ref 2 overlapped: hit += 0.5, miss += 0.5
 - Total: hit = 1.0, miss = 1.0
 
 **NEDC (correct):**
+
 - Ref 1 overlapped: hit = 0.5, miss = 0.5
 - Ref 2 overlapped by SAME hyp: miss += 1.0 (FULL PENALTY)
 - Total: hit = 0.5, miss = 1.5
@@ -163,20 +174,20 @@ The current Beta implementation sums fractional hits independently for each ref.
 ## The Path to Perfect Parity
 
 1. **Implement exact sequencing logic** - Not just calc_hf, but ovlp_ref_seqs and ovlp_hyp_seqs
-2. **Process events in order** - NEDC processes refs sequentially, marking flags
-3. **Apply correct penalties** - Additional overlapped refs get +1.0 miss each
-4. **Handle both directions** - Hyp>ref and ref>hyp have different logic
+1. **Process events in order** - NEDC processes refs sequentially, marking flags
+1. **Apply correct penalties** - Additional overlapped refs get +1.0 miss each
+1. **Handle both directions** - Hyp>ref and ref>hyp have different logic
 
 ## Test Case to Verify
 
 ```python
 # One hyp spanning two refs
 refs = [
-    Event(0, 10, 'seiz'),   # 10 sec
-    Event(20, 30, 'seiz'),  # 10 sec
+    Event(0, 10, "seiz"),  # 10 sec
+    Event(20, 30, "seiz"),  # 10 sec
 ]
 hyps = [
-    Event(5, 25, 'seiz'),   # Spans both!
+    Event(5, 25, "seiz"),  # Spans both!
 ]
 
 # NEDC scoring:
