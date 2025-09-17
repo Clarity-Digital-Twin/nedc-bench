@@ -66,13 +66,29 @@ NEDC-BENCH transforms Temple University's NEDC EEG evaluation suite into a produ
 ```bash
 git clone https://github.com/Clarity-Digital-Twin/nedc-bench.git
 cd nedc-bench
-docker-compose up -d
-curl http://localhost:8000/api/v1/health
 
-# API documentation available at:
-# http://localhost:8000/docs (Swagger UI)
-# http://localhost:8000/redoc (ReDoc)
+# Build and start all services (API, Redis, Prometheus, Grafana)
+docker compose up -d --build
+
+# Verify health
+curl http://localhost:8000/api/v1/health
+# Expected: {"status":"healthy"}
+
+# View API documentation
+open http://localhost:8000/docs  # Swagger UI
+open http://localhost:3000        # Grafana dashboards (admin/admin)
 ```
+
+**Quick test with sample data:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/evaluate" \
+  -F "reference=@data/csv_bi_parity/csv_bi_export_clean/ref/aaaaaajy_s001_t000.csv_bi" \
+  -F "hypothesis=@data/csv_bi_parity/csv_bi_export_clean/hyp/aaaaaajy_s001_t000.csv_bi" \
+  -F "algorithms=all" \
+  -F "pipeline=beta"
+```
+
+> 💡 **Windows/WSL users**: Use `docker compose` (v2) not `docker-compose` (v1). See [deployment guide](docs/deployment/docker.md) for troubleshooting.
 
 ### From Source (Python 3.10+)
 
