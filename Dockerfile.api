@@ -7,14 +7,12 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
+# Copy source code and install dependencies
 COPY pyproject.toml README.md ./
-RUN pip install --no-cache-dir uv \
-    && uv pip install --system --no-cache -e ".[api]"
-
-# Copy application code
 COPY src/ ./src/
 COPY nedc_eeg_eval/ ./nedc_eeg_eval/
+RUN pip install --no-cache-dir uv \
+    && uv pip install --system --no-cache -e ".[api]"
 
 # Entrypoint for runtime configurability
 COPY docker-entrypoint.sh ./docker-entrypoint.sh

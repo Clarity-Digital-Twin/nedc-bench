@@ -72,7 +72,7 @@ All algorithms operate on event annotations with:
 ## Implementation Architecture
 
 ```
-nedc_bench/algorithms/
+src/nedc_bench/algorithms/
 ├── taes.py          # Time-Aligned Event Scoring
 ├── epoch.py         # Epoch-based scoring
 ├── dp_alignment.py  # Dynamic Programming alignment
