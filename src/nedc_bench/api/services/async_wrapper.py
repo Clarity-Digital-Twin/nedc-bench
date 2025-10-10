@@ -15,6 +15,8 @@ from nedc_bench.monitoring.metrics import (
     parity_failures,
     track_evaluation_dynamic,
 )
+from nedc_bench.orchestration.beta_orchestrator import BetaPipelineOrchestrator
+from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
 from nedc_bench.orchestration.router import OrchestratorRouter
 
 logger = logging.getLogger(__name__)
@@ -70,10 +72,11 @@ class AsyncOrchestrator:
         async def _run() -> dict[str, Any]:
             if pipeline == "dual":
                 # Use router to get dual orchestrator (lazy-loads Alpha if needed)
+                orchestrator = self.router.get_orchestrator("dual")
+                # Type narrowing for MyPy
                 from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
 
-                orchestrator = self.router.get_orchestrator("dual")
-                assert isinstance(orchestrator, DualPipelineOrchestrator)  # Type narrowing
+                assert isinstance(orchestrator, DualPipelineOrchestrator)
                 result = await loop.run_in_executor(
                     self.executor,
                     orchestrator.evaluate,
