@@ -2,7 +2,19 @@
 
 ## Executive Summary
 
-The NEDC-BENCH test suite consists of **204 tests** covering algorithms, API endpoints, models, orchestration, and validation. Current execution time is **~5 minutes** (302 seconds) in sequential mode. This document analyzes the test suite structure, identifies performance bottlenecks, and provides professional optimization recommendations.
+The NEDC-BENCH test suite consists of **204 tests** covering algorithms, API endpoints, models, orchestration, and validation.
+
+**Current State (2025-10-10)**:
+- ✅ Parallel execution enabled by default (`make test` uses `pytest -n auto`)
+- ✅ Test tier targets created (`make test-quick`, `make test-unit`, `make test-integration`, `make test-e2e`)
+- ✅ Test markers defined in pyproject.toml (unit, integration, e2e, slow, subprocess, performance, benchmark, gpu)
+- ⚠️ **Only 9/204 tests have markers applied** - full tier separation requires adding markers to ~195 remaining tests
+- ⏱️ **Sequential time**: ~5 minutes (302 seconds baseline)
+- ⏱️ **Parallel time**: ~2-3 minutes estimated (requires pytest-xdist installation)
+
+**To use parallel execution**: Ensure pytest-xdist is installed with `pip install pytest-xdist` or `uv pip install -e ".[dev]"`
+
+This document analyzes the test suite structure, identifies performance bottlenecks, and tracks optimization progress.
 
 ## Table of Contents
 
@@ -309,20 +321,16 @@ await asyncio.sleep(0.1)  # Simulate slow evaluation
 
 ## Professional Recommendations
 
-### Immediate Improvements (Quick Wins)
+### ✅ Completed Improvements (As of 2025-10-10)
 
-#### 1. Enable Parallel Execution by Default ⚡
+#### 1. Parallel Execution Enabled ⚡
 
-**Change `Makefile` line 47:**
+**Status**: IMPLEMENTED in Makefile:45-51
+
+Current `Makefile` configuration:
 
 ```makefile
-# BEFORE
-test: ## Run all tests with coverage (project only)
-	@echo "$(GREEN)Running tests...$(NC)"
-	pytest -v --cov=nedc_bench --cov-report=term-missing
-
-# AFTER
-test: ## Run all tests with coverage (parallel, fast)
+test: ## Run all tests with coverage (parallel, fast - default)
 	@echo "$(GREEN)Running tests in parallel...$(NC)"
 	pytest -n auto -v --cov=nedc_bench --cov-report=term-missing
 
@@ -331,29 +339,36 @@ test-sequential: ## Run tests sequentially (for debugging)
 	pytest -v --cov=nedc_bench --cov-report=term-missing
 ```
 
+**Actual Implementation**: Makefile:45-51
 **Expected Improvement**: 5 minutes → 2-3 minutes (~50% speedup)
+**Requirement**: pytest-xdist must be installed (`pip install pytest-xdist`)
 
-#### 2. Add Test Tier Markers ⚡
+#### 2. Test Marker Definitions Added ⚡
 
-**Add to `pyproject.toml` (line 211):**
+**Status**: IMPLEMENTED in pyproject.toml:290-299
+
+Current marker definitions:
 
 ```toml
 markers = [
-    "unit: fast unit tests (< 0.5s each)",
-    "integration: integration tests (0.5-5s, may use real services)",
-    "e2e: end-to-end tests (> 5s, spawn external processes)",
+    "unit: fast unit tests (< 0.5s each, no external dependencies)",
+    "integration: integration tests (0.5-5s, may use real services like TestClient)",
+    "e2e: end-to-end tests (> 5s, spawn external processes, full system validation)",
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "subprocess: tests that spawn external processes",
+    "subprocess: tests that spawn external processes (NEDC tooling, etc)",
     "performance: timing-sensitive tests",
     "benchmark: marks benchmark tests",
     "gpu: marks tests requiring GPU",
 ]
 ```
 
-**Add markers to test files:**
+**Actual Implementation**: pyproject.toml:290-299
+
+**Example marker usage** (only 9/204 tests currently marked):
 
 ```python
-# tests/validation/test_integration_parity.py
+# tests/validation/test_integration_parity.py - NOT YET MARKED
+# SHOULD BE:
 @pytest.mark.e2e
 @pytest.mark.subprocess
 @pytest.mark.slow
@@ -361,20 +376,20 @@ markers = [
 def test_algorithm_parity(self, algorithm, ...):
     ...
 
-# tests/api/test_integration.py
+# tests/api/test_cache_performance.py - ALREADY MARKED ✅
 @pytest.mark.integration
-def test_submit_and_result_single_algorithm(client, sample_files):
-    ...
-
-# tests/algorithms/test_dp_alignment.py
-@pytest.mark.unit
-class TestDPAlignment:
+@pytest.mark.asyncio
+async def test_cache_hit_rate(self, ...):
     ...
 ```
 
-#### 3. Add Makefile Targets for Test Tiers ⚡
+**⚠️ Remaining Work**: Add markers to ~195 unmarked tests for full tier separation
 
-**Add to `Makefile` after line 63:**
+#### 3. Makefile Test Tier Targets Created ⚡
+
+**Status**: IMPLEMENTED in Makefile:53-78
+
+Current targets:
 
 ```makefile
 test-unit: ## Run only fast unit tests (< 30 seconds)
@@ -398,21 +413,25 @@ test-ci: ## Run tests suitable for CI (all except GPU)
 	pytest -n auto -m "not gpu" -v --cov=nedc_bench --cov-report=xml
 ```
 
+**Actual Implementation**: Makefile:53-78
+
 **Workflow Impact:**
 
 ```bash
 # TDD workflow - instant feedback
-make test-quick          # ~30 seconds
+make test-quick          # ~30 seconds (estimated with full marker coverage)
 
 # Pre-commit - verify core functionality
-make test-unit           # ~1 minute
+make test-unit           # ~1 minute (estimated with full marker coverage)
 
 # Pre-push - full validation
-make test                # ~2-3 minutes (parallel)
+make test                # ~2-3 minutes (parallel with pytest-xdist)
 
 # CI/CD - comprehensive
-make test-ci             # ~2-3 minutes
+make test-ci             # ~2-3 minutes (parallel, excludes GPU tests)
 ```
+
+**Note**: Test tier targets work best with complete marker coverage. Currently only 9/204 tests are marked.
 
 ### Medium-Term Improvements (Refactoring Required)
 
