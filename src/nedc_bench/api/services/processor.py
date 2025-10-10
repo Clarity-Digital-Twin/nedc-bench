@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from datetime import datetime
 from typing import Any
 
@@ -12,6 +13,17 @@ from .websocket_manager import broadcast_progress
 logger = logging.getLogger(__name__)
 
 async_orchestrator = AsyncOrchestrator()
+
+
+def _cleanup_temp_files(ref_path: str | None, hyp_path: str | None) -> None:
+    """Remove temporary files created for this job."""
+    for path in (ref_path, hyp_path):
+        if path and os.path.exists(path):
+            try:
+                os.remove(path)
+                logger.debug("Removed temp file: %s", path)
+            except OSError as exc:
+                logger.warning("Failed to remove temp file %s: %s", path, exc)
 
 
 async def process_evaluation(job_id: str) -> None:
@@ -65,6 +77,7 @@ async def process_evaluation(job_id: str) -> None:
             await broadcast_progress(
                 job_id, {"type": "status", "status": "failed", "error": str(exc)}
             )
+            _cleanup_temp_files(job.get("ref_path"), job.get("hyp_path"))
             return
         finally:
             await progress_tracker.update_algorithm(job_id, algo, job["pipeline"], "completed")
@@ -82,3 +95,6 @@ async def process_evaluation(job_id: str) -> None:
         job_id,
         {"type": "status", "status": "completed", "message": "Evaluation completed successfully"},
     )
+
+    # Clean up temporary files
+    _cleanup_temp_files(job.get("ref_path"), job.get("hyp_path"))

@@ -259,7 +259,12 @@ class DualPipelineOrchestrator:
         ref_files = [f.replace("$NEDC_NFC", nedc_nfc) for f in ref_files]
         hyp_files = [f.replace("$NEDC_NFC", nedc_nfc) for f in hyp_files]
 
-        assert len(ref_files) == len(hyp_files), "List files must have same length"
+        # Validate list lengths match (explicit check, not assert)
+        if len(ref_files) != len(hyp_files):
+            raise ValueError(
+                f"Reference and hypothesis list files must have the same length. "
+                f"Got {len(ref_files)} ref files and {len(hyp_files)} hyp files."
+            )
 
         # Process each pair
         file_results: list[dict[str, Any]] = []
@@ -269,7 +274,7 @@ class DualPipelineOrchestrator:
             "total_files": len(ref_files),
         }
 
-        for ref_file, hyp_file in zip(ref_files, hyp_files, strict=False):
+        for ref_file, hyp_file in zip(ref_files, hyp_files, strict=True):
             result = self.evaluate(ref_file, hyp_file, algorithm)
             file_results.append({
                 "ref": ref_file,
