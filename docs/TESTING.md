@@ -175,17 +175,19 @@ tests/api/test_integration.py::test_websocket_progress
 ### Quick Reference
 
 ```bash
-# Standard test run (sequential, current default)
-make test                        # ~5 minutes
+# Standard test run (parallel by default - requires pytest-xdist)
+make test                        # ~2-3 minutes (parallel)
 
-# Parallel execution (RECOMMENDED)
-make test-fast                   # ~2-3 minutes (uses pytest-xdist)
+# Sequential execution (for debugging)
+make test-sequential             # ~5 minutes (sequential)
 
-# Run only fast unit tests (NEW TARGET - see recommendations)
-pytest -m "not integration and not slow" -v
+# Run only fast unit tests
+make test-quick                  # ~30 seconds (no coverage)
+make test-unit                   # ~1 minute (with coverage)
 
-# Run only integration tests
-pytest -m integration -v
+# Run specific test tiers
+make test-integration            # Integration tests only
+make test-e2e                    # End-to-end tests only
 
 # Run specific test file
 pytest tests/algorithms/test_dp_alignment.py -v
@@ -218,15 +220,18 @@ make benchmark         # Run performance benchmarks
 
 ## Performance Bottlenecks
 
-### 1. Sequential Execution (CRITICAL)
+### 1. Parallel Execution Setup (NOTE)
 
-**Issue**: Default `make test` runs tests sequentially despite pytest-xdist being installed.
+**Current Status**: As of 2025-10-10, `make test` now defaults to parallel execution using `pytest -n auto`.
 
-**Impact**:
-- Wastes ~60-70% of potential speedup
-- Multi-core CPUs underutilized
+**Requirements**:
+- Requires `pytest-xdist>=3.6.0` (included in `dev` dependencies)
+- Install with: `uv pip install -e ".[dev]"` or `pip install pytest-xdist`
+- If pytest-xdist is not installed, use `make test-sequential` instead
 
-**Fix**: Change default to parallel execution (see recommendations).
+**Expected Impact**:
+- 50-70% speedup on multi-core CPUs (5 min → 2-3 min)
+- For debugging failures, use `make test-sequential`
 
 ### 2. Integration Test Subprocess Overhead (HIGH)
 
@@ -762,15 +767,20 @@ cat pyproject.toml | grep -A 10 "\[tool.coverage"
 
 ### Current State (Baseline)
 
-| Metric | Value |
-|--------|-------|
-| Total Tests | 204 |
-| Sequential Time | 302 seconds (~5 min) |
-| Parallel Time | Not measured (not default) |
-| Unit Tests | ~30-60 seconds |
-| Integration Tests | ~60-120 seconds |
-| E2E Tests | ~120-180 seconds |
-| Coverage | 81.35% |
+| Metric | Value | Notes |
+|--------|-------|-------|
+| Total Tests | 204 | As of 2025-10-10 |
+| Sequential Time | 302 seconds (~5 min) | Baseline measurement |
+| Parallel Time (est.) | 120-180 seconds (~2-3 min) | Requires pytest-xdist installation |
+| Unit Tests | ~30-60 seconds | Estimated without markers |
+| Integration Tests | ~60-120 seconds | Estimated without markers |
+| E2E Tests | ~120-180 seconds | Includes subprocess overhead |
+| Coverage | 81.35% | nedc_bench package only |
+
+**⚠️ Important**: Actual parallel performance will vary based on:
+- CPU core count (pytest-xdist uses `-n auto` for optimal worker count)
+- Whether pytest-xdist is installed (`pip install pytest-xdist`)
+- Test isolation and shared resource contention
 
 ### Target State (After Optimizations)
 
@@ -785,24 +795,31 @@ cat pyproject.toml | grep -A 10 "\[tool.coverage"
 
 ## Summary of Recommendations
 
-### Priority 0 (Immediate - No Code Changes)
+### Priority 0 (Configuration Changes - Minimal Code)
 
-- ✅ **Enable parallel execution by default** in Makefile
-- ✅ **Add test tier markers** to existing tests
-- ✅ **Create new Makefile targets** (test-unit, test-integration, test-e2e, test-quick)
+**Status as of 2025-10-10**:
 
-**Expected Time Investment**: 1-2 hours
-**Expected Speedup**: 50-70% (5 min → 2-3 min)
+- ✅ **Enable parallel execution by default** in Makefile (Makefile:45-47)
+- ✅ **Create new Makefile targets** (test-unit, test-integration, test-e2e, test-quick, test-ci) (Makefile:53-78)
+- ✅ **Add test marker definitions** to pyproject.toml (pyproject.toml:290-299)
+- ⚠️ **Apply markers to test files** - PARTIALLY DONE (9/204 tests marked)
+
+**Actual Time Investment**: 2 hours (configuration complete)
+**Expected Speedup**: 50-70% (5 min → 2-3 min) *requires pytest-xdist installation*
+**Remaining Work**: Add markers to ~195 test functions
 
 ### Priority 1 (Refactoring - Medium Effort)
 
-- 🔧 **Optimize integration parity tests** with module-scoped fixtures
-- 🔧 **Make autouse fixture conditional** or session-scoped
-- 🔧 **Reduce sleep times** in polling loops and performance tests
-- 🔧 **Add explicit markers** to all 204 tests
+**Status**: PENDING - Requires code changes
+
+- 🔧 **Complete marker coverage** - Add markers to remaining ~195 tests
+- 🔧 **Optimize integration parity tests** with module-scoped fixtures (tests/validation/test_integration_parity.py)
+- 🔧 **Make autouse fixture conditional** or session-scoped (tests/conftest.py:49-57)
+- 🔧 **Reduce sleep times** in polling loops (tests/api/test_integration.py, test_cache_performance.py)
 
 **Expected Time Investment**: 4-8 hours
 **Expected Additional Speedup**: 20-30% (2-3 min → 1.5-2 min)
+**Blocking Factor**: Marker coverage needed for test tier targets to be fully effective
 
 ### Priority 2 (Strategic - Long-Term)
 
