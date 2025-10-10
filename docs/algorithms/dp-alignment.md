@@ -159,6 +159,17 @@ substitutions = {
 - **Space Complexity**: O(m × n) for DP table
 - **Typical Runtime**: \<100ms for typical sequences
 
+### Troubleshooting & History
+
+- **Penalty constants** — As of 2025-10-10, the default penalties come from
+  `nedc_bench.config.constants`. Keep constructor defaults in sync with that
+  module so edits remain single-sourced.
+- **NULL sentinel design** — The internal `NULL_CLASS = "null"` sentinel is
+  intentional and must remain distinct from the shared `"bckg"` background
+  label. See the collision analysis in
+  `docs/archive_v2/AGENT_FEEDBACK_VALIDATION_2025.md` for the reasoning. Never
+  replace it with the shared constant or parity will break.
+
 ## When to Use DP Alignment
 
 ### Recommended for:

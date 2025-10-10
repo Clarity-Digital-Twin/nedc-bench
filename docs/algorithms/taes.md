@@ -141,6 +141,18 @@ print(f"FN: {result.false_negatives:.2f}")  # FN: 0.25
 1. **Flag tracking**: Proper boolean flag management for processed events
 1. **Fractional boundaries**: Exact NEDC calc_hf formula matching
 
+### Troubleshooting & History
+
+- **FA/24h duration mismatch (P0, 2025-09-15)** — Beta summed only the longest
+  event per file, inflating false alarm rates by 5.6×. The fix now mirrors the
+  legacy implementation by summing durations across all files. See
+  `docs/archive/bugs/P0_CRITICAL_BUG_DURATION.md` for the original write-up;
+  parity evidence is tracked in [`docs/reference/parity.md`](../reference/parity.md).
+- **Microscopic float differences** — Investigations showed ≤0.0014 drift due
+  to floating-point rounding. TAES tolerances in the tests reflect the NEDC
+  behaviour documented in `docs/archive/bugs/TAES_INVESTIGATION.md`. Any larger
+  delta should trigger a regression investigation.
+
 ### Performance Characteristics
 
 - **Time Complexity**: O(n × m) where n=refs, m=hyps

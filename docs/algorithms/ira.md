@@ -189,6 +189,20 @@ kappa = (sum_n * sum_m - sum_gc) / (sum_n * sum_n - sum_gc)
 
 This fix aligns the multi-class kappa formula exactly with NEDC; see docs/archive/bugs/IRA_KAPPA_FIX.md.
 
+### Troubleshooting & History
+
+- **Default parameters** — As part of the 2025-10-10 beta configuration work,
+  the scorer adopts the TOML defaults (`epoch_duration=0.25`,
+  `null_class="bckg"`). Earlier revisions exposed `1.0`/`"null"` defaults, so
+  double-check custom callers and update them if needed.
+- **Parity tolerances** — The tiny kappa delta that triggered the historical
+  bug report is now covered by regression tests in
+  `tests/validation/test_integration_parity.py`. Any deviation beyond rounding
+  noise should be treated as a regression.
+- **Event vs label mode** — Keep both code paths aligned. Divergence caused the
+  mismatch captured in the archived reports; the shared augmentation and
+  sampling helpers prevent that drift.
+
 ## Performance Characteristics
 
 - **Time Complexity**: O(n × e) for sampling, O(L²) for kappa

@@ -29,3 +29,6 @@
 ## Defaults
 
 - Minimum Python: 3.10 (3.11 used in CI for coverage, 3.10–3.11 supported).
+- Beta configuration design and load order are documented in
+  [`docs/developer/beta_config.md`](../developer/beta_config.md) and
+  [`docs/developer/beta_config_design.md`](../developer/beta_config_design.md).

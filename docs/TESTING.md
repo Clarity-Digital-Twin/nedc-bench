@@ -214,6 +214,38 @@ pytest tests/ -k "test_epoch" -v
 pytest tests/ --durations=20
 ```
 
+### Parity Validation Workflow
+
+Parity testing runs the full dual-pipeline comparison against the 1,832-file
+dataset in `data/csv_bi_parity/csv_bi_export_clean/`. Use these steps whenever
+you touch algorithm code or orchestration logic:
+
+1. Run the integration tests that exercise Alpha vs. Beta:
+
+   ```bash
+   pytest tests/validation/test_integration_parity.py -xvs
+   ```
+
+   This suite asserts metric-level equality for TAES, Epoch, Overlap, DP, and
+   IRA. It is the automated encoding of the guidance that used to live in
+   `docs/archive/bugs/PARITY_TESTING_SSOT.md`.
+
+2. Execute the comprehensive parity script for full-dataset validation:
+
+   ```bash
+   PYTHONPATH=src python scripts/ultimate_parity_test.py
+   ```
+
+   Add `--subset <N>` to sample a smaller batch during development. The script
+   compares against the canonical Alpha outputs stored alongside the dataset.
+
+3. Review or update the parity snapshot JSON files (`SSOT_ALPHA.json`,
+   `SSOT_BETA.json`) if the metrics change. Document updates in
+   [`docs/reference/parity.md`](reference/parity.md).
+
+These runs are CPU-heavy; prefer executing them in tmux or an environment where
+timeouts are not a concern.
+
 ### Current Makefile Targets
 
 ```makefile
@@ -602,6 +634,154 @@ pytest --durations=0 --durations-min=1.0 > test_timings.txt
 # Track slowest tests over time
 # Alert if any test exceeds threshold (e.g., 5s for unit test)
 ```
+
+### 2025 Integration Stability Findings
+
+Root causes identified during the 2025 stability audit (see archived
+`TEST_STABILITY_FIX_2025.md`):
+
+1. **Singleton job manager** — Module-level state in
+   `src/nedc_bench/api/services/job_manager.py` spawned multiple workers across
+   parallel tests, causing cancellations and mismatched job statuses.
+2. **NEDC subprocess contention** — Legacy wrapper executions are not
+   concurrent-safe; simultaneous runs conflicted over temporary files and
+   opaque stderr outputs.
+3. **Event loop binding** — Re-using the singleton queue across different
+   `TestClient` event loops triggered `Queue is bound to a different event loop`
+   errors.
+
+Resolution strategy:
+
+- Group all API integration tests with `@pytest.mark.xdist_group` and rely on
+  `pytest -n auto --dist loadgroup` (Makefile defaults) to run them serially on
+  a single worker.
+- Alternatives were evaluated and rejected (see detailed analysis below).
+
+### Alternative Solutions Evaluated
+
+During the 2025 stability audit, four approaches were considered:
+
+#### ❌ Alternative 1: Monkeypatching Job Manager
+
+**Approach**: Create fresh `JobManager()` instance per test and patch the module-level singleton.
+
+**Technical Details**:
+```python
+@pytest.fixture(scope="function")
+def fresh_job_manager(monkeypatch):
+    """Attempt to create fresh job manager per test."""
+    fresh_manager = JobManager()
+    monkeypatch.setattr("nedc_bench.api.services.job_manager.job_manager", fresh_manager)
+    return fresh_manager
+```
+
+**Why Rejected**:
+- **AsyncIO event loop binding issue** - The `asyncio.Queue` in `JobManager` is bound to the event loop that exists when the singleton is first created
+- When `TestClient` creates a new event loop per test, jobs fail with: `RuntimeError: <Queue> is bound to a different event loop`
+- Worker tasks can't process jobs across different event loops
+- Requires invasive changes to decouple queue from event loop lifecycle
+
+**Verdict**: Technically infeasible without major architectural refactoring.
+
+#### ❌ Alternative 2: Disabling Parallel Execution Entirely
+
+**Approach**: Remove `-n auto` flag from all test commands, forcing sequential execution.
+
+**Technical Details**:
+```makefile
+# Would revert to:
+test:
+    pytest -v --cov=nedc_bench  # No -n auto
+```
+
+**Why Rejected**:
+- **Unacceptable performance impact** - Test suite time increases from ~2 minutes to ~5 minutes
+- **Poor developer experience** - Slow feedback loop kills TDD workflow
+- **Wastes parallelization benefits** - 190 of 199 tests CAN run in parallel safely
+- **Not scalable** - As test suite grows, sequential execution becomes prohibitive
+
+**Verdict**: Solves the problem but creates worse problems.
+
+#### ❌ Alternative 3: Per-Process Job Manager with Process-Local Storage
+
+**Approach**: Replace module-level singleton with process-local storage using `multiprocessing.Manager` or similar.
+
+**Technical Details**:
+```python
+# Would require refactoring JobManager to:
+import threading
+
+_thread_local = threading.local()
+
+def get_job_manager() -> JobManager:
+    if not hasattr(_thread_local, 'job_manager'):
+        _thread_local.job_manager = JobManager()
+    return _thread_local.job_manager
+```
+
+**Why Rejected**:
+- **Complex architectural change** - Requires refactoring all imports of `job_manager`
+- **Invasive modifications** - Touches API routes, services, WebSocket handlers
+- **Testing realism** - Production uses singleton, tests would use different pattern
+- **Maintenance burden** - Additional abstraction layer to maintain
+- **Risk of new bugs** - Major refactoring introduces regression risk
+
+**Verdict**: Over-engineered solution for a test isolation problem.
+
+#### ✅ Alternative 4: pytest-xdist Group Markers (CHOSEN)
+
+**Approach**: Mark API tests to run serially on one worker while other tests run in parallel.
+
+**Technical Details**:
+```python
+# tests/api/test_integration.py
+@pytest.mark.xdist_group(name="api_integration")
+def test_submit_and_result_single_algorithm(client, sample_files):
+    """Runs serially with other api_integration group tests."""
+    ...
+```
+
+```makefile
+# Makefile
+test:
+    pytest -n auto --dist loadgroup -v --cov=nedc_bench
+    #             ^^^ Required for xdist_group to work
+```
+
+**Why Chosen**:
+- **Minimal code changes** - Only add decorator to 9 tests and update Makefile flag
+- **Industry standard solution** - Official pytest-xdist pattern for shared resources (2025 docs)
+- **Maintains parallel efficiency** - 190 tests still run in parallel, only 9 serialized
+- **Explicit and maintainable** - Clear intent via decorator, no hidden magic
+- **Zero architectural changes** - Production code unchanged, test isolation solved
+- **Low risk** - Non-invasive, easily reversible if needed
+
+**Performance Impact**:
+- API tests: ~47s (serial execution on one worker)
+- Algorithm tests: Fully parallelized across remaining workers
+- Total: ~2m 5s (negligible impact from serializing 9 tests)
+
+**Verification**: 100% pass rate across 3 consecutive runs, 199/199 tests passing.
+
+**Verdict**: Optimal solution balancing simplicity, performance, and maintainability.
+
+### Decision Rationale
+
+The `xdist_group` marker approach was selected because it:
+1. Solves the root cause (shared singleton contention) without changing production code
+2. Follows 2025 pytest-xdist best practices
+3. Keeps tests realistic (same job manager pattern as production)
+4. Maintains fast parallel execution for 95% of test suite
+5. Makes resource sharing explicit and documented
+
+Alternative approaches were rejected due to technical infeasibility (AsyncIO event loop binding), unacceptable performance degradation (sequential execution), or excessive complexity (per-process storage).
+
+Best practices adopted:
+
+- Scope API fixtures to `"function"` so each test gets a fresh `TestClient`.
+- Capture failure diagnostics (job errors, stderr) to accelerate debugging.
+- When adding new integration tests, place them in the existing
+  `api_integration` group unless they are explicitly isolated.
 
 ## Configuration Details
 
