@@ -47,4 +47,6 @@ class BetaPipelineOrchestrator:
         elif algorithm == "ira":
             return self.beta.evaluate_ira(ref_file, hyp_file)
         else:
-            raise ValueError(f"Unknown algorithm: {algorithm}. Beta supports: taes, dp, epoch, overlap, ira")
+            raise ValueError(
+                f"Unknown algorithm: {algorithm}. Beta supports: taes, dp, epoch, overlap, ira"
+            )

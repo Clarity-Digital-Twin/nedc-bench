@@ -164,6 +164,7 @@ class TestCacheIntegration:
 
             # Create properly typed mock orchestrator
             from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+
             mock_dual_orch = MagicMock(spec=DualPipelineOrchestrator)
 
             # Mock router to return typed orchestrator
@@ -223,6 +224,7 @@ class TestCacheIntegration:
 
             # Create properly typed mock orchestrator
             from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+
             mock_dual_orch = MagicMock(spec=DualPipelineOrchestrator)
             mock_dual_orch.evaluate.return_value = mock_result
 
@@ -261,6 +263,7 @@ class TestCacheIntegration:
 
             # Create properly typed mock orchestrator
             from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+
             mock_dual_orch = MagicMock(spec=DualPipelineOrchestrator)
             mock_dual_orch.alpha_wrapper = MagicMock()
             mock_dual_orch.alpha_wrapper.evaluate.return_value = alpha_result
@@ -335,6 +338,7 @@ class TestCachePerformance:
 
             # Create properly typed mock orchestrator
             from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+
             mock_dual_orch = MagicMock(spec=DualPipelineOrchestrator)
             mock_dual_orch.evaluate.return_value = mock_result
 
