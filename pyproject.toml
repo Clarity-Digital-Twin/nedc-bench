@@ -286,7 +286,8 @@ addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
-    "--dist=loadgroup",  # Required for xdist_group markers to work correctly
+    # NOTE: --dist=loadgroup is set in Makefile for parallel runs
+    # DO NOT set it here as default - it breaks sequential test runs
 ]
 markers = [
     "unit: fast unit tests (< 0.5s each, no external dependencies)",

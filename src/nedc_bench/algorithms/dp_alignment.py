@@ -12,7 +12,12 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from nedc_bench.config.constants import DP_PENALTY_DEL, DP_PENALTY_INS, DP_PENALTY_SUB, NULL_CLASS
+from nedc_bench.config.constants import DP_PENALTY_DEL, DP_PENALTY_INS, DP_PENALTY_SUB
+
+# DP Sentinel: Internal marker for alignment gaps. MUST be distinct from all real labels.
+# NEDC uses "***", but "null" is clearer and guaranteed not to appear in EEG label data.
+# This is DIFFERENT from config.NULL_CLASS ("bckg"), which is a real background label.
+NULL_CLASS = "null"
 
 
 @dataclass
