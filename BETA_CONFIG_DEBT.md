@@ -764,45 +764,54 @@ nedc-bench/
 
 **All claims validated from first principles by reading actual source code.**
 
-### Validation 1: TOML Dependency ✅ CONFIRMED
+### Validation 1: TOML Dependency ✅ CONFIRMED → FIXED
 - **Claim**: Beta requires TOML file from `nedc_eeg_eval/v6.0.0/`
 - **Evidence**: `params.py:51-56` shows `p.open("rb")` will raise `FileNotFoundError` if TOML missing
-- **Status**: **100% ACCURATE**
+- **Status**: **100% ACCURATE** → **FIXED via Tier 1** (beta_params.toml now bundled)
 
-### Validation 2: IRA Scorer Defaults ✅ CONFIRMED
+### Validation 2: IRA Scorer Defaults ✅ CONFIRMED → FIXED
 - **Claim**: IRA scorer has wrong defaults (same as Epoch)
 - **Evidence**: `ira.py:73` shows `null_class: str = "null"` (wrong default)
-- **Status**: **100% ACCURATE** - Document updated to include IRA in Issue 2
+- **Status**: **100% ACCURATE** → **FIXED via Tier 2** (now uses NULL_CLASS = "bckg")
 
-### Validation 3: Case Sensitivity ✅ CONFIRMED
+### Validation 3: Case Sensitivity ✅ CONFIRMED → DOCUMENTED
 - **Claim**: Canonical form is lowercase "bckg", not uppercase "BCKG"
 - **Evidence**: `params.py:75` shows `.lower()` applied to null_class before returning
 - **Status**: **100% ACCURATE** - Document updated to use lowercase "bckg" throughout
 
-### Validation 4: Build System is Hatch ✅ CONFIRMED
+### Validation 4: Build System is Hatch ✅ CONFIRMED → IMPLEMENTED
 - **Claim**: pyproject.toml uses Hatch, not setuptools
 - **Evidence**: `pyproject.toml:1-3` shows `build-backend = "hatchling.build"`
-- **Status**: **100% ACCURATE** - Document updated to use Hatch packaging instructions with `importlib.resources`
+- **Status**: **100% ACCURATE** → **IMPLEMENTED** (Hatch force-include added)
 
-### Validation 5: DEFAULT_CHANNEL Already Exists ✅ CONFIRMED
+### Validation 5: DEFAULT_CHANNEL Already Exists ✅ CONFIRMED → IMPLEMENTED
 - **Claim**: DEFAULT_CHANNEL constant already defined, should reuse not duplicate
 - **Evidence**: `annotations.py:15` shows `DEFAULT_CHANNEL: Literal["TERM"] = "TERM"`
-- **Status**: **100% ACCURATE** - Document updated to import and re-export, not duplicate
+- **Status**: **100% ACCURATE** → **IMPLEMENTED** (constants.py re-exports, no duplication)
+
+### Validation 6: DP NULL_CLASS Semantic Distinction ✅ INTENTIONAL DESIGN
+- **Discovery**: dp_alignment.py uses `NULL_CLASS = "null"` (different from config.NULL_CLASS)
+- **Evidence**: This is **correct by design** - DP sentinel must not collide with real labels
+- **Status**: **INTENTIONAL ARCHITECTURE** - Documented in AGENT_FEEDBACK_VALIDATION_2025.md
+- **Imports**: DP penalties centralized, NULL_CLASS intentionally local
 
 ### Agent Audit Findings
 External agent identified these corrections (all validated and incorporated):
-1. ✅ IRA scorer has same wrong default as Epoch (added to Issue 2)
-2. ✅ Lowercase "bckg" is canonical (updated throughout document)
-3. ✅ Use Hatch packaging, not setuptools (updated Tier 1 implementation)
-4. ✅ Use `importlib.resources`, not `pkg_resources` (updated Tier 1 implementation)
-5. ✅ Reuse DEFAULT_CHANNEL, don't duplicate (updated Tier 3 implementation)
+1. ✅ IRA scorer has same wrong default as Epoch → FIXED (Tier 2)
+2. ✅ Lowercase "bckg" is canonical → DOCUMENTED throughout
+3. ✅ Use Hatch packaging, not setuptools → IMPLEMENTED (Tier 1)
+4. ✅ Use `importlib.resources`, not `pkg_resources` → IMPLEMENTED (Tier 1)
+5. ✅ Reuse DEFAULT_CHANNEL, don't duplicate → IMPLEMENTED (Tier 3)
+6. ✅ DP NULL_CLASS must remain local → VALIDATED (intentional design)
 
 ### Document Accuracy: 100%
 - All file paths verified
 - All line numbers verified
 - All code snippets verified
 - All claims validated from source
+- All fixes implemented and tested
 - No assumptions, only evidence
+- Design decisions documented with rationale
 
 ---
 
@@ -875,7 +884,7 @@ External agent identified these corrections (all validated and incorporated):
 **Files Created**:
 - `src/nedc_bench/config/constants.py` - Centralized algorithm constants
   - EPOCH_DURATION = 0.25
-  - NULL_CLASS = "bckg"
+  - NULL_CLASS = "bckg" (real background label used by epoch/IRA)
   - DP penalties = 1.0
   - OVERLAP_GUARD_WIDTH = 0.001
   - MIN_PRECISION = 4
@@ -885,13 +894,17 @@ External agent identified these corrections (all validated and incorporated):
 **Files Modified**:
 - `src/nedc_bench/algorithms/epoch.py` - Imports EPOCH_DURATION, NULL_CLASS
 - `src/nedc_bench/algorithms/ira.py` - Imports NULL_CLASS
+- `src/nedc_bench/algorithms/dp_alignment.py` - Imports DP_PENALTY_* (NOT NULL_CLASS - see below)
 - `src/nedc_bench/utils/params.py` - Imports constants for fallback
 
 **Result**:
-- ✅ All algorithm constants in one place
+- ✅ All algorithm parameters centralized with proper separation of concerns
 - ✅ Type-safe with Final annotation
 - ✅ No duplication (reuses DEFAULT_CHANNEL)
 - ✅ All algorithm tests pass (71/71)
+
+**Critical Design Note**:
+`dp_alignment.py` imports DP penalties but keeps its own `NULL_CLASS = "null"` sentinel. This is **correct by design** - the DP sentinel must be distinct from real data labels (including "bckg") to prevent collision during alignment. See `docs/AGENT_FEEDBACK_VALIDATION_2025.md` for detailed explanation.
 
 ### Tests Updated
 
@@ -928,12 +941,15 @@ External agent identified these corrections (all validated and incorporated):
 - ✅ All tests pass
 
 **Tier 3 Success Criteria**:
-- ✅ All magic numbers imported from `config/constants.py`
-- ✅ No hardcoded `0.25`, `"bckg"`, `1.0` in algorithm code
+- ✅ All algorithm parameters imported from `config/constants.py`
+- ✅ No hardcoded algorithm params in code (EXCEPT dp_alignment.py NULL_CLASS="null" sentinel, which is intentionally local - see note below)
 - ✅ DEFAULT_CHANNEL reused from annotations.py (not duplicated)
 - ✅ Type-safe constants with `Final` annotation
 - ✅ All tests pass
-- ⏳ Linting and type checking pass (requires separate validation)
+- ✅ Linting and type checking pass
+
+**IMPORTANT NOTE on dp_alignment.py NULL_CLASS**:
+The DP aligner uses `NULL_CLASS = "null"` as a local **internal sentinel** for alignment gaps. This is DIFFERENT from `config.NULL_CLASS = "bckg"` which is a real background label that appears in EEG data. This separation is **intentional by design** to prevent collision. See `docs/AGENT_FEEDBACK_VALIDATION_2025.md` lines 38-109 for detailed first-principles explanation of why this must remain local.
 
 ### Files Modified Summary
 
@@ -974,5 +990,42 @@ External agent identified these corrections (all validated and incorporated):
 ✅ **Status**: FULLY IMPLEMENTED - ALL THREE TIERS COMPLETE
 
 📋 **Result**: Beta pipeline achieves TRUE independence from NEDC assets
+
+---
+
+## Key Design Decisions Summary
+
+### 1. Centralized Constants (Tier 3)
+**What's Centralized**: Algorithm parameters that affect NEDC parity
+- `EPOCH_DURATION = 0.25` (used by epoch.py, ira.py)
+- `NULL_CLASS = "bckg"` (semantic background label used by epoch.py, ira.py)
+- `DP_PENALTY_DEL/INS/SUB = 1.0` (used by dp_alignment.py)
+- `OVERLAP_GUARD_WIDTH = 0.001` (used by overlap.py)
+
+**What's NOT Centralized**: Internal implementation details
+- `dp_alignment.py NULL_CLASS = "null"` (internal sentinel, must be distinct from real labels)
+
+**Rationale**: Separation of concerns - algorithm parameters vs internal sentinels serve different purposes
+
+### 2. Beta Config Priority (Tier 1)
+**Load Order**:
+1. `BETA_CONFIG_PATH` env → custom user config
+2. Bundled `beta_params.toml` → default (shipped with package)
+3. `NEDC_NFC` → dual pipeline backwards compatibility
+4. In-repo NEDC → development mode
+5. Hardcoded defaults → last resort
+
+**Result**: Beta runs without NEDC assets, dual pipeline still works
+
+### 3. Test Configuration
+**Parallel Execution**: `--dist loadgroup` in Makefile targets (opt-in)
+**Sequential Execution**: No special flags needed (works out of box)
+**Rationale**: Don't force parallel config globally - let developers run tests normally
+
+### 4. Package Distribution (Tier 1)
+**Build System**: Hatch (not setuptools)
+**Data Files**: `force-include` for beta_params.toml
+**Resource Loading**: `importlib.resources` (Python 3.10+)
+**Result**: Beta config ships in wheel, accessible at runtime
 
 **Actual Implementation Time**: ~2 hours (all three tiers)
