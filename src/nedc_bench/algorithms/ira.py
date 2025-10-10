@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from typing import cast
 
 from nedc_bench.models.annotations import EventAnnotation
+from nedc_bench.utils.annotations import fill_gaps_with_background
 
 
 @dataclass
