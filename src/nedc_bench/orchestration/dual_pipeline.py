@@ -18,6 +18,7 @@ from nedc_bench.algorithms.ira import IRAScorer
 from nedc_bench.algorithms.overlap import OverlapScorer
 from nedc_bench.algorithms.taes import TAESScorer
 from nedc_bench.models.annotations import AnnotationFile, EventAnnotation
+from nedc_bench.utils.annotations import fill_gaps_with_background
 from nedc_bench.utils.params import load_nedc_params, map_event_label
 from nedc_bench.validation.parity import ParityValidator, ValidationReport
 
@@ -59,49 +60,13 @@ class BetaPipeline:
             ev.label = map_event_label(ev.label, label_map)
         return events
 
-    def _expand_with_null(
-        self, events: list[EventAnnotation], duration: float, null_label: str
-    ) -> list[EventAnnotation]:
-        """Expand sparse events by inserting null segments to cover full duration."""
-        if not events:
-            return []
-        # Ensure sorted
-        evs: list[EventAnnotation] = sorted(events, key=lambda e: e.start_time)
-        expanded: list[EventAnnotation] = []
-        cur = 0.0
-        for ev in evs:
-            if ev.start_time > cur:
-                # insert null
-                expanded.append(
-                    type(ev)(
-                        channel=ev.channel,
-                        start_time=cur,
-                        stop_time=ev.start_time,
-                        label=null_label,
-                        confidence=1.0,
-                    )
-                )
-            expanded.append(ev)
-            cur = ev.stop_time
-        if cur < duration:
-            expanded.append(
-                type(evs[0])(
-                    channel=evs[0].channel,
-                    start_time=cur,
-                    stop_time=duration,
-                    label=null_label,
-                    confidence=1.0,
-                )
-            )
-        return expanded
-
     def evaluate_dp(self, ref_file: Path, hyp_file: Path) -> Any:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
         # Expand to include background segments to mirror NEDC tooling behavior
-        ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
-        hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
+        ref_events = fill_gaps_with_background(ref_ann.events, ref_ann.duration, params.null_class)
+        hyp_events = fill_gaps_with_background(hyp_ann.events, hyp_ann.duration, params.null_class)
         # Apply label mapping
         self._map_events(ref_events, params.label_map)
         self._map_events(hyp_events, params.label_map)
@@ -114,8 +79,8 @@ class BetaPipeline:
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
         # Use expansion for consistency with prior validated behavior
-        ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
-        hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
+        ref_events = fill_gaps_with_background(ref_ann.events, ref_ann.duration, params.null_class)
+        hyp_events = fill_gaps_with_background(hyp_ann.events, hyp_ann.duration, params.null_class)
         self._map_events(ref_events, params.label_map)
         self._map_events(hyp_events, params.label_map)
         scorer = EpochScorer(epoch_duration=params.epoch_duration, null_class=params.null_class)
