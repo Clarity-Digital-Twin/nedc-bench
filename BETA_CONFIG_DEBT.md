@@ -1,0 +1,641 @@
+# Beta Configuration Debt & TOML Dependency Audit
+
+**Created**: 2025-10-10
+**Status**: 🔴 NEEDS REVIEW BEFORE IMPLEMENTATION
+**Priority**: P1 - Affects "beta-only" deployment claim
+
+---
+
+## Executive Summary
+
+**AGENT CLAIM VALIDATED**: ✅ **100% TRUE**
+
+The external agent correctly identified that **beta pipeline is NOT fully independent** from NEDC assets. While we eliminated runtime Alpha coupling, beta algorithms still depend on a TOML config file located at:
+
+```
+nedc_eeg_eval/v6.0.0/src/nedc_eeg_eval/nedc_eeg_eval_params_v00.toml
+```
+
+This creates a **hidden dependency** that contradicts our "beta-only deployment" claims.
+
+### Related Issues Discovered
+
+During validation, discovered **2 additional critical issues**:
+
+1. **Wrong defaults in epoch.py**: Defaults are `epoch_duration=1.0, null_class="null"` but TOML specifies `0.25, "BCKG"`
+2. **Magic numbers scattered**: No centralized constants module for beta configuration
+
+These issues are **directly related** - they all stem from lack of a centralized configuration strategy.
+
+---
+
+## Issue 1: Beta Depends on NEDC TOML File
+
+### Current Behavior
+
+**Location**: `src/nedc_bench/utils/params.py:28-56`
+
+```python
+PARAM_REL_PATH = "src/nedc_eeg_eval/nedc_eeg_eval_params_v00.toml"
+
+def _default_param_path() -> Path:
+    """Return fallback param path inside the repo."""
+    return Path("nedc_eeg_eval/v6.0.0") / PARAM_REL_PATH
+
+def load_nedc_params() -> NedcParams:
+    """Load parameters and label map from TOML."""
+    p = _env_param_path()
+    if p is None or not p.exists():
+        p = _default_param_path()  # ⚠️ Falls back to NEDC directory!
+
+    with p.open("rb") as fp:
+        data = _tomllib.load(fp)
+```
+
+### What Beta Algorithms Load from TOML
+
+| Algorithm | Uses | From TOML |
+|-----------|------|-----------|
+| **Epoch** | `load_nedc_params()` | `epoch_duration=0.25`, `null_class="BCKG"`, `label_map` |
+| **DP** | `load_nedc_params()` | `label_map` only |
+| **Overlap** | `load_nedc_params()` | `label_map` only |
+| **IRA** | `load_nedc_params()` | `epoch_duration=0.25`, `null_class="BCKG"`, `label_map` |
+| **TAES** | ❌ No params | N/A |
+
+**Code Evidence**:
+- `dual_pipeline.py:64, 78, 90, 102` - All non-TAES algorithms call `load_nedc_params()`
+- `dual_pipeline.py:68, 82, 94, 105` - Use `params.null_class` for background filling
+- `dual_pipeline.py:86` - EpochScorer uses `params.epoch_duration`
+- `dual_pipeline.py:112` - IRAScorer uses `params.epoch_duration`
+
+### Why This Matters
+
+**CLAIM**: "Beta can run WITHOUT 1GB+ legacy assets"
+**REALITY**: Beta needs the TOML file, which lives inside `nedc_eeg_eval/v6.0.0/`
+
+**Impact on Deployment**:
+- ❌ Cannot deploy pure-beta container without extracting TOML
+- ❌ Docker image still needs NEDC directory (or TOML copy)
+- ❌ API requires either NEDC_NFC set OR repo present
+- ✅ Beta doesn't need Alpha Python code (TRUE)
+- ✅ Beta doesn't need 1GB+ model files (TRUE)
+- ⚠️ Beta needs ONE 2KB TOML file (HIDDEN DEPENDENCY)
+
+### Agent's Suggestion
+
+> "If the deployment goal is a completely legacy-free beta image, copy or package the TOML config outside nedc_eeg_eval/ so the claim holds in production."
+
+**Verdict**: ✅ Correct recommendation
+
+---
+
+## Issue 2: Wrong Defaults in EpochScorer and IRAScorer
+
+### Current Code
+
+**Location 1**: `src/nedc_bench/algorithms/epoch.py:98`
+
+```python
+class EpochScorer:
+    def __init__(self, epoch_duration: float = 1.0, null_class: str = "null"):
+        #                              ^^^ WRONG!     ^^^^^^^^^^^ WRONG!
+        self.epoch_duration = epoch_duration
+        self.null_class = null_class
+```
+
+**Location 2**: `src/nedc_bench/algorithms/ira.py:73` (IRAScorer.score method)
+
+```python
+def score(
+    self,
+    ref: list[EventAnnotation] | list[str],
+    hyp: list[EventAnnotation] | list[str],
+    epoch_duration: float | None = None,
+    file_duration: float | None = None,
+    null_class: str = "null",  # ← WRONG! Same issue
+):
+```
+
+### What TOML Says
+
+**Location**: `nedc_eeg_eval/v6.0.0/src/nedc_eeg_eval/nedc_eeg_eval_params_v00.toml:64-65`
+
+```toml
+[NEDC_EPOCH]
+epoch_duration = '0.25'  # ← Correct value
+null_class = "BCKG"      # ← Correct value (lowercased to "bckg" by loader)
+```
+
+**IMPORTANT**: `load_nedc_params()` applies `.lower()` to null_class (params.py:75), so the canonical form is **`"bckg"`** (lowercase), not `"BCKG"`.
+
+### Why This Is Wrong
+
+1. **Misleading API**: Defaults suggest `1.0` and `"null"` are standard, but NEDC uses `0.25` and `"bckg"`
+2. **Breaks without TOML**: If you call `EpochScorer()` or `IRAScorer.score()` directly without params, you get wrong values
+3. **Both algorithms affected**: Both Epoch and IRA need the same correction
+4. **User confusion**: Docstring says "default 1.0" but NEDC parity requires `0.25`
+
+### Current Mitigation
+
+**Orchestrator always passes params**:
+- `dual_pipeline.py:86`: EpochScorer gets params from `load_nedc_params()`
+- `dual_pipeline.py:112`: IRAScorer.score gets params from `load_nedc_params()`
+
+```python
+scorer = EpochScorer(epoch_duration=params.epoch_duration, null_class=params.null_class)
+```
+
+So in practice, wrong defaults don't break parity **because we always override them**.
+
+But this is **fragile** - if someone calls `EpochScorer()` or `IRAScorer.score()` directly in a script without params, they'll get wrong results.
+
+---
+
+## Issue 3: No Centralized Constants Module
+
+### Magic Numbers Found
+
+| Location | Value | Purpose | Source of Truth |
+|----------|-------|---------|-----------------|
+| `epoch.py:98` | `1.0` | Epoch duration default | ⚠️ WRONG (should be 0.25) |
+| `epoch.py:98` | `"null"` | Null class default | ⚠️ WRONG (should be "bckg") |
+| `ira.py:73` | `"null"` | IRA null class default | ⚠️ WRONG (should be "bckg") |
+| `dp_alignment.py:59` | `1.0, 1.0, 1.0` | DP penalties | TOML (NEDC_DPALIGN) |
+| `file_validator.py:8` | `100 * 1024 * 1024` | Max file size | ✅ OK (API config, not NEDC) |
+| `dual_pipeline.py:121` | `1e-10` | Parity tolerance | ✅ OK (orchestration config) |
+| `utils/annotations.py:15` | `"TERM"` | Default channel | ✅ OK (already constant - reuse this!) |
+| `params.py:74` | `"0.25"` | Fallback epoch | ⚠️ Hardcoded fallback in loader |
+| `params.py:75` | `"BCKG"` → `.lower()` | Fallback null class | ⚠️ Hardcoded fallback (becomes "bckg") |
+| `params.py:79` | `"0.001"` | Fallback guard width | ⚠️ Hardcoded fallback in loader |
+
+### Problems
+
+1. **No single source of truth** for beta configuration
+2. **Defaults scattered** across multiple files
+3. **Hardcoded fallbacks** in params loader duplicates TOML values
+4. **Wrong defaults** in algorithm constructors
+
+### What's OK vs What's Not
+
+**✅ ACCEPTABLE** (not related to NEDC algorithms):
+- API limits (max file size, max workers, timeouts)
+- Parity validation tolerance
+- Monitoring intervals
+- Cache TTLs
+
+**⚠️ NEEDS CENTRALIZATION** (NEDC algorithm parameters):
+- Epoch duration
+- Null class label
+- DP penalties
+- Guard width
+- Label mappings
+
+---
+
+## Relationship Between Issues
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ROOT CAUSE: No centralized beta configuration strategy      │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+        ┌─────────────┼─────────────┐
+        │             │             │
+        ▼             ▼             ▼
+  Issue 1:      Issue 2:      Issue 3:
+  TOML          Wrong         No constants
+  dependency    defaults      module
+```
+
+**All three issues stem from the same root problem**: Beta algorithms need NEDC-compatible parameters, but there's no proper abstraction for this.
+
+**Current approach**: "Just load the TOML file"
+**Problem**: Creates hidden dependency on NEDC directory structure
+
+---
+
+## Proposed Solution: Three-Tiered Fix
+
+### Tier 1: Eliminate TOML Dependency (P0)
+
+**Goal**: Beta can run without ANY NEDC files
+
+**Approach**: Extract beta-relevant params into standalone config
+
+**Implementation**:
+1. Create `src/nedc_bench/config/beta_params.toml` with beta-only params:
+   ```toml
+   [beta]
+   version = "1.0.0"
+
+   [algorithms.epoch]
+   duration = 0.25
+   null_class = "BCKG"
+
+   [algorithms.ira]
+   duration = 0.25
+   null_class = "BCKG"
+
+   [algorithms.dp]
+   penalty_del = 1.0
+   penalty_ins = 1.0
+   penalty_sub = 1.0
+
+   [algorithms.overlap]
+   guard_width = 0.001  # Currently unused but documented
+
+   [label_map]
+   SEIZ = ["SEIZ"]
+   BCKG = ["BCKG"]
+   ```
+
+2. Update `params.py` to prefer beta config:
+   ```python
+   def load_nedc_params() -> NedcParams:
+       # Try 1: Beta-specific config (new)
+       beta_config = Path("src/nedc_bench/config/beta_params.toml")
+       if beta_config.exists():
+           return _load_from_beta_config(beta_config)
+
+       # Try 2: NEDC_NFC environment (dual pipeline)
+       p = _env_param_path()
+       if p and p.exists():
+           return _load_from_nedc_toml(p)
+
+       # Try 3: In-repo NEDC (development)
+       p = _default_param_path()
+       if p.exists():
+           return _load_from_nedc_toml(p)
+
+       # Fallback: Hardcoded defaults (last resort)
+       return _default_params()
+   ```
+
+3. Ship beta config in package:
+   ```python
+   # pyproject.toml
+   [tool.setuptools.package-data]
+   nedc_bench = ["config/*.toml"]
+   ```
+
+**Result**:
+- ✅ Beta container needs ZERO NEDC files
+- ✅ Dual/Alpha pipeline still uses NEDC TOML (backwards compatible)
+- ✅ Clear separation of concerns
+
+**Files Modified**:
+- `src/nedc_bench/config/beta_params.toml` (NEW)
+- `src/nedc_bench/utils/params.py` (UPDATE)
+- `pyproject.toml` (UPDATE package data)
+
+---
+
+### Tier 2: Fix Wrong Defaults (P1)
+
+**Goal**: Algorithm defaults match NEDC/beta config
+
+**Approach**: Update constructor defaults to match beta_params.toml
+
+**Implementation**:
+
+1. **epoch.py:98** - Fix EpochScorer defaults:
+   ```python
+   # BEFORE
+   def __init__(self, epoch_duration: float = 1.0, null_class: str = "null"):
+
+   # AFTER
+   def __init__(self, epoch_duration: float = 0.25, null_class: str = "BCKG"):
+       """Initialize with epoch parameters
+
+       Args:
+           epoch_duration: Duration of each fixed-width epoch (default 0.25 per NEDC)
+           null_class: Label for unclassified epochs (default "BCKG" per NEDC)
+       """
+   ```
+
+2. **Update docstrings** to reflect correct defaults
+
+**Result**:
+- ✅ Calling `EpochScorer()` without args gives NEDC-compatible behavior
+- ✅ No silent failures if orchestrator forgets to pass params
+- ✅ Less fragile code
+
+**Files Modified**:
+- `src/nedc_bench/algorithms/epoch.py` (UPDATE)
+
+---
+
+### Tier 3: Centralized Constants Module (P2)
+
+**Goal**: Single source of truth for beta configuration
+
+**Approach**: Create typed constants module
+
+**Implementation**:
+
+1. Create `src/nedc_bench/config/constants.py`:
+   ```python
+   """Beta pipeline configuration constants.
+
+   These values are derived from NEDC reference implementation
+   but packaged independently for beta-only deployments.
+   """
+
+   from dataclasses import dataclass
+   from typing import Final
+
+
+   # Algorithm parameters (from beta_params.toml)
+   EPOCH_DURATION: Final[float] = 0.25
+   NULL_CLASS: Final[str] = "BCKG"
+   DP_PENALTY_DEL: Final[float] = 1.0
+   DP_PENALTY_INS: Final[float] = 1.0
+   DP_PENALTY_SUB: Final[float] = 1.0
+   OVERLAP_GUARD_WIDTH: Final[float] = 0.001
+
+   # Default channel
+   DEFAULT_CHANNEL: Final[str] = "TERM"
+
+   # Precision (NEDC rounding)
+   MIN_PRECISION: Final[int] = 4
+
+
+   @dataclass(frozen=True)
+   class LabelMap:
+       """Default two-class label mapping (SEIZ vs BCKG)"""
+
+       SEIZ: tuple[str, ...] = ("SEIZ",)
+       BCKG: tuple[str, ...] = ("BCKG",)
+
+       def to_dict(self) -> dict[str, str]:
+           """Flatten to raw_label -> class mapping"""
+           mapping = {}
+           for cls in ("SEIZ", "BCKG"):
+               for label in getattr(self, cls):
+                   mapping[label.lower()] = cls.lower()
+           return mapping
+
+
+   DEFAULT_LABEL_MAP = LabelMap()
+   ```
+
+2. Update algorithms to import from constants:
+   ```python
+   # epoch.py
+   from nedc_bench.config.constants import EPOCH_DURATION, NULL_CLASS
+
+   def __init__(
+       self,
+       epoch_duration: float = EPOCH_DURATION,
+       null_class: str = NULL_CLASS
+   ):
+   ```
+
+3. Update params.py to use constants as fallbacks:
+   ```python
+   from nedc_bench.config.constants import EPOCH_DURATION, NULL_CLASS
+
+   def _default_params() -> NedcParams:
+       """Fallback params using constants"""
+       return NedcParams(
+           label_map=DEFAULT_LABEL_MAP.to_dict(),
+           epoch_duration=EPOCH_DURATION,
+           null_class=NULL_CLASS,
+           guard_width=OVERLAP_GUARD_WIDTH,
+       )
+   ```
+
+**Result**:
+- ✅ All constants in one place
+- ✅ Type-safe (Final, frozen dataclasses)
+- ✅ Self-documenting
+- ✅ Easy to modify for experiments
+
+**Files Modified**:
+- `src/nedc_bench/config/constants.py` (NEW)
+- `src/nedc_bench/algorithms/epoch.py` (UPDATE imports)
+- `src/nedc_bench/algorithms/dp_alignment.py` (UPDATE imports)
+- `src/nedc_bench/utils/annotations.py` (UPDATE imports)
+- `src/nedc_bench/utils/params.py` (UPDATE fallback)
+
+---
+
+## Implementation Plan
+
+### Phase 1: Document and Align (THIS DOCUMENT)
+- ✅ Create comprehensive audit
+- 🔄 Get user approval on plan
+- 📋 No code changes yet
+
+### Phase 2: Tier 1 - Eliminate TOML Dependency
+**Priority**: P0 (blocks "beta-only" claim)
+**Estimated Time**: 1-2 hours
+**Risk**: Low (additive, backwards compatible)
+
+**Steps**:
+1. Create `src/nedc_bench/config/beta_params.toml`
+2. Update `params.py` with beta-first loading strategy
+3. Update `pyproject.toml` package data
+4. Test beta-only execution (no NEDC directory)
+5. Update docs to reflect true beta independence
+
+**Testing**:
+```bash
+# Remove NEDC directory temporarily
+mv nedc_eeg_eval /tmp/nedc_backup
+
+# Run beta-only tests
+pytest tests/algorithms/ -v
+
+# Verify beta-only API works
+export NEDC_NFC=""
+docker-compose up -d
+curl -X POST "http://localhost:8000/api/v1/evaluate" \
+  -F "reference=@test.csv_bi" \
+  -F "hypothesis=@test.csv_bi" \
+  -F "algorithm=epoch" \
+  -F "pipeline=beta"
+
+# Restore NEDC directory
+mv /tmp/nedc_backup nedc_eeg_eval
+```
+
+### Phase 3: Tier 2 - Fix Wrong Defaults
+**Priority**: P1 (data quality)
+**Estimated Time**: 30 minutes
+**Risk**: Low (orchestrator overrides anyway)
+
+**Steps**:
+1. Update `epoch.py` constructor defaults
+2. Update docstrings
+3. Run full test suite to ensure no breakage
+
+**Testing**:
+```bash
+# Verify direct instantiation works
+python3 << EOF
+from nedc_bench.algorithms.epoch import EpochScorer
+scorer = EpochScorer()  # No args
+assert scorer.epoch_duration == 0.25
+assert scorer.null_class == "BCKG"
+print("✅ Defaults correct")
+EOF
+
+# Full test suite
+make test
+```
+
+### Phase 4: Tier 3 - Centralized Constants
+**Priority**: P2 (code quality)
+**Estimated Time**: 2-3 hours
+**Risk**: Medium (touches multiple files)
+
+**Steps**:
+1. Create `config/constants.py`
+2. Update all algorithm imports
+3. Update params.py fallback
+4. Run full test suite + linting
+5. Update any hardcoded values in tests
+
+**Testing**:
+```bash
+# Verify constants are used
+grep -r "0.25" src/nedc_bench/algorithms/
+# Should only find in constants.py or as EPOCH_DURATION import
+
+# Full test suite
+make test
+make lint
+make typecheck
+```
+
+---
+
+## Success Criteria
+
+### After Tier 1 (TOML Elimination)
+- [ ] Beta algorithms run without NEDC directory present
+- [ ] `src/nedc_bench/config/beta_params.toml` exists and is shipped
+- [ ] `params.py` prefers beta config over NEDC TOML
+- [ ] Dual pipeline still works (backwards compatible)
+- [ ] All tests pass
+- [ ] Docker image size reduced (no NEDC directory needed)
+
+### After Tier 2 (Fix Defaults)
+- [ ] `EpochScorer()` with no args has correct defaults (0.25, "BCKG")
+- [ ] Docstrings reflect correct defaults
+- [ ] All tests pass
+
+### After Tier 3 (Centralized Constants)
+- [ ] All magic numbers imported from `config/constants.py`
+- [ ] No hardcoded `0.25`, `"BCKG"`, `1.0` in algorithm code
+- [ ] Type-safe constants with `Final` annotation
+- [ ] All tests pass
+- [ ] Linting and type checking pass
+
+---
+
+## Risks and Mitigations
+
+### Risk 1: Breaking Dual Pipeline
+**Risk**: Changes to params.py might break Alpha/NEDC integration
+**Mitigation**:
+- Keep NEDC TOML as fallback (Tier 1 is additive, not replacement)
+- Test dual pipeline thoroughly
+- Beta-first loading strategy is backwards compatible
+
+### Risk 2: Label Map Differences
+**Risk**: Beta config label map might diverge from NEDC TOML
+**Mitigation**:
+- Copy exact label map from NEDC TOML initially
+- Document that users can customize beta config for experiments
+- Keep NEDC TOML as source of truth for dual pipeline
+
+### Risk 3: Test Breakage
+**Risk**: Tests might hardcode assumptions about params
+**Mitigation**:
+- Run full test suite after each tier
+- Fix tests to use constants instead of literals
+- Add regression test for beta-only execution
+
+---
+
+## Open Questions for User Approval
+
+### Question 1: TOML Location
+Where should `beta_params.toml` live?
+
+**Option A**: `src/nedc_bench/config/beta_params.toml` (inside package)
+- ✅ Ships with package automatically
+- ✅ Type-safe with pkg_resources
+- ❌ Users can't easily customize without forking
+
+**Option B**: `config/beta_params.toml` (repo root, copied to package)
+- ✅ Easier to find and edit
+- ✅ Can be overridden via env var
+- ❌ Requires explicit package_data config
+
+**Recommendation**: Option A (inside package) with env var override:
+```python
+BETA_CONFIG_PATH = os.environ.get("BETA_CONFIG_PATH") or pkg_resources.resource_filename("nedc_bench", "config/beta_params.toml")
+```
+
+### Question 2: Backwards Compatibility
+Should we keep supporting direct NEDC TOML loading?
+
+**Option A**: Yes (recommended)
+- ✅ Dual pipeline still works unchanged
+- ✅ Users with custom NEDC TOML can keep using it
+- ❌ More code paths to maintain
+
+**Option B**: No (deprecate)
+- ✅ Simpler code
+- ❌ Breaks dual pipeline unless we copy TOML
+- ❌ Forces users to migrate
+
+**Recommendation**: Option A (keep backwards compatibility)
+
+### Question 3: Tier 3 Scope
+Should Tier 3 also centralize API constants (max file size, timeouts, etc)?
+
+**Option A**: Yes (comprehensive)
+- ✅ True single source of truth
+- ❌ Mixes algorithm params with API config
+
+**Option B**: No (algorithm params only)
+- ✅ Focused on NEDC-related constants
+- ✅ API config stays in API code (clear boundaries)
+- ❌ Some magic numbers remain
+
+**Recommendation**: Option B (algorithm params only)
+
+---
+
+## Approval Checklist
+
+Before proceeding to implementation, confirm:
+
+- [ ] **Issue 1 (TOML dependency)** - Diagnosis correct? Fix approach sound?
+- [ ] **Issue 2 (wrong defaults)** - Confirmed as bug? Safe to fix?
+- [ ] **Issue 3 (magic numbers)** - Scope appropriate? Worth the refactor?
+- [ ] **Three-tiered approach** - Logical? Priorities correct?
+- [ ] **Implementation plan** - Sequence makes sense? Testing sufficient?
+- [ ] **Open questions** - Decisions made on TOML location, backwards compat, scope?
+
+**Once approved, proceed to Phase 2 implementation.**
+
+---
+
+## Related Documents
+
+- `BUG_HUNT_REPORT.md` - P1-1 Beta/Alpha decoupling (marked as fixed, but incomplete)
+- `docs/implementation/beta_decoupling_plan.md` - Original router pattern implementation
+- `CLAUDE.md` - Repository guidelines (constants section missing)
+
+**This document supersedes** the "100% beta independence" claim in BUG_HUNT_REPORT.md P1-1.
+
+---
+
+**END OF AUDIT DOCUMENT**
+
+📋 **Status**: Awaiting user review and approval before implementation
