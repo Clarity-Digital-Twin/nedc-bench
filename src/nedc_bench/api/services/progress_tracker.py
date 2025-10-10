@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 
@@ -16,7 +16,7 @@ class ProgressTracker:
             "completed_algorithms": 0,
             "current_algorithm": None,
             "current_pipeline": None,
-            "start_time": datetime.utcnow(),
+            "start_time": datetime.now(timezone.utc),
             "algorithm_times": {},
         }
 
@@ -26,7 +26,7 @@ class ProgressTracker:
         if job_id not in self.progress:
             return
         p = self.progress[job_id]
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         if status == "started":
             p["current_algorithm"] = algorithm
             p["current_pipeline"] = pipeline
@@ -44,7 +44,7 @@ class ProgressTracker:
         p = self.progress.get(job_id)
         if not p:
             return {}
-        elapsed = (datetime.utcnow() - p["start_time"]).total_seconds()
+        elapsed = (datetime.now(timezone.utc) - p["start_time"]).total_seconds()
         percent = (
             (p["completed_algorithms"] / p["total_algorithms"]) * 100
             if p["total_algorithms"]
@@ -58,6 +58,11 @@ class ProgressTracker:
             "total": p["total_algorithms"],
             "elapsed_time": elapsed,
         }
+
+    async def finish_job(self, job_id: str) -> None:
+        """Remove progress tracking data for completed/failed job to prevent memory leak."""
+        if job_id in self.progress:
+            del self.progress[job_id]
 
 
 progress_tracker = ProgressTracker()

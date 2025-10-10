@@ -78,6 +78,7 @@ async def process_evaluation(job_id: str) -> None:
                 job_id, {"type": "status", "status": "failed", "error": str(exc)}
             )
             _cleanup_temp_files(job.get("ref_path"), job.get("hyp_path"))
+            await progress_tracker.finish_job(job_id)  # Clean up progress tracking
             return
         finally:
             await progress_tracker.update_algorithm(job_id, algo, job["pipeline"], "completed")
@@ -96,5 +97,6 @@ async def process_evaluation(job_id: str) -> None:
         {"type": "status", "status": "completed", "message": "Evaluation completed successfully"},
     )
 
-    # Clean up temporary files
+    # Clean up temporary files and progress tracking
     _cleanup_temp_files(job.get("ref_path"), job.get("hyp_path"))
+    await progress_tracker.finish_job(job_id)  # Clean up progress tracking
