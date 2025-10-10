@@ -70,7 +70,10 @@ class AsyncOrchestrator:
         async def _run() -> dict[str, Any]:
             if pipeline == "dual":
                 # Use router to get dual orchestrator (lazy-loads Alpha if needed)
+                from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+
                 orchestrator = self.router.get_orchestrator("dual")
+                assert isinstance(orchestrator, DualPipelineOrchestrator)  # Type narrowing
                 result = await loop.run_in_executor(
                     self.executor,
                     orchestrator.evaluate,
@@ -104,7 +107,10 @@ class AsyncOrchestrator:
 
             if pipeline == "alpha":
                 # Use router to get dual orchestrator (lazy-loads Alpha if needed)
+                from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+
                 orchestrator = self.router.get_orchestrator("alpha")
+                assert isinstance(orchestrator, DualPipelineOrchestrator)  # Type narrowing
                 alpha_res = await loop.run_in_executor(
                     self.executor,
                     orchestrator.alpha_wrapper.evaluate,
@@ -115,7 +121,10 @@ class AsyncOrchestrator:
 
             if pipeline == "beta":
                 # Use router to get beta orchestrator (NO NEDC_NFC needed!)
+                from nedc_bench.orchestration.beta_orchestrator import BetaPipelineOrchestrator
+
                 orchestrator = self.router.get_orchestrator("beta")
+                assert isinstance(orchestrator, BetaPipelineOrchestrator)  # Type narrowing
 
                 def _run_beta() -> Any:
                     r = Path(ref_file)

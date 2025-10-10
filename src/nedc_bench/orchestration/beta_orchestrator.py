@@ -9,7 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from nedc_bench.orchestration.beta_pipeline import BetaPipeline
+from nedc_bench.orchestration.dual_pipeline import BetaPipeline
 
 
 class BetaPipelineOrchestrator:
