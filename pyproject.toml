@@ -288,9 +288,12 @@ addopts = [
     "--strict-config"
 ]
 markers = [
-    "integration: integration tests (may touch external resources)",
-    "performance: timing-sensitive tests",
+    "unit: fast unit tests (< 0.5s each, no external dependencies)",
+    "integration: integration tests (0.5-5s, may use real services like TestClient)",
+    "e2e: end-to-end tests (> 5s, spawn external processes, full system validation)",
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "subprocess: tests that spawn external processes (NEDC tooling, etc)",
+    "performance: timing-sensitive tests",
     "benchmark: marks benchmark tests",
     "gpu: marks tests requiring GPU",
 ]
