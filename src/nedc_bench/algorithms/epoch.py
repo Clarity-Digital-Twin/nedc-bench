@@ -211,67 +211,6 @@ class EpochScorer:
                 return idx
         return -1
 
-    def _augment_events(
-        self, events: list[EventAnnotation], file_duration: float
-    ) -> list[EventAnnotation]:
-        """Augment events with background to fill all gaps (NEDC-style).
-
-        NEDC fills gaps between events with background annotation so that
-        the entire file duration is covered continuously. This is CRITICAL
-        for exact parity - without this, we had a 9 TP difference!
-        """
-        if not events:
-            # If duration is non-positive, return empty to avoid zero-length events
-            if file_duration <= 0.0:
-                return []
-            # Empty annotation - fill entire duration with background
-            return [
-                EventAnnotation(
-                    channel="TERM",
-                    start_time=0.0,
-                    stop_time=file_duration,
-                    label=self.null_class,
-                    confidence=1.0,
-                )
-            ]
-
-        augmented: list[EventAnnotation] = []
-        curr_time = 0.0
-
-        # Sort events by start time
-        sorted_events = sorted(events, key=lambda x: x.start_time)
-
-        for ev in sorted_events:
-            # Fill gap before this event if needed
-            if curr_time < ev.start_time:
-                augmented.append(
-                    EventAnnotation(
-                        channel="TERM",
-                        start_time=curr_time,
-                        stop_time=ev.start_time,
-                        label=self.null_class,
-                        confidence=1.0,
-                    )
-                )
-
-            # Add the actual event
-            augmented.append(ev)
-            curr_time = ev.stop_time
-
-        # Fill gap at end if needed
-        if curr_time < file_duration:
-            augmented.append(
-                EventAnnotation(
-                    channel="TERM",
-                    start_time=curr_time,
-                    stop_time=file_duration,
-                    label=self.null_class,
-                    confidence=1.0,
-                )
-            )
-
-        return augmented
-
     def _compress_joint(self, reft: list[str], hypt: list[str]) -> tuple[list[str], list[str]]:
         """Compress duplicate consecutive pairs across ref/hyp jointly."""
         if not reft or not hypt:
