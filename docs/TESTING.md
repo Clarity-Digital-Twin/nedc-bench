@@ -203,11 +203,18 @@ pytest tests/ --durations=20
 ### Current Makefile Targets
 
 ```makefile
-make test           # Sequential, full coverage report
-make test-fast      # Parallel with pytest-xdist (-n auto)
-make test-slow      # Include slow-marked tests
-make benchmark      # Run performance benchmarks
+make test              # Parallel execution by default (requires pytest-xdist)
+make test-sequential   # Sequential execution (for debugging)
+make test-unit         # Run only fast unit tests (< 30 seconds)
+make test-integration  # Run integration tests only
+make test-e2e          # Run end-to-end tests (spawns external processes)
+make test-quick        # Run unit tests without coverage (fastest)
+make test-slow         # Run all tests including slow ones
+make test-ci           # Run tests suitable for CI (excludes GPU tests)
+make benchmark         # Run performance benchmarks
 ```
+
+**Note**: Parallel execution requires `pytest-xdist`. Install with: `uv pip install -e ".[dev]"`
 
 ## Performance Bottlenecks
 
