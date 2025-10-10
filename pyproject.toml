@@ -285,7 +285,8 @@ python_functions = ["test_*"]
 addopts = [
     "-ra",
     "--strict-markers",
-    "--strict-config"
+    "--strict-config",
+    "--dist=loadgroup",  # Required for xdist_group markers to work correctly
 ]
 markers = [
     "unit: fast unit tests (< 0.5s each, no external dependencies)",
@@ -338,3 +339,6 @@ exclude = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/nedc_bench", "src/alpha"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/nedc_bench/config/beta_params.toml" = "nedc_bench/config/beta_params.toml"

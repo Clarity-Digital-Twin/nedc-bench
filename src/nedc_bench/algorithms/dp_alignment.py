@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-NULL_CLASS = "null"
+from nedc_bench.config.constants import DP_PENALTY_DEL, DP_PENALTY_INS, DP_PENALTY_SUB, NULL_CLASS
 
 
 @dataclass
@@ -56,14 +56,17 @@ class DPAligner:
     """
 
     def __init__(
-        self, penalty_del: float = 1.0, penalty_ins: float = 1.0, penalty_sub: float = 1.0
+        self,
+        penalty_del: float = DP_PENALTY_DEL,
+        penalty_ins: float = DP_PENALTY_INS,
+        penalty_sub: float = DP_PENALTY_SUB,
     ):
         """Initialize with alignment penalties
 
         Args:
-            penalty_del: Deletion penalty (default 1.0)
-            penalty_ins: Insertion penalty (default 1.0)
-            penalty_sub: Substitution penalty (default 1.0)
+            penalty_del: Deletion penalty (default from config: DP_PENALTY_DEL)
+            penalty_ins: Insertion penalty (default from config: DP_PENALTY_INS)
+            penalty_sub: Substitution penalty (default from config: DP_PENALTY_SUB)
         """
         self.penalty_del = penalty_del
         self.penalty_ins = penalty_ins
