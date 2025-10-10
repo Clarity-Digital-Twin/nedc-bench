@@ -78,10 +78,7 @@ def test_submit_and_result_single_algorithm(client, sample_files):
         if status == "failed":
             # Capture and display error for debugging
             error_msg = result.get("error", "Unknown error")
-            pytest.fail(
-                f"Job {job_id} failed with error: {error_msg}\n"
-                f"Full result: {result}"
-            )
+            pytest.fail(f"Job {job_id} failed with error: {error_msg}\nFull result: {result}")
 
         time.sleep(0.5)
 
@@ -135,8 +132,7 @@ def test_websocket_progress(client, sample_files):
                 if status == "failed":
                     failed_with_error = msg.get("error", "Unknown error")
                     pytest.fail(
-                        f"Job {job_id} failed via websocket: {failed_with_error}\n"
-                        f"Message: {msg}"
+                        f"Job {job_id} failed via websocket: {failed_with_error}\nMessage: {msg}"
                     )
 
         assert got_update, f"No progress updates received for job {job_id}"
