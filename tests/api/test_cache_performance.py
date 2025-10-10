@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import asyncio
-import time
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
-from nedc_bench.api.services.async_wrapper import AsyncOrchestrator
 from nedc_bench.api.services.cache import RedisCache
 
 
@@ -147,7 +144,6 @@ class TestCacheOperations:
 
         result = await cache_with_mock_client.ping()
         assert result is False
-
 
 
 @pytest.mark.asyncio
