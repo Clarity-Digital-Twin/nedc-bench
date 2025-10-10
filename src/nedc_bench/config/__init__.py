@@ -6,6 +6,8 @@ This package contains:
 
 The beta config eliminates dependency on nedc_eeg_eval/ directory while maintaining
 full NEDC parity and backwards compatibility with dual pipeline.
-"""
 
-__all__ = ["beta_params.toml", "constants"]
+Usage:
+    from nedc_bench.config.constants import EPOCH_DURATION, NULL_CLASS
+    from nedc_bench.config import constants
+"""

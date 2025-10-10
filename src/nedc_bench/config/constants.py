@@ -25,16 +25,16 @@ from typing import Final
 from nedc_bench.utils.annotations import DEFAULT_CHANNEL
 
 __all__ = [
-    "EPOCH_DURATION",
-    "NULL_CLASS",
+    "DEFAULT_CHANNEL",
+    "DEFAULT_LABEL_MAP",
     "DP_PENALTY_DEL",
     "DP_PENALTY_INS",
     "DP_PENALTY_SUB",
-    "OVERLAP_GUARD_WIDTH",
+    "EPOCH_DURATION",
     "MIN_PRECISION",
-    "DEFAULT_CHANNEL",
+    "NULL_CLASS",
+    "OVERLAP_GUARD_WIDTH",
     "LabelMap",
-    "DEFAULT_LABEL_MAP",
 ]
 
 

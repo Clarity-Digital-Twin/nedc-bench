@@ -23,7 +23,7 @@ except ImportError:  # Python 3.10 fallback
 try:
     from importlib import resources
 except ImportError:
-    import importlib_resources as resources  # type: ignore[import-not-found]
+    import importlib_resources as resources  # type: ignore[import-not-found, no-redef]
 
 from nedc_bench.config.constants import (
     DEFAULT_LABEL_MAP,
@@ -89,9 +89,11 @@ def _load_from_beta_toml(path: Path) -> NedcParams:
     """
     # Handle both Path and Traversable (from importlib.resources)
     if hasattr(path, "read_bytes"):
-        data = _tomllib.loads(path.read_bytes().decode("utf-8"))  # type: ignore[union-attr]
+        data = _tomllib.loads(path.read_bytes().decode("utf-8"))
     else:
-        with open(path, "rb") as fp:
+        # Ensure path is a Path object for proper .open() usage
+        path_obj = Path(path) if not isinstance(path, Path) else path
+        with path_obj.open("rb") as fp:
             data = _tomllib.load(fp)
 
     # Load label map (already lowercase in beta format)
@@ -209,7 +211,7 @@ def load_nedc_params() -> NedcParams:
         # Python 3.10+ compatible resource loading
         if hasattr(resources, "files"):
             beta_config = resources.files("nedc_bench.config") / "beta_params.toml"
-            if beta_config.is_file():  # type: ignore[union-attr]
+            if beta_config.is_file():
                 return _load_from_beta_toml(beta_config)  # type: ignore[arg-type]
     except (ImportError, FileNotFoundError, AttributeError):
         pass
