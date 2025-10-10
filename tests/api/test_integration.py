@@ -10,36 +10,24 @@ pytest.importorskip("aiofiles")
 from fastapi.testclient import TestClient  # type: ignore
 
 from nedc_bench.api.main import app  # type: ignore
-from nedc_bench.api.services.job_manager import JobManager
 
 
 @pytest.fixture(scope="function")
-def client(monkeypatch):
-    """Create isolated TestClient with fresh job manager per test.
+def client():
+    """Create TestClient for integration tests.
 
-    CRITICAL FIX: Changed from scope="module" to scope="function" to fix race condition.
+    CRITICAL FIX: Uses @pytest.mark.xdist_group to prevent parallel execution.
 
-    Issue: The job_manager is a module-level singleton shared across all tests.
-    When multiple tests run in parallel (pytest -n auto), they create multiple
-    TestClient instances that all start worker tasks competing for jobs in the
-    same shared queue. This causes jobs to fail when worker tasks get cancelled
-    by other tests finishing.
+    Issue: The job_manager is a module-level singleton and the NEDC wrapper
+    spawns subprocesses that cannot run concurrently. When multiple tests run
+    in parallel (pytest -n auto), they interfere with each other causing:
+    1. Job manager race conditions (shared queue, multiple workers)
+    2. NEDC wrapper subprocess failures (file system contention)
 
-    Solution: Use function scope to ensure each test gets its own isolated
-    TestClient and job manager instance, preventing parallel test interference.
-
-    Technical details:
-    - Patches the singleton at its definition site (job_manager.py)
-    - This ensures all imports see the patched instance
-    - Each test gets a fresh JobManager with its own queue and worker
-    - Prevents worker task cancellation from affecting other tests
+    Solution: Mark all integration tests with @pytest.mark.xdist_group to
+    ensure they run serially on the same worker, preventing interference.
+    This requires running pytest with --dist loadgroup.
     """
-    # Create a fresh job manager instance for this test
-    fresh_manager = JobManager()
-
-    # Patch the singleton at its source - all imports will see this patched version
-    monkeypatch.setattr("nedc_bench.api.services.job_manager.job_manager", fresh_manager)
-
     with TestClient(app) as c:
         yield c
 

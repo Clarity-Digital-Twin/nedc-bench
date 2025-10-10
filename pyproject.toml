@@ -296,6 +296,7 @@ markers = [
     "performance: timing-sensitive tests",
     "benchmark: marks benchmark tests",
     "gpu: marks tests requiring GPU",
+    "xdist_group: group tests to run serially with pytest-xdist (prevents parallel execution)",
 ]
 pythonpath = ["src"]
 

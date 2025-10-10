@@ -44,7 +44,7 @@ update: ## Update all dependencies to latest versions
 
 test: ## Run all tests with coverage (parallel, fast - default)
 	@echo "$(GREEN)Running tests in parallel...$(NC)"
-	pytest -n auto -v --cov=nedc_bench --cov-report=term-missing
+	pytest -n auto --dist loadgroup -v --cov=nedc_bench --cov-report=term-missing
 
 test-sequential: ## Run tests sequentially (for debugging)
 	@echo "$(GREEN)Running tests sequentially...$(NC)"
@@ -52,7 +52,7 @@ test-sequential: ## Run tests sequentially (for debugging)
 
 test-unit: ## Run only fast unit tests (< 30 seconds)
 	@echo "$(GREEN)Running unit tests...$(NC)"
-	pytest -n auto -m "unit or (not integration and not e2e and not slow)" -v --cov=nedc_bench
+	pytest -n auto --dist loadgroup -m "unit or (not integration and not e2e and not slow)" -v --cov=nedc_bench
 
 test-integration: ## Run integration tests only
 	@echo "$(GREEN)Running integration tests...$(NC)"
@@ -64,11 +64,11 @@ test-e2e: ## Run end-to-end tests (spawns external processes, slow)
 
 test-quick: ## Run only unit tests, no coverage (fastest feedback)
 	@echo "$(GREEN)Running quick unit tests...$(NC)"
-	pytest -n auto -m "unit or (not integration and not e2e and not slow)" -v --no-cov
+	pytest -n auto --dist loadgroup -m "unit or (not integration and not e2e and not slow)" -v --no-cov
 
 test-slow: ## Run all tests including slow ones
 	@echo "$(GREEN)Running all tests (including slow)...$(NC)"
-	pytest -n auto -v --cov=nedc_bench -m ""
+	pytest -n auto --dist loadgroup -v --cov=nedc_bench -m ""
 
 test-watch: ## Run tests in watch mode
 	@echo "$(GREEN)Starting test watcher...$(NC)"
@@ -76,7 +76,7 @@ test-watch: ## Run tests in watch mode
 
 test-ci: ## Run tests suitable for CI (all except GPU)
 	@echo "$(GREEN)Running CI test suite...$(NC)"
-	pytest -n auto -m "not gpu" -v --cov=nedc_bench --cov-report=xml
+	pytest -n auto --dist loadgroup -m "not gpu" -v --cov=nedc_bench --cov-report=xml
 
 benchmark: ## Run performance benchmarks
 	@echo "$(GREEN)Running benchmarks...$(NC)"
