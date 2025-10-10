@@ -5,7 +5,7 @@ import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from .dual_pipeline import DualPipelineOrchestrator
 
@@ -92,4 +92,23 @@ class ParallelEvaluator:
                         "ref_file": ref,
                         "hyp_file": hyp,
                     }
-        return results  # type: ignore[return-value]
+
+        # Ensure no None values remain (defensive - should not happen if all futures complete)
+        for idx, result in enumerate(results):
+            if result is None:
+                ref, hyp = file_pairs[idx]
+                logger.error(
+                    "Unexpected None result for file pair %d (%s, %s) - future did not complete",
+                    idx,
+                    ref,
+                    hyp,
+                )
+                results[idx] = {
+                    "error": "Evaluation did not complete",
+                    "error_type": "UnexpectedNone",
+                    "ref_file": ref,
+                    "hyp_file": hyp,
+                }
+
+        # All None values replaced - safe to cast
+        return cast(list[dict[str, Any]], results)
