@@ -91,8 +91,8 @@ class BetaPipeline:
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
         # Expand background segments to mirror NEDC overlap behavior
-        ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
-        hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
+        ref_events = fill_gaps_with_background(ref_ann.events, ref_ann.duration, params.null_class)
+        hyp_events = fill_gaps_with_background(hyp_ann.events, hyp_ann.duration, params.null_class)
         self._map_events(ref_events, params.label_map)
         self._map_events(hyp_events, params.label_map)
         scorer = OverlapScorer()
@@ -102,8 +102,8 @@ class BetaPipeline:
         params = load_nedc_params()
         ref_ann = AnnotationFile.from_csv_bi(ref_file)
         hyp_ann = AnnotationFile.from_csv_bi(hyp_file)
-        ref_events = self._expand_with_null(ref_ann.events, ref_ann.duration, params.null_class)
-        hyp_events = self._expand_with_null(hyp_ann.events, hyp_ann.duration, params.null_class)
+        ref_events = fill_gaps_with_background(ref_ann.events, ref_ann.duration, params.null_class)
+        hyp_events = fill_gaps_with_background(hyp_ann.events, hyp_ann.duration, params.null_class)
         self._map_events(ref_events, params.label_map)
         self._map_events(hyp_events, params.label_map)
         return IRAScorer().score(
