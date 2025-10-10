@@ -11,6 +11,7 @@ SOLID Principles:
 from dataclasses import dataclass
 
 from nedc_bench.models.annotations import EventAnnotation
+from nedc_bench.utils.annotations import fill_gaps_with_background
 
 
 @dataclass
@@ -120,8 +121,8 @@ class EpochScorer:
         - Derive per-label hits/misses/false alarms and ins/del from compressed streams
         """
         # CRITICAL: Augment events like NEDC does - fill all gaps with background
-        ref_events = self._augment_events(ref_events, file_duration)
-        hyp_events = self._augment_events(hyp_events, file_duration)
+        ref_events = fill_gaps_with_background(ref_events, file_duration, self.null_class)
+        hyp_events = fill_gaps_with_background(hyp_events, file_duration, self.null_class)
 
         # Generate sample times and initialize confusion matrix labels
         samples = self._sample_times(file_duration)
