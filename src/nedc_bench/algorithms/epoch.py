@@ -10,6 +10,7 @@ SOLID Principles:
 
 from dataclasses import dataclass
 
+from nedc_bench.config.constants import EPOCH_DURATION, NULL_CLASS
 from nedc_bench.models.annotations import EventAnnotation
 from nedc_bench.utils.annotations import fill_gaps_with_background
 
@@ -95,12 +96,12 @@ class EpochScorer:
     with consecutive duplicate compression and NULL_CLASS handling.
     """
 
-    def __init__(self, epoch_duration: float = 1.0, null_class: str = "null"):
+    def __init__(self, epoch_duration: float = EPOCH_DURATION, null_class: str = NULL_CLASS):
         """Initialize with epoch parameters
 
         Args:
-            epoch_duration: Duration of each fixed-width epoch (default 1.0)
-            null_class: Label for unclassified epochs (default "null")
+            epoch_duration: Duration of each fixed-width epoch in seconds (default EPOCH_DURATION=0.25 per NEDC)
+            null_class: Label for unclassified/background epochs (default NULL_CLASS="bckg" per NEDC, lowercase canonical)
         """
         self.epoch_duration = epoch_duration
         self.null_class = null_class

@@ -18,7 +18,8 @@ def test_epoch_compress_joint_empty():
 
 
 def test_epoch_compute_metrics_varied_paths():
-    scorer = EpochScorer()
+    # Use explicit null_class="null" to test with "null" label
+    scorer = EpochScorer(null_class="null")
 
     # Construct compressed sequences to exercise all branches
     # Index-by-index:
@@ -53,7 +54,8 @@ def test_epoch_compute_metrics_varied_paths():
 
 
 def test_epoch_helpers_create_classify_compress():
-    scorer = EpochScorer(epoch_duration=1.0)
+    # Use explicit null_class="bckg" (new default) for this test
+    scorer = EpochScorer(epoch_duration=1.0, null_class="bckg")
 
     # File duration: 3s => epochs: [0-1), [1-2), [2-3)
     epochs = scorer._create_epochs(3.0)
@@ -63,9 +65,9 @@ def test_epoch_helpers_create_classify_compress():
     events = [EventAnnotation(start_time=0.2, stop_time=1.4, label="seiz", confidence=1.0)]
     labels = scorer._classify_epochs(epochs, events)
 
-    # Any overlap sets the epoch label to the event label
-    assert labels == ["seiz", "seiz", "null"]
+    # Any overlap sets the epoch label to the event label, non-overlapping epochs get null_class
+    assert labels == ["seiz", "seiz", "bckg"]
 
     # Compression removes consecutive duplicates
     compressed = scorer._compress_epochs(labels)
-    assert compressed == ["seiz", "null"]
+    assert compressed == ["seiz", "bckg"]

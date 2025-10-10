@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import cast
 
+from nedc_bench.config.constants import NULL_CLASS
 from nedc_bench.models.annotations import EventAnnotation
 from nedc_bench.utils.annotations import fill_gaps_with_background
 
@@ -70,12 +71,23 @@ class IRAScorer:
         hyp: list[EventAnnotation] | list[str],
         epoch_duration: float | None = None,
         file_duration: float | None = None,
-        null_class: str = "null",
+        null_class: str = NULL_CLASS,
     ) -> IRAResult:
         """Compute IRA from labels or events.
 
-        - Label mode: if `ref` contains strings, treat as epoch labels and build the confusion directly.
-        - Event mode: if `ref` contains EventAnnotation, sample midpoints using epoch_duration and file_duration.
+        Args:
+            ref: Reference labels (strings) or events (EventAnnotation)
+            hyp: Hypothesis labels (strings) or events (EventAnnotation)
+            epoch_duration: Epoch duration in seconds (required for event mode)
+            file_duration: Total file duration in seconds (required for event mode)
+            null_class: Label for background/unclassified epochs (default NULL_CLASS="bckg" per NEDC, lowercase canonical)
+
+        Returns:
+            IRAResult with confusion matrix and kappa scores
+
+        Notes:
+            - Label mode: if `ref` contains strings, treat as epoch labels and build the confusion directly.
+            - Event mode: if `ref` contains EventAnnotation, sample midpoints using epoch_duration and file_duration.
         """
         # Label mode
         if (not ref and not hyp) or (ref and isinstance(ref[0], str)):

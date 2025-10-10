@@ -72,16 +72,17 @@ class TestEpochCoverage:
     """Tests to cover uncovered lines in Epoch scoring (lines 241-307)"""
 
     def test_epoch_empty_events(self):
-        """Test with no events - all epochs become null"""
+        """Test with no events - all epochs become bckg (null class)"""
         scorer = EpochScorer()
 
         # Empty event lists for 10 second file
+        # With default epoch_duration=0.25, we get 40 epochs (10.0 / 0.25 = 40)
         result = scorer.score([], [], 10.0)
 
-        # Should create 10 null epochs
-        assert "null" in result.confusion_matrix
-        # All null epochs match each other
-        assert result.confusion_matrix["null"]["null"] == 10
+        # Should create 40 bckg epochs (null class default is "bckg", epoch_duration default is 0.25)
+        assert "bckg" in result.confusion_matrix
+        # All bckg epochs match each other
+        assert result.confusion_matrix["bckg"]["bckg"] == 40
 
     def test_epoch_unaligned_lengths(self):
         """Test unaligned sequence lengths (lines 288-305)"""
@@ -113,8 +114,8 @@ class TestEpochCoverage:
         """Test null class transitions (lines 276-286)"""
         scorer = EpochScorer()
 
-        # Event that doesn't cover whole file - creates nulls
-        ref_events = []  # All nulls
+        # Event that doesn't cover whole file - creates bckg (null class) in gaps
+        ref_events = []  # All bckg (null class)
         hyp_events = [
             EventAnnotation(
                 channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
@@ -123,23 +124,23 @@ class TestEpochCoverage:
 
         result = scorer.score(ref_events, hyp_events, 5.0)
 
-        # null -> seiz is an insertion
+        # bckg (null) -> seiz is an insertion
         assert "seiz" in result.insertions
         assert result.insertions["seiz"] >= 1
 
-        # Reverse: something -> null is deletion
+        # Reverse: seiz -> bckg (null) is deletion
         ref_events = [
             EventAnnotation(
-                channel="TERM", start_time=0.0, stop_time=1.0, label="bckg", confidence=1.0
+                channel="TERM", start_time=0.0, stop_time=1.0, label="seiz", confidence=1.0
             ),
         ]
-        hyp_events = []  # All nulls
+        hyp_events = []  # All bckg (null class)
 
         result = scorer.score(ref_events, hyp_events, 5.0)
 
-        # bckg -> null is a deletion
-        assert "bckg" in result.deletions
-        assert result.deletions["bckg"] >= 1
+        # seiz -> bckg (null) is a deletion
+        assert "seiz" in result.deletions
+        assert result.deletions["seiz"] >= 1
 
     def test_epoch_all_labels_in_matrix(self):
         """Test that confusion matrix includes all labels"""
@@ -198,8 +199,8 @@ class TestEpochCoverage:
         # Should handle 1000 epochs
         assert result.compressed_ref
         assert result.compressed_hyp
-        # Most will be nulls
-        assert "null" in result.confusion_matrix
+        # Most will be bckg (null class default is "bckg")
+        assert "bckg" in result.confusion_matrix
 
 
 class TestCriticalParity:
