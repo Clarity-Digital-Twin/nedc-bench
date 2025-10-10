@@ -93,8 +93,8 @@ class IRAScorer:
             hyp_events = cast(list[EventAnnotation], hyp)
 
             # Augment events to fill gaps with background, matching NEDC
-            ref_events = self._augment_events(ref_events, file_duration, null_class)
-            hyp_events = self._augment_events(hyp_events, file_duration, null_class)
+            ref_events = fill_gaps_with_background(ref_events, file_duration, null_class)
+            hyp_events = fill_gaps_with_background(hyp_events, file_duration, null_class)
             labels = sorted(
                 {ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {null_class}
             )
