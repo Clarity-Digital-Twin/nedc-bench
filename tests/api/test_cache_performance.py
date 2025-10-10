@@ -161,8 +161,14 @@ class TestCacheIntegration:
         with patch.object(AsyncOrchestrator, "__init__", lambda self, *args: None):
             orchestrator = AsyncOrchestrator()
             orchestrator.executor = MagicMock()
+
+            # Create properly typed mock orchestrator
+            from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+            mock_dual_orch = MagicMock(spec=DualPipelineOrchestrator)
+
+            # Mock router to return typed orchestrator
             orchestrator.router = MagicMock()
-            orchestrator.router.dual_orch = MagicMock()
+            orchestrator.router.get_orchestrator.return_value = mock_dual_orch
             orchestrator.cache = AsyncMock()
 
             # Simulate cache hit
@@ -181,8 +187,8 @@ class TestCacheIntegration:
             # Verify cache was checked
             orchestrator.cache.get_json.assert_called_once()
 
-            # Verify actual evaluation was NOT called
-            assert not orchestrator.router.dual_orch.evaluate.called
+            # Verify actual evaluation was NOT called (cached)
+            assert not mock_dual_orch.evaluate.called
 
             # Verify result matches cached data
             assert result == cached_result
@@ -194,7 +200,6 @@ class TestCacheIntegration:
         with patch.object(AsyncOrchestrator, "__init__", lambda self, *args: None):
             orchestrator = AsyncOrchestrator()
             orchestrator.executor = MagicMock()
-            orchestrator.router = MagicMock()
             orchestrator.cache = AsyncMock()
 
             # Simulate cache miss
@@ -215,8 +220,15 @@ class TestCacheIntegration:
 
             # Setup the mock to return our result
             loop = asyncio.get_event_loop()
-            orchestrator.router.dual_orch = MagicMock()
-            orchestrator.router.dual_orch.evaluate.return_value = mock_result
+
+            # Create properly typed mock orchestrator
+            from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+            mock_dual_orch = MagicMock(spec=DualPipelineOrchestrator)
+            mock_dual_orch.evaluate.return_value = mock_result
+
+            # Mock router to return typed orchestrator
+            orchestrator.router = MagicMock()
+            orchestrator.router.get_orchestrator.return_value = mock_dual_orch
 
             # Patch run_in_executor to call the function directly
             async def mock_run_in_executor(executor, func, *args):
@@ -241,15 +253,21 @@ class TestCacheIntegration:
         with patch.object(AsyncOrchestrator, "__init__", lambda self, *args: None):
             orchestrator = AsyncOrchestrator()
             orchestrator.executor = MagicMock()
-            orchestrator.router = MagicMock()
             orchestrator.cache = AsyncMock()
             orchestrator.cache.make_key.return_value = "test_key"
 
             # Mock alpha evaluation
             alpha_result = {"score": 0.85}
-            orchestrator.router.dual_orch = MagicMock()
-            orchestrator.router.dual_orch.alpha_wrapper = MagicMock()
-            orchestrator.router.dual_orch.alpha_wrapper.evaluate.return_value = alpha_result
+
+            # Create properly typed mock orchestrator
+            from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+            mock_dual_orch = MagicMock(spec=DualPipelineOrchestrator)
+            mock_dual_orch.alpha_wrapper = MagicMock()
+            mock_dual_orch.alpha_wrapper.evaluate.return_value = alpha_result
+
+            # Mock router to return typed orchestrator
+            orchestrator.router = MagicMock()
+            orchestrator.router.get_orchestrator.return_value = mock_dual_orch
 
             # Patch run_in_executor
             loop = asyncio.get_event_loop()
@@ -315,9 +333,14 @@ class TestCachePerformance:
                 await asyncio.sleep(0.1)  # Simulate slow evaluation
                 return mock_result
 
+            # Create properly typed mock orchestrator
+            from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+            mock_dual_orch = MagicMock(spec=DualPipelineOrchestrator)
+            mock_dual_orch.evaluate.return_value = mock_result
+
+            # Mock router to return typed orchestrator
             orchestrator.router = MagicMock()
-            orchestrator.router.dual_orch = MagicMock()
-            orchestrator.router.dual_orch.evaluate.return_value = mock_result
+            orchestrator.router.get_orchestrator.return_value = mock_dual_orch
 
             with patch.object(loop, "run_in_executor", mock_run_in_executor_slow):
                 await orchestrator.evaluate(ref_file, hyp_file, "taes", "dual")
