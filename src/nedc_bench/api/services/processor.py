@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import pathlib
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from .async_wrapper import AsyncOrchestrator
@@ -34,7 +34,7 @@ async def process_evaluation(job_id: str) -> None:
         logger.error("Job %s not found", job_id)
         return
 
-    await job_manager.update_job(job_id, {"status": "processing", "started_at": datetime.utcnow()})
+    await job_manager.update_job(job_id, {"status": "processing", "started_at": datetime.now(timezone.utc)})
     await broadcast_progress(
         job_id, {"type": "status", "status": "processing", "message": "Starting evaluation"}
     )
@@ -70,7 +70,7 @@ async def process_evaluation(job_id: str) -> None:
                 job_id,
                 {
                     "status": "failed",
-                    "completed_at": datetime.utcnow(),
+                    "completed_at": datetime.now(timezone.utc),
                     "error": str(exc),
                 },
             )
@@ -87,7 +87,7 @@ async def process_evaluation(job_id: str) -> None:
         job_id,
         {
             "status": "completed",
-            "completed_at": datetime.utcnow(),
+            "completed_at": datetime.now(timezone.utc),
             "results": results,
         },
     )

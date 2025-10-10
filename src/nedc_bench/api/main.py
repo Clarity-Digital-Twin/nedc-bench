@@ -95,5 +95,13 @@ try:
     from .docs import custom_openapi
 
     app.openapi = lambda: custom_openapi(app)  # type: ignore[method-assign]
-except Exception:  # pragma: no cover - docs customization optional in tests
-    pass
+    logger.debug("OpenAPI customization loaded successfully")
+except ImportError:  # pragma: no cover - docs module may not exist in test environments
+    logger.debug("OpenAPI customization module not found, using default OpenAPI schema")
+except Exception as exc:  # pragma: no cover - catch other unexpected errors
+    logger.warning(
+        "Failed to load OpenAPI customization: %s. Using default OpenAPI schema. "
+        "This may indicate a broken docs module.",
+        exc,
+        exc_info=True,
+    )
