@@ -67,9 +67,14 @@ app = FastAPI(
 app.middleware("http")(error_handler_middleware)
 app.middleware("http")(rate_limit_middleware)
 
+# CORS Configuration - customize via CORS_ALLOWED_ORIGINS environment variable
+# Default to localhost for development; use comma-separated list for production
+cors_origins_str = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8000")
+cors_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure for production
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

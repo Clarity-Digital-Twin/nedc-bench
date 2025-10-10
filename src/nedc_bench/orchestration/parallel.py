@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
@@ -7,6 +8,8 @@ from pathlib import Path
 from typing import Any
 
 from .dual_pipeline import DualPipelineOrchestrator
+
+logger = logging.getLogger(__name__)
 
 
 def _evaluate_pair(
@@ -63,7 +66,7 @@ class ParallelEvaluator:
         algorithm: str,
         pipeline: str = "dual",
     ) -> list[dict[str, Any]]:
-        results: list[dict[str, Any]] = [None] * len(file_pairs)  # type: ignore[list-item]
+        results: list[dict[str, Any] | None] = [None] * len(file_pairs)
         with ProcessPoolExecutor(max_workers=self.max_workers) as ex:
             futures = {
                 ex.submit(_evaluate_pair, ref, hyp, algorithm, pipeline): idx
@@ -71,5 +74,22 @@ class ParallelEvaluator:
             }
             for fut in as_completed(futures):
                 idx = futures[fut]
-                results[idx] = fut.result()
-        return results
+                try:
+                    results[idx] = fut.result()
+                except Exception as exc:
+                    ref, hyp = file_pairs[idx]
+                    logger.error(
+                        "Evaluation failed for file pair %d (%s, %s): %s",
+                        idx,
+                        ref,
+                        hyp,
+                        exc,
+                        exc_info=True,
+                    )
+                    results[idx] = {
+                        "error": str(exc),
+                        "error_type": type(exc).__name__,
+                        "ref_file": ref,
+                        "hyp_file": hyp,
+                    }
+        return results  # type: ignore[return-value]
