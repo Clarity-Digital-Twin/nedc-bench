@@ -7,17 +7,19 @@ scoring algorithms.
 
 from __future__ import annotations
 
+from typing import Literal
+
 from nedc_bench.models.annotations import EventAnnotation
 
 # Default channel name used for background/null events
-DEFAULT_CHANNEL = "TERM"
+DEFAULT_CHANNEL: Literal["TERM"] = "TERM"
 
 
 def fill_gaps_with_background(
     events: list[EventAnnotation],
     file_duration: float,
     null_label: str,
-    channel: str = DEFAULT_CHANNEL,
+    channel: Literal["TERM"] = DEFAULT_CHANNEL,
 ) -> list[EventAnnotation]:
     """Fill gaps between events with background annotation to cover full duration.
 
