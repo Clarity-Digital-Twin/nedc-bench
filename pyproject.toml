@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nedc-bench"
-version = "1.0.0"
+version = "1.1.0"
 description = "Modern benchmarking platform for EEG event detection systems"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -285,14 +285,20 @@ python_functions = ["test_*"]
 addopts = [
     "-ra",
     "--strict-markers",
-    "--strict-config"
+    "--strict-config",
+    # NOTE: --dist=loadgroup is set in Makefile for parallel runs
+    # DO NOT set it here as default - it breaks sequential test runs
 ]
 markers = [
-    "integration: integration tests (may touch external resources)",
-    "performance: timing-sensitive tests",
+    "unit: fast unit tests (< 0.5s each, no external dependencies)",
+    "integration: integration tests (0.5-5s, may use real services like TestClient)",
+    "e2e: end-to-end tests (> 5s, spawn external processes, full system validation)",
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "subprocess: tests that spawn external processes (NEDC tooling, etc)",
+    "performance: timing-sensitive tests",
     "benchmark: marks benchmark tests",
     "gpu: marks tests requiring GPU",
+    "xdist_group: group tests to run serially with pytest-xdist (prevents parallel execution)",
 ]
 pythonpath = ["src"]
 
@@ -334,3 +340,6 @@ exclude = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/nedc_bench", "src/alpha"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/nedc_bench/config/beta_params.toml" = "nedc_bench/config/beta_params.toml"

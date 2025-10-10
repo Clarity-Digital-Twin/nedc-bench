@@ -198,6 +198,18 @@ confusion_matrix = {
    - Original: Used `<` for stop boundary
    - Fixed: Use `<=` to match NEDC inclusive boundary
 
+### Troubleshooting & History
+
+- **Deep analysis of missing TP counts** — The walkthrough in
+  `docs/archive/bugs/EPOCH_BUG_FIXED.md` and
+  `docs/archive/bugs/BUG_2_EPOCH_DEEP_ANALYSIS.md` explains the confusion
+  matrix derivation that informed the current implementation. When adjusting the
+  scorer, ensure the compression and augmentation steps remain in sync.
+- **Parity investigations** — `docs/archive/bugs/EPOCH_PARITY_INVESTIGATION.md`
+  documents the set of regression tests that now live in
+  `tests/algorithms/test_epoch_edge_cases.py`. Any new edge case should extend
+  those tests to avoid reintroducing drift.
+
 1. **Compression Logic**:
 
    - Original: Compressed sequences independently

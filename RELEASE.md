@@ -20,11 +20,19 @@ We follow [Semantic Versioning](https://semver.org/):
 
 ## Current Version
 
-**v1.0.0** - Production Stable
+**v1.1.0** - Documentation & Stability Release
 
 - Status: Production ready
 - API stability: Stable
 - Production ready: Yes
+- Release date: 2025-10-10
+
+**Highlights:**
+- Complete documentation overhaul with 100% detail preservation
+- 11 critical bug fixes documented with evidence and completion grades
+- Test stability improvements using pytest-xdist groups
+- Beta configuration three-tier architecture
+- All cross-references verified and working
 
 ## Release Checklist
 
@@ -78,11 +86,12 @@ git push origin v0.1.0
 
 ## Version History
 
-| Version | Date       | Status   | Notes             |
-| ------- | ---------- | -------- | ----------------- |
-| 0.0.1   | 2024-12-01 | Released | Initial structure |
-| 0.1.0   | 2024-12-15 | Released | Alpha release     |
-| 1.0.0   | 2025-09-15 | Current  | Production stable |
+| Version | Date       | Status   | Notes                                  |
+| ------- | ---------- | -------- | -------------------------------------- |
+| 0.0.1   | 2024-12-01 | Released | Initial structure                      |
+| 0.1.0   | 2024-12-15 | Released | Alpha release                          |
+| 1.0.0   | 2025-09-15 | Released | Production stable                      |
+| 1.1.0   | 2025-10-10 | Current  | Documentation overhaul & bug fixes (11)|
 
 ## Versioning Guidelines
 

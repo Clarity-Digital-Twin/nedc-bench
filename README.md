@@ -4,7 +4,8 @@
 [![Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen.svg)](https://github.com/Clarity-Digital-Twin/nedc-bench)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Parity](https://img.shields.io/badge/parity-100%25-success.svg)](docs/archive/bugs/FINAL_PARITY_RESULTS.md)
+[![Parity](https://img.shields.io/badge/parity-100%25-success.svg)](docs/reference/parity.md)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](CHANGELOG.md)
 
 **Production-ready wrapper and reimplementation of Temple University's NEDC EEG Evaluation v6.0.0**
 
@@ -66,13 +67,29 @@ NEDC-BENCH transforms Temple University's NEDC EEG evaluation suite into a produ
 ```bash
 git clone https://github.com/Clarity-Digital-Twin/nedc-bench.git
 cd nedc-bench
-docker-compose up -d
-curl http://localhost:8000/api/v1/health
 
-# API documentation available at:
-# http://localhost:8000/docs (Swagger UI)
-# http://localhost:8000/redoc (ReDoc)
+# Build and start all services (API, Redis, Prometheus, Grafana)
+docker compose up -d --build
+
+# Verify health
+curl http://localhost:8000/api/v1/health
+# Expected: {"status":"healthy"}
+
+# View API documentation
+open http://localhost:8000/docs  # Swagger UI
+open http://localhost:3000        # Grafana dashboards (admin/admin)
 ```
+
+**Quick test with sample data:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/evaluate" \
+  -F "reference=@data/csv_bi_parity/csv_bi_export_clean/ref/aaaaaajy_s001_t000.csv_bi" \
+  -F "hypothesis=@data/csv_bi_parity/csv_bi_export_clean/hyp/aaaaaajy_s001_t000.csv_bi" \
+  -F "algorithms=all" \
+  -F "pipeline=beta"
+```
+
+> 💡 **Windows/WSL users**: Use `docker compose` (v2) not `docker-compose` (v1). See [deployment guide](docs/deployment/docker.md) for troubleshooting.
 
 ### From Source (Python 3.10+)
 
@@ -205,13 +222,27 @@ nedc-bench/
 
 ## 📚 Documentation
 
+### Core Documentation
 - 📖 [Installation Guide](docs/installation.md) — Detailed setup instructions
 - 🚀 [Quick Start Tutorial](docs/quickstart.md) — Get running in 5 minutes
-- 🔬 [Algorithm Details](docs/algorithms/overview.md) — Deep dive into each metric
 - 🔌 [API Reference](docs/api/endpoints.md) — Endpoints, examples, OpenAPI access
 - 🐳 [Deployment Guide](docs/deployment/overview.md) — Production deployment
 - 🔄 [Migration Guide](docs/migration/from-nedc.md) — Moving from vanilla NEDC
-- 🐛 [Bug Reports](docs/archive/bugs/) — Fixed issues documentation
+
+### Algorithm & Technical Details
+- 🔬 [TAES Algorithm](docs/algorithms/taes.md) — Time-Aligned Event Scoring with multi-overlap sequencing
+- 📊 [Epoch Algorithm](docs/algorithms/epoch.md) — 250ms epoch-based sampling details
+- 🎯 [Overlap Algorithm](docs/algorithms/overlap.md) — Any-overlap detection
+- 🔗 [DP Alignment](docs/algorithms/dp-alignment.md) — Dynamic programming with NULL sentinel design
+- 📈 [IRA Algorithm](docs/algorithms/ira.md) — Inter-Rater Agreement (Cohen's κ)
+
+### Developer Resources
+- 🏗️ [Architecture Guide](docs/developer/architecture.md) — Dual-pipeline design & router pattern
+- 🐛 [Bug Fixes 2025](docs/developer/bug_fixes_2025.md) — Complete technical reference for 11 critical fixes
+- ⚙️ [Beta Configuration](docs/developer/beta_config.md) — Three-tier architecture documentation
+- 🧪 [Testing Guide](docs/TESTING.md) — Comprehensive test strategy & stability solutions
+- ✅ [Parity Validation](docs/reference/parity.md) — 100% parity on 1832 file pairs
+- 🔧 [Contributing Guide](docs/developer/contributing.md) — Development workflow
 
 ## 🔗 Background: TUH EEG Corpus
 

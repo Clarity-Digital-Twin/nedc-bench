@@ -13,7 +13,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import cast
 
+from nedc_bench.config.constants import NULL_CLASS
 from nedc_bench.models.annotations import EventAnnotation
+from nedc_bench.utils.annotations import fill_gaps_with_background
 
 
 @dataclass
@@ -69,12 +71,23 @@ class IRAScorer:
         hyp: list[EventAnnotation] | list[str],
         epoch_duration: float | None = None,
         file_duration: float | None = None,
-        null_class: str = "null",
+        null_class: str = NULL_CLASS,
     ) -> IRAResult:
         """Compute IRA from labels or events.
 
-        - Label mode: if `ref` contains strings, treat as epoch labels and build the confusion directly.
-        - Event mode: if `ref` contains EventAnnotation, sample midpoints using epoch_duration and file_duration.
+        Args:
+            ref: Reference labels (strings) or events (EventAnnotation)
+            hyp: Hypothesis labels (strings) or events (EventAnnotation)
+            epoch_duration: Epoch duration in seconds (required for event mode)
+            file_duration: Total file duration in seconds (required for event mode)
+            null_class: Label for background/unclassified epochs (default NULL_CLASS="bckg" per NEDC, lowercase canonical)
+
+        Returns:
+            IRAResult with confusion matrix and kappa scores
+
+        Notes:
+            - Label mode: if `ref` contains strings, treat as epoch labels and build the confusion directly.
+            - Event mode: if `ref` contains EventAnnotation, sample midpoints using epoch_duration and file_duration.
         """
         # Label mode
         if (not ref and not hyp) or (ref and isinstance(ref[0], str)):
@@ -92,8 +105,8 @@ class IRAScorer:
             hyp_events = cast(list[EventAnnotation], hyp)
 
             # Augment events to fill gaps with background, matching NEDC
-            ref_events = self._augment_events(ref_events, file_duration, null_class)
-            hyp_events = self._augment_events(hyp_events, file_duration, null_class)
+            ref_events = fill_gaps_with_background(ref_events, file_duration, null_class)
+            hyp_events = fill_gaps_with_background(hyp_events, file_duration, null_class)
             labels = sorted(
                 {ev.label for ev in ref_events} | {ev.label for ev in hyp_events} | {null_class}
             )
@@ -120,57 +133,6 @@ class IRAScorer:
             multi_class_kappa=multi_kappa,
             labels=labels,
         )
-
-    def _augment_events(
-        self,
-        events: list[EventAnnotation],
-        file_duration: float,
-        null_class: str,
-    ) -> list[EventAnnotation]:
-        """Fill gaps between events with background to cover [0, duration].
-
-        Mirrors NEDC ann augmentation used before IRA/Epoch sampling.
-        """
-        if not events:
-            # If duration is non-positive, avoid creating zero-length background
-            if file_duration <= 0.0:
-                return []
-            return [
-                EventAnnotation(
-                    channel="TERM",
-                    start_time=0.0,
-                    stop_time=file_duration,
-                    label=null_class,
-                    confidence=1.0,
-                )
-            ]
-
-        augmented: list[EventAnnotation] = []
-        curr = 0.0
-        for ev in sorted(events, key=lambda e: e.start_time):
-            if curr < ev.start_time:
-                augmented.append(
-                    EventAnnotation(
-                        channel="TERM",
-                        start_time=curr,
-                        stop_time=ev.start_time,
-                        label=null_class,
-                        confidence=1.0,
-                    )
-                )
-            augmented.append(ev)
-            curr = ev.stop_time
-        if curr < file_duration:
-            augmented.append(
-                EventAnnotation(
-                    channel="TERM",
-                    start_time=curr,
-                    stop_time=file_duration,
-                    label=null_class,
-                    confidence=1.0,
-                )
-            )
-        return augmented
 
     def _compute_label_kappa(
         self, confusion: dict[str, dict[str, int]], label: str, labels: list[str]

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+import pathlib
+from datetime import datetime, timezone
 from typing import Any
 
 from .async_wrapper import AsyncOrchestrator
@@ -14,6 +15,17 @@ logger = logging.getLogger(__name__)
 async_orchestrator = AsyncOrchestrator()
 
 
+def _cleanup_temp_files(ref_path: str | None, hyp_path: str | None) -> None:
+    """Remove temporary files created for this job."""
+    for path in (ref_path, hyp_path):
+        if path and pathlib.Path(path).exists():
+            try:
+                pathlib.Path(path).unlink()
+                logger.debug("Removed temp file: %s", path)
+            except OSError as exc:
+                logger.warning("Failed to remove temp file %s: %s", path, exc)
+
+
 async def process_evaluation(job_id: str) -> None:
     """Process a single evaluation job and broadcast progress."""
 
@@ -22,7 +34,9 @@ async def process_evaluation(job_id: str) -> None:
         logger.error("Job %s not found", job_id)
         return
 
-    await job_manager.update_job(job_id, {"status": "processing", "started_at": datetime.utcnow()})
+    await job_manager.update_job(
+        job_id, {"status": "processing", "started_at": datetime.now(timezone.utc)}
+    )
     await broadcast_progress(
         job_id, {"type": "status", "status": "processing", "message": "Starting evaluation"}
     )
@@ -58,13 +72,15 @@ async def process_evaluation(job_id: str) -> None:
                 job_id,
                 {
                     "status": "failed",
-                    "completed_at": datetime.utcnow(),
+                    "completed_at": datetime.now(timezone.utc),
                     "error": str(exc),
                 },
             )
             await broadcast_progress(
                 job_id, {"type": "status", "status": "failed", "error": str(exc)}
             )
+            _cleanup_temp_files(job.get("ref_path"), job.get("hyp_path"))
+            await progress_tracker.finish_job(job_id)  # Clean up progress tracking
             return
         finally:
             await progress_tracker.update_algorithm(job_id, algo, job["pipeline"], "completed")
@@ -74,7 +90,7 @@ async def process_evaluation(job_id: str) -> None:
         job_id,
         {
             "status": "completed",
-            "completed_at": datetime.utcnow(),
+            "completed_at": datetime.now(timezone.utc),
             "results": results,
         },
     )
@@ -82,3 +98,7 @@ async def process_evaluation(job_id: str) -> None:
         job_id,
         {"type": "status", "status": "completed", "message": "Evaluation completed successfully"},
     )
+
+    # Clean up temporary files and progress tracking
+    _cleanup_temp_files(job.get("ref_path"), job.get("hyp_path"))
+    await progress_tracker.finish_job(job_id)  # Clean up progress tracking

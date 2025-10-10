@@ -41,7 +41,8 @@ TERM,3.0,4.0,bckg,1.0
         ref_file, hyp_file = sample_files
 
         # Mock only the Alpha wrapper to avoid NEDC dependency
-        with patch.object(orchestrator.orchestrator.alpha_wrapper, "evaluate") as mock_eval:
+        # Access via router's lazy-loaded dual orchestrator
+        with patch.object(orchestrator.router.dual_orch.alpha_wrapper, "evaluate") as mock_eval:
             mock_eval.return_value = {
                 "taes": {"true_positives": 1.0, "false_positives": 0.0, "false_negatives": 0.0}
             }
@@ -67,6 +68,7 @@ TERM,3.0,4.0,bckg,1.0
         assert "false_positives" in result["beta_result"]
 
     @pytest.mark.asyncio
+    @pytest.mark.slow  # Mark as slow - runs 5 algorithms sequentially
     async def test_beta_pipeline_all_algorithms(self, orchestrator, sample_files):
         """Test Beta pipeline supports all 5 algorithms"""
         ref_file, hyp_file = sample_files
@@ -91,7 +93,7 @@ TERM,3.0,4.0,bckg,1.0
         """Test error handling for unsupported algorithm in Beta"""
         ref_file, hyp_file = sample_files
 
-        with pytest.raises(ValueError, match="Unsupported algorithm: unknown"):
+        with pytest.raises(ValueError, match="Unknown algorithm: unknown"):
             await orchestrator.evaluate(ref_file, hyp_file, algorithm="unknown", pipeline="beta")
 
     @pytest.mark.asyncio

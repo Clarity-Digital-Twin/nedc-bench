@@ -10,7 +10,9 @@ SOLID Principles:
 
 from dataclasses import dataclass
 
+from nedc_bench.config.constants import EPOCH_DURATION, NULL_CLASS
 from nedc_bench.models.annotations import EventAnnotation
+from nedc_bench.utils.annotations import fill_gaps_with_background
 
 
 @dataclass
@@ -94,12 +96,12 @@ class EpochScorer:
     with consecutive duplicate compression and NULL_CLASS handling.
     """
 
-    def __init__(self, epoch_duration: float = 1.0, null_class: str = "null"):
+    def __init__(self, epoch_duration: float = EPOCH_DURATION, null_class: str = NULL_CLASS):
         """Initialize with epoch parameters
 
         Args:
-            epoch_duration: Duration of each fixed-width epoch (default 1.0)
-            null_class: Label for unclassified epochs (default "null")
+            epoch_duration: Duration of each fixed-width epoch in seconds (default EPOCH_DURATION=0.25 per NEDC)
+            null_class: Label for unclassified/background epochs (default NULL_CLASS="bckg" per NEDC, lowercase canonical)
         """
         self.epoch_duration = epoch_duration
         self.null_class = null_class
@@ -120,8 +122,8 @@ class EpochScorer:
         - Derive per-label hits/misses/false alarms and ins/del from compressed streams
         """
         # CRITICAL: Augment events like NEDC does - fill all gaps with background
-        ref_events = self._augment_events(ref_events, file_duration)
-        hyp_events = self._augment_events(hyp_events, file_duration)
+        ref_events = fill_gaps_with_background(ref_events, file_duration, self.null_class)
+        hyp_events = fill_gaps_with_background(hyp_events, file_duration, self.null_class)
 
         # Generate sample times and initialize confusion matrix labels
         samples = self._sample_times(file_duration)
@@ -209,67 +211,6 @@ class EpochScorer:
             if (val >= ev.start_time) & (val <= ev.stop_time):
                 return idx
         return -1
-
-    def _augment_events(
-        self, events: list[EventAnnotation], file_duration: float
-    ) -> list[EventAnnotation]:
-        """Augment events with background to fill all gaps (NEDC-style).
-
-        NEDC fills gaps between events with background annotation so that
-        the entire file duration is covered continuously. This is CRITICAL
-        for exact parity - without this, we had a 9 TP difference!
-        """
-        if not events:
-            # If duration is non-positive, return empty to avoid zero-length events
-            if file_duration <= 0.0:
-                return []
-            # Empty annotation - fill entire duration with background
-            return [
-                EventAnnotation(
-                    channel="TERM",
-                    start_time=0.0,
-                    stop_time=file_duration,
-                    label=self.null_class,
-                    confidence=1.0,
-                )
-            ]
-
-        augmented: list[EventAnnotation] = []
-        curr_time = 0.0
-
-        # Sort events by start time
-        sorted_events = sorted(events, key=lambda x: x.start_time)
-
-        for ev in sorted_events:
-            # Fill gap before this event if needed
-            if curr_time < ev.start_time:
-                augmented.append(
-                    EventAnnotation(
-                        channel="TERM",
-                        start_time=curr_time,
-                        stop_time=ev.start_time,
-                        label=self.null_class,
-                        confidence=1.0,
-                    )
-                )
-
-            # Add the actual event
-            augmented.append(ev)
-            curr_time = ev.stop_time
-
-        # Fill gap at end if needed
-        if curr_time < file_duration:
-            augmented.append(
-                EventAnnotation(
-                    channel="TERM",
-                    start_time=curr_time,
-                    stop_time=file_duration,
-                    label=self.null_class,
-                    confidence=1.0,
-                )
-            )
-
-        return augmented
 
     def _compress_joint(self, reft: list[str], hypt: list[str]) -> tuple[list[str], list[str]]:
         """Compress duplicate consecutive pairs across ref/hyp jointly."""

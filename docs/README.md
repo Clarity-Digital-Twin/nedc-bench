@@ -25,6 +25,8 @@ Complete documentation for NEDC-BENCH - a production-ready EEG benchmarking plat
 
 - [`developer/`](developer/) - For contributors and developers
   - Architecture, testing, code style, debugging
+  - [Beta configuration](developer/beta_config.md) and [design details](developer/beta_config_design.md)
+  - [2025 bug fixes](developer/bug_fixes_2025.md)
 
 ### 🧮 Algorithm Reference
 
@@ -39,7 +41,7 @@ Complete documentation for NEDC-BENCH - a production-ready EEG benchmarking plat
 ### 📖 Reference
 
 - [`reference/`](reference/) - Complete reference material
-  - Configuration, CLI, API reference, glossary, FAQ
+  - Configuration, CLI, API reference, glossary, FAQ, [Parity Status](reference/parity.md)
 
 ### 🔄 Migration
 
@@ -48,10 +50,9 @@ Complete documentation for NEDC-BENCH - a production-ready EEG benchmarking plat
 
 ### 📦 Archive
 
-- [`archive/`](archive/) - Historical documentation
-  - Parity achievement history
-  - Bug investigations and fixes
-  - Implementation phases
+- [`archive/`](archive/) - Historical documentation (being migrated)
+  - Use the [Archive Migration Plan](developer/archive_migration_plan.md) to track what has already been folded into the main docs.
+  - Legacy parity histories, bug investigations, and phased implementation notes remain here until migration is complete.
 
 ## Quick Links
 
@@ -66,4 +67,4 @@ Complete documentation for NEDC-BENCH - a production-ready EEG benchmarking plat
 - Algorithms, API, developer, migration, and reference sections are complete and current.
 - Deployment, installation, and quickstart guides provide practical, verified steps.
 
-Last updated: 2025-09-15
+Last updated: 2025-10-10

@@ -22,6 +22,89 @@
   - `middleware/`: error handler, rate limit.
 - Alpha wrapper (`src/alpha/`): container and helpers to execute the original tool.
 
+## Clean Architecture Roadmap
+
+Highlights extracted from the archived proposals
+(`docs/archive/bulid_implementation/ARCHITECTURE_PROPOSAL.md`,
+`ARCHITECTURE_COMPARISON.md`):
+
+- **Target layering** — Domain entities and use cases will eventually sit in a
+  `domain/` + `application/` structure, with adapters (API, CLI, batch) above
+  them. The current codebase already resides under `src/`, so future extraction
+  work can proceed incrementally.
+- **Interface boundaries** — Define clear orchestrator interfaces to decouple
+  algorithm execution from transport/IO concerns. The new router pattern is the
+  first step in that direction.
+- **Phased approach** — The historical `PHASE_1`–`PHASE_5` documents describe a
+  vertical slice strategy (environment setup → algorithm parity → API → ops).
+  Consolidate those notes under `docs/implementation/` as work continues.
+
+## Refactor Risk & Completion Summary
+
+The completed `src/` migration and associated hardening are chronicled in
+`docs/archive/bulid_implementation/REFACTOR_RISK_ANALYSIS.md` and
+`REFACTOR_COMPLETION_REPORT.md`. Key assurances to retain:
+
+- Packaging now relies on Hatch with `packages = ["src/nedc_bench", "src/alpha"]`
+  and data files are force-included where necessary.
+- Docker images copy from `src/` and maintain parity with development installs.
+- Tooling updates (Makefile, MyPy, Ruff) all target the new source layout.
+
+## Router Pattern (2025 Architecture Upgrade)
+
+Key elements extracted from the 2025 bug hunt:
+
+```python
+# src/nedc_bench/orchestration/router.py
+class OrchestratorRouter:
+    def __init__(self) -> None:
+        self._dual_orch: DualPipelineOrchestrator | None = None
+        self.beta_orch = BetaPipelineOrchestrator()
+
+    def get_orchestrator(self, pipeline: str) -> Orchestrator:
+        if pipeline == "beta":
+            return self.beta_orch
+        if pipeline in {"dual", "alpha"}:
+            return self.dual_orch  # Lazy-load; requires NEDC_NFC
+        raise ValueError(f"Unsupported pipeline: {pipeline}")
+```
+
+- **BetaPipelineOrchestrator** runs pure-beta evaluations without touching the
+  legacy wrapper. Its constructor no longer mutates environment variables.
+- Example:
+
+  ```python
+  class BetaPipelineOrchestrator:
+      def __init__(self) -> None:
+          self.beta = BetaPipeline()
+
+      def evaluate(self, ref: Path, hyp: Path, algorithm: str) -> Any:
+          return self.beta.evaluate(ref, hyp, algorithm)
+  ```
+
+- **Lazy loading** defers creation of `DualPipelineOrchestrator` until a dual or
+  alpha request arrives. If `NEDC_NFC` is missing, the router raises a friendly
+  error instead of mutating the environment.
+- **Startup logging** clarifies when legacy assets are required. `main.py`
+  auto-detects the vendored NEDC directory for development but logs a warning if
+  it is absent—beta remains available either way:
+
+  ```python
+  nedc_root = os.environ.get("NEDC_NFC")
+  if nedc_root:
+      logger.info("NEDC_NFC set to: %s", nedc_root)
+  else:
+      logger.warning(
+          "NEDC_NFC not set; beta pipeline available, dual/alpha disabled.",
+      )
+  ```
+
+- **Result** — Beta can run with zero legacy dependencies; dual/alpha requests
+  only succeed when the operator provides `NEDC_NFC`.
+
+See `docs/developer/bug_fixes_2025.md#p1-1-betaalpha-decoupling` for the full
+context and verification evidence.
+
 ## Data Flow (API)
 
 1. Client POSTs to `POST /api/v1/evaluate` with `reference`/`hypothesis` files and form fields: `algorithms` (repeatable), `pipeline`.

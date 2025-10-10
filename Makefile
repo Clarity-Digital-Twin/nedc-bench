@@ -42,21 +42,41 @@ update: ## Update all dependencies to latest versions
 
 # ==================== Testing ====================
 
-test: ## Run all tests with coverage (project only)
-	@echo "$(GREEN)Running tests...$(NC)"
+test: ## Run all tests with coverage (parallel, fast - default)
+	@echo "$(GREEN)Running tests in parallel...$(NC)"
+	pytest -n auto --dist loadgroup -v --cov=nedc_bench --cov-report=term-missing
+
+test-sequential: ## Run tests sequentially (for debugging)
+	@echo "$(GREEN)Running tests sequentially...$(NC)"
 	pytest -v --cov=nedc_bench --cov-report=term-missing
 
-test-fast: ## Run tests in parallel (fast)
-	@echo "$(GREEN)Running tests in parallel...$(NC)"
-	pytest -n auto -v --cov=nedc_bench --cov-report=term-missing
+test-unit: ## Run only fast unit tests (< 30 seconds)
+	@echo "$(GREEN)Running unit tests...$(NC)"
+	pytest -n auto --dist loadgroup -m "unit or (not integration and not e2e and not slow)" -v --cov=nedc_bench
+
+test-integration: ## Run integration tests only
+	@echo "$(GREEN)Running integration tests...$(NC)"
+	pytest -m integration -v --cov=nedc_bench
+
+test-e2e: ## Run end-to-end tests (spawns external processes, slow)
+	@echo "$(GREEN)Running E2E tests...$(NC)"
+	pytest -m e2e -v --cov=nedc_bench
+
+test-quick: ## Run only unit tests, no coverage (fastest feedback)
+	@echo "$(GREEN)Running quick unit tests...$(NC)"
+	pytest -n auto --dist loadgroup -m "unit or (not integration and not e2e and not slow)" -v --no-cov
 
 test-slow: ## Run all tests including slow ones
 	@echo "$(GREEN)Running all tests (including slow)...$(NC)"
-	pytest -v --cov=nedc_bench -m ""
+	pytest -n auto --dist loadgroup -v --cov=nedc_bench -m ""
 
 test-watch: ## Run tests in watch mode
 	@echo "$(GREEN)Starting test watcher...$(NC)"
 	pytest-watch -- -v
+
+test-ci: ## Run tests suitable for CI (all except GPU)
+	@echo "$(GREEN)Running CI test suite...$(NC)"
+	pytest -n auto --dist loadgroup -m "not gpu" -v --cov=nedc_bench --cov-report=xml
 
 benchmark: ## Run performance benchmarks
 	@echo "$(GREEN)Running benchmarks...$(NC)"

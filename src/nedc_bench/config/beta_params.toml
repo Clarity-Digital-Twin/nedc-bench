@@ -1,0 +1,80 @@
+# Beta Pipeline Parameters
+#
+# This is a standalone configuration file for beta-only deployments,
+# eliminating dependency on nedc_eeg_eval/ directory while maintaining
+# full NEDC parity.
+#
+# Source: Extracted from nedc_eeg_eval_params_v00.toml with canonical
+# lowercase label normalization applied.
+#
+# To override: Set BETA_CONFIG_PATH environment variable to custom TOML path.
+
+[beta]
+version = "1.0.0"
+
+#------------------------------------------------------------------------------
+# Label Mapping (Two-Class: Seizure vs Background)
+#------------------------------------------------------------------------------
+#
+# NOTE: All labels are normalized to lowercase by the loader.
+# The canonical forms are "seiz" and "bckg" (lowercase).
+#
+[label_map]
+seiz = ["seiz"]
+bckg = ["bckg"]
+
+#------------------------------------------------------------------------------
+# Epoch-Based Scoring Parameters
+#------------------------------------------------------------------------------
+#
+# epoch_duration: Duration of fixed-width epochs in seconds (NEDC standard)
+# null_class: Label for unclassified/background epochs (lowercase canonical)
+#
+[algorithms.epoch]
+duration = 0.25
+null_class = "bckg"
+
+#------------------------------------------------------------------------------
+# Inter-Rater Agreement (IRA) Parameters
+#------------------------------------------------------------------------------
+#
+# Uses same epoch-based approach as epoch scoring
+#
+[algorithms.ira]
+duration = 0.25
+null_class = "bckg"
+
+#------------------------------------------------------------------------------
+# Dynamic Programming (DP) Alignment Parameters
+#------------------------------------------------------------------------------
+#
+# Penalties for insertions, deletions, and substitutions in DP alignment
+#
+[algorithms.dp]
+penalty_del = 1.0
+penalty_ins = 1.0
+penalty_sub = 1.0
+
+#------------------------------------------------------------------------------
+# Overlap-Based Scoring Parameters
+#------------------------------------------------------------------------------
+#
+# guard_width: Small epsilon for boundary handling (seconds)
+# ndigits_round: Decimal precision for time rounding
+#
+[algorithms.overlap]
+guard_width = 0.001
+ndigits_round = 3
+
+#------------------------------------------------------------------------------
+# Time-Aligned Event Scoring (TAES) Parameters
+#------------------------------------------------------------------------------
+#
+# TAES uses same approach as overlap-based scoring (no additional params)
+#
+[algorithms.taes]
+# No parameters currently required
+
+#------------------------------------------------------------------------------
+# End of beta_params.toml
+#------------------------------------------------------------------------------

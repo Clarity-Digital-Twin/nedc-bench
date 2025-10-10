@@ -18,3 +18,21 @@
 - API logs: configured in `nedc_bench/api/main.py` (basicConfig INFO). Run with higher verbosity using uvicorn, e.g.:
   - `uv run uvicorn nedc_bench.api.main:app --reload --log-level debug`.
 - Worker lifecycle and job state transitions are logged by `job_manager` and `processor`.
+
+## Lessons from AI Agent Review (2025-09-15)
+
+Key takeaways distilled from `docs/archive/status/AI_AGENT_REVIEW_FINAL.md`:
+
+- **Validate fixes against NEDC source** — Every parity fix should be confirmed
+  line-by-line against the legacy implementation (e.g., the epoch FA/24h formula
+  at `nedc_eeg_eval_epoch.py:958`).
+- **Beware over-mocking in tests** — The review highlighted that mocking the
+  orchestrator and router hid regressions. Prefer integration tests that execute
+  real orchestrators when debugging cache behaviour.
+- **Keep type annotations sound** — Incorrect forward references in annotations
+  masked algorithm issues. Ensure that helper functions maintain precise typing
+  so MyPy catches structural drift early.
+- **Document regression fixes** — Summaries now live in
+  [`docs/reference/parity.md`](../reference/parity.md) and the algorithm
+  troubleshooting sections, tightening the feedback loop between debugging and
+  documentation.

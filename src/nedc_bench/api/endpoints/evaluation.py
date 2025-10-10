@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import cast
 
 import aiofiles
@@ -53,7 +53,7 @@ async def submit_evaluation(
         "algorithms": alg_values,
         "pipeline": pipeline_value,
         "status": "queued",
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
     }
 
     await job_manager.add_job(job)
@@ -88,7 +88,7 @@ async def get_evaluation_result(job_id: str) -> EvaluationResult:
     base = {
         "job_id": job["id"],
         "status": job.get("status", "queued"),
-        "created_at": job.get("created_at", datetime.utcnow()),
+        "created_at": job.get("created_at", datetime.now(timezone.utc)),
         "completed_at": job.get("completed_at"),
         "pipeline": job.get("pipeline", PipelineType.DUAL),
         "error": job.get("error"),
@@ -122,7 +122,7 @@ async def list_evaluations(
         EvaluationResult(
             job_id=job["id"],
             status=job.get("status", "queued"),
-            created_at=job.get("created_at", datetime.utcnow()),
+            created_at=job.get("created_at", datetime.now(timezone.utc)),
             completed_at=job.get("completed_at"),
             pipeline=job.get("pipeline", PipelineType.DUAL),
             results=job.get("results"),

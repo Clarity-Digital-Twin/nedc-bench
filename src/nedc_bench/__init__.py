@@ -1,6 +1,6 @@
 """NEDC-BENCH: Modern benchmarking platform for EEG event detection systems."""
 
-__version__ = "0.1.0"
+__version__ = "1.1.0"
 __author__ = "Clarity Digital Twin"
 __license__ = "Apache-2.0"
 

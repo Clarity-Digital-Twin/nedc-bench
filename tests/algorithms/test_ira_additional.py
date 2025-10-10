@@ -29,6 +29,7 @@ def test_ira_event_mode_time_to_index_no_cover():
     scorer = IRAScorer()
     # Event mode with a sample that is not covered by any event
     # epoch_duration=1.0 => sample at 0.5; event ends at 0.4, so -1 index path is used
+    # Use explicit null_class="null" to test with "null" label
     ref = [
         EventAnnotation(channel="TERM", start_time=0.0, stop_time=0.4, label="X", confidence=1.0)
     ]
@@ -36,7 +37,7 @@ def test_ira_event_mode_time_to_index_no_cover():
         EventAnnotation(channel="TERM", start_time=0.0, stop_time=0.4, label="X", confidence=1.0)
     ]
 
-    res = scorer.score(ref, hyp, epoch_duration=1.0, file_duration=1.0)
+    res = scorer.score(ref, hyp, epoch_duration=1.0, file_duration=1.0, null_class="null")
     # With both -1, both map to null; ensure label exists and count is 1
     assert "null" in res.labels
     assert res.confusion_matrix["null"]["null"] == 1

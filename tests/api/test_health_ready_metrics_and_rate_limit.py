@@ -14,19 +14,27 @@ from nedc_bench.api.main import app  # type: ignore
 from nedc_bench.api.middleware.rate_limit import rate_limiter
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def client() -> Any:
+    """Create TestClient for API tests.
+
+    CRITICAL FIX: Changed to function scope and all tests marked with xdist_group.
+    This ensures all API tests using TestClient run serially to avoid event loop
+    conflicts with the shared job_manager singleton.
+    """
     # Prevent HTTPException from bubbling to the test runner during 429 checks
     with TestClient(app, raise_server_exceptions=False) as c:
         yield c
 
 
+@pytest.mark.xdist_group(name="api_integration")
 def test_health_endpoint_ok(client: Any) -> None:
     res = client.get("/api/v1/health")
     assert res.status_code == 200
     assert res.json() == {"status": "healthy"}
 
 
+@pytest.mark.xdist_group(name="api_integration")
 def test_metrics_endpoint_exposes_text(client: Any) -> None:
     res = client.get("/metrics")
     assert res.status_code == 200
@@ -36,6 +44,7 @@ def test_metrics_endpoint_exposes_text(client: Any) -> None:
 
 
 @pytest.mark.integration
+@pytest.mark.xdist_group(name="api_integration")
 def test_readiness_ok_when_worker_and_redis_ok(client: Any, monkeypatch: Any) -> None:
     # Worker is started by app lifespan in TestClient context; patch Redis ping only
     async def ping_ok() -> bool:
@@ -50,6 +59,7 @@ def test_readiness_ok_when_worker_and_redis_ok(client: Any, monkeypatch: Any) ->
 
 
 @pytest.mark.integration
+@pytest.mark.xdist_group(name="api_integration")
 def test_readiness_fails_when_worker_down(client: Any, monkeypatch: Any) -> None:
     # Force job_manager.is_running() to return False
     monkeypatch.setattr("nedc_bench.api.endpoints.health.job_manager.is_running", lambda: False)
@@ -59,6 +69,7 @@ def test_readiness_fails_when_worker_down(client: Any, monkeypatch: Any) -> None
 
 
 @pytest.mark.integration
+@pytest.mark.xdist_group(name="api_integration")
 def test_readiness_fails_when_redis_down(client: Any, monkeypatch: Any) -> None:
     # Ensure worker check passes, then fail Redis ping
     monkeypatch.setattr("nedc_bench.api.endpoints.health.job_manager.is_running", lambda: True)
@@ -76,6 +87,7 @@ def test_readiness_fails_when_redis_down(client: Any, monkeypatch: Any) -> None:
 
 
 @pytest.mark.integration
+@pytest.mark.xdist_group(name="api_integration")
 def test_rate_limit_returns_429(client: Any, monkeypatch: Any) -> None:
     # Test that rate limiting logic works (even if TestClient doesn't trigger it properly)
     # TestClient doesn't properly set request.client.host, so we test the limiter directly
