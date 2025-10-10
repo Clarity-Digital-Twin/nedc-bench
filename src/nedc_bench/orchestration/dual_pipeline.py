@@ -160,9 +160,22 @@ class DualPipelineOrchestrator:
         Args:
             tolerance: Numerical tolerance for parity validation
         """
-        self.alpha_wrapper = NEDCAlphaWrapper(nedc_root=Path(os.environ["NEDC_NFC"]))
+        self._alpha_wrapper: NEDCAlphaWrapper | None = None
         self.beta_pipeline = BetaPipeline()
         self.validator = ParityValidator(tolerance=tolerance)
+
+    @property
+    def alpha_wrapper(self) -> NEDCAlphaWrapper:
+        """Lazy initialization of Alpha wrapper (requires NEDC_NFC environment variable)."""
+        if self._alpha_wrapper is None:
+            nedc_root = os.environ.get("NEDC_NFC")
+            if not nedc_root:
+                raise RuntimeError(
+                    "NEDC_NFC environment variable required for Alpha pipeline. "
+                    "Set it to the path of nedc_eeg_eval/v6.0.0 directory."
+                )
+            self._alpha_wrapper = NEDCAlphaWrapper(nedc_root=Path(nedc_root))
+        return self._alpha_wrapper
 
     def evaluate(
         self,

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-import os
+import pathlib
 from datetime import datetime
 from typing import Any
 
@@ -18,9 +18,9 @@ async_orchestrator = AsyncOrchestrator()
 def _cleanup_temp_files(ref_path: str | None, hyp_path: str | None) -> None:
     """Remove temporary files created for this job."""
     for path in (ref_path, hyp_path):
-        if path and os.path.exists(path):
+        if path and pathlib.Path(path).exists():
             try:
-                os.remove(path)
+                pathlib.Path(path).unlink()
                 logger.debug("Removed temp file: %s", path)
             except OSError as exc:
                 logger.warning("Failed to remove temp file %s: %s", path, exc)
