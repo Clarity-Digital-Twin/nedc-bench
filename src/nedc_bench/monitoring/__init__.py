@@ -16,9 +16,9 @@ All metrics gracefully degrade to no-ops when prometheus_client is unavailable.
 ```python
 from nedc_bench.monitoring import track_evaluation
 
+
 @track_evaluation(algorithm="taes", pipeline="beta")
-async def my_eval():
-    ...
+async def my_eval(): ...
 ```
 
 ### Helper (dynamic labels):
@@ -26,9 +26,7 @@ async def my_eval():
 from nedc_bench.monitoring import track_evaluation_dynamic
 
 result = await track_evaluation_dynamic(
-    algorithm=alg,
-    pipeline=pipe,
-    coro=lambda: evaluate(ref, hyp)
+    algorithm=alg, pipeline=pipe, coro=lambda: evaluate(ref, hyp)
 )
 ```
 
@@ -52,16 +50,14 @@ from nedc_bench.monitoring.metrics import (
 )
 
 __all__ = [
-    # Metric types (for type hints)
+    # Alphabetically sorted for RUF022
     "Counter",
     "Gauge",
     "Histogram",
-    # Metric instances
+    "active_evaluations",
     "evaluation_counter",
     "evaluation_duration",
     "parity_failures",
-    "active_evaluations",
-    # Tracking helpers
     "track_evaluation",
     "track_evaluation_dynamic",
 ]

@@ -15,21 +15,22 @@ from nedc_bench.monitoring.metrics import (
     parity_failures,
     track_evaluation_dynamic,
 )
-from nedc_bench.orchestration.dual_pipeline import DualPipelineOrchestrator
+from nedc_bench.orchestration.router import OrchestratorRouter
 
 logger = logging.getLogger(__name__)
 
 
 class AsyncOrchestrator:
-    """Async wrapper around DualPipelineOrchestrator using a thread pool."""
+    """Async wrapper around orchestration layer using smart routing.
+
+    Routes to appropriate orchestrator based on pipeline type:
+    - Beta pipeline → BetaPipelineOrchestrator (no NEDC_NFC needed)
+    - Dual/Alpha pipeline → DualPipelineOrchestrator (lazy-loads Alpha wrapper)
+    """
 
     def __init__(self, max_workers: int = 4):
-        # Ensure NEDC environment is available (tests may import before app startup)
-        if "NEDC_NFC" not in os.environ:
-            default_root = Path("nedc_eeg_eval/v6.0.0").absolute()
-            os.environ["NEDC_NFC"] = str(default_root)
-            os.environ.setdefault("PYTHONPATH", str(default_root / "lib"))
-        self.orchestrator = DualPipelineOrchestrator()
+        # Use router pattern - no forced NEDC_NFC setup (only set when needed)
+        self.router = OrchestratorRouter()
         env_workers = int(os.environ.get("MAX_WORKERS", str(max_workers)))
         self.executor = ThreadPoolExecutor(max_workers=env_workers)
         self.cache: RedisCache = redis_cache
@@ -68,9 +69,11 @@ class AsyncOrchestrator:
 
         async def _run() -> dict[str, Any]:
             if pipeline == "dual":
+                # Use router to get dual orchestrator (lazy-loads Alpha if needed)
+                orchestrator = self.router.get_orchestrator("dual")
                 result = await loop.run_in_executor(
                     self.executor,
-                    self.orchestrator.evaluate,
+                    orchestrator.evaluate,
                     ref_file,
                     hyp_file,
                     algorithm,
@@ -100,30 +103,24 @@ class AsyncOrchestrator:
                 return out
 
             if pipeline == "alpha":
+                # Use router to get dual orchestrator (lazy-loads Alpha if needed)
+                orchestrator = self.router.get_orchestrator("alpha")
                 alpha_res = await loop.run_in_executor(
                     self.executor,
-                    self.orchestrator.alpha_wrapper.evaluate,
+                    orchestrator.alpha_wrapper.evaluate,
                     ref_file,
                     hyp_file,
                 )
                 return {"alpha_result": alpha_res}
 
             if pipeline == "beta":
-                # Dispatch to specific Beta algorithm
+                # Use router to get beta orchestrator (NO NEDC_NFC needed!)
+                orchestrator = self.router.get_orchestrator("beta")
+
                 def _run_beta() -> Any:
                     r = Path(ref_file)
                     h = Path(hyp_file)
-                    if algorithm == "taes":
-                        return self.orchestrator.beta_pipeline.evaluate_taes(r, h)
-                    if algorithm == "dp":
-                        return self.orchestrator.beta_pipeline.evaluate_dp(r, h)
-                    if algorithm == "epoch":
-                        return self.orchestrator.beta_pipeline.evaluate_epoch(r, h)
-                    if algorithm == "overlap":
-                        return self.orchestrator.beta_pipeline.evaluate_overlap(r, h)
-                    if algorithm == "ira":
-                        return self.orchestrator.beta_pipeline.evaluate_ira(r, h)
-                    raise ValueError(f"Unsupported algorithm: {algorithm}")
+                    return orchestrator.evaluate(r, h, algorithm)
 
                 beta_res = await loop.run_in_executor(self.executor, _run_beta)
                 # Convert dataclass to dict

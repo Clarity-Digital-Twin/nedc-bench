@@ -34,7 +34,9 @@ async def process_evaluation(job_id: str) -> None:
         logger.error("Job %s not found", job_id)
         return
 
-    await job_manager.update_job(job_id, {"status": "processing", "started_at": datetime.now(timezone.utc)})
+    await job_manager.update_job(
+        job_id, {"status": "processing", "started_at": datetime.now(timezone.utc)}
+    )
     await broadcast_progress(
         job_id, {"type": "status", "status": "processing", "message": "Starting evaluation"}
     )
