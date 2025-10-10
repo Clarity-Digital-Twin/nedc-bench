@@ -68,6 +68,7 @@ TERM,3.0,4.0,bckg,1.0
         assert "false_positives" in result["beta_result"]
 
     @pytest.mark.asyncio
+    @pytest.mark.slow  # Mark as slow - runs 5 algorithms sequentially
     async def test_beta_pipeline_all_algorithms(self, orchestrator, sample_files):
         """Test Beta pipeline supports all 5 algorithms"""
         ref_file, hyp_file = sample_files
