@@ -122,57 +122,6 @@ class IRAScorer:
             labels=labels,
         )
 
-    def _augment_events(
-        self,
-        events: list[EventAnnotation],
-        file_duration: float,
-        null_class: str,
-    ) -> list[EventAnnotation]:
-        """Fill gaps between events with background to cover [0, duration].
-
-        Mirrors NEDC ann augmentation used before IRA/Epoch sampling.
-        """
-        if not events:
-            # If duration is non-positive, avoid creating zero-length background
-            if file_duration <= 0.0:
-                return []
-            return [
-                EventAnnotation(
-                    channel="TERM",
-                    start_time=0.0,
-                    stop_time=file_duration,
-                    label=null_class,
-                    confidence=1.0,
-                )
-            ]
-
-        augmented: list[EventAnnotation] = []
-        curr = 0.0
-        for ev in sorted(events, key=lambda e: e.start_time):
-            if curr < ev.start_time:
-                augmented.append(
-                    EventAnnotation(
-                        channel="TERM",
-                        start_time=curr,
-                        stop_time=ev.start_time,
-                        label=null_class,
-                        confidence=1.0,
-                    )
-                )
-            augmented.append(ev)
-            curr = ev.stop_time
-        if curr < file_duration:
-            augmented.append(
-                EventAnnotation(
-                    channel="TERM",
-                    start_time=curr,
-                    stop_time=file_duration,
-                    label=null_class,
-                    confidence=1.0,
-                )
-            )
-        return augmented
-
     def _compute_label_kappa(
         self, confusion: dict[str, dict[str, int]], label: str, labels: list[str]
     ) -> float:
