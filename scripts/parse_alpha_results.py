@@ -114,8 +114,10 @@ def parse_alpha_results() -> dict:
             per[lab.lower()] = float(kv)
         results["ira"] = {"multi_class_kappa": multi, "per_label_kappa": per}
 
-    # Save results
-    Path("SSOT_ALPHA.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
+    # Save results to data/validation/
+    Path("data/validation/SSOT_ALPHA.json").write_text(
+        json.dumps(results, indent=2), encoding="utf-8"
+    )
 
     # Friendly print
     print("Alpha Results (parsed from summary.txt):")

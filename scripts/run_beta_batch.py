@@ -107,8 +107,8 @@ def main():
     except Exception as e:
         print(f"Warning: IRA computation failed: {e}")
 
-    # Save as JSON
-    output_file = Path("SSOT_BETA.json")
+    # Save as JSON to data/validation/
+    output_file = Path("data/validation/SSOT_BETA.json")
     with output_file.open("w", encoding="utf-8") as f:
         json.dump(beta_results, f, indent=2, default=str)
 

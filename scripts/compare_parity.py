@@ -8,11 +8,11 @@ from pathlib import Path
 def compare_results():
     """Compare SSOT_ALPHA.json vs SSOT_BETA.json"""
 
-    # Load results
-    with Path("SSOT_ALPHA.json").open(encoding="utf-8") as f:
+    # Load results from data/validation/
+    with Path("data/validation/SSOT_ALPHA.json").open(encoding="utf-8") as f:
         alpha = json.load(f)
 
-    with Path("SSOT_BETA.json").open(encoding="utf-8") as f:
+    with Path("data/validation/SSOT_BETA.json").open(encoding="utf-8") as f:
         beta = json.load(f)
 
     print("=" * 60)

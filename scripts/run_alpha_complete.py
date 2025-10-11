@@ -121,11 +121,13 @@ def parse_alpha_results():
                 except (IndexError, ValueError) as e:
                     print(f"WARNING: Could not parse {algo} summary: {e}")
 
-    # Save results
-    with Path("SSOT_ALPHA.json").open("w", encoding="utf-8") as f:
+    # Save results to data/validation/
+    with Path("data/validation/SSOT_ALPHA.json").open("w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
 
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Saved Alpha results to SSOT_ALPHA.json")
+    print(
+        f"[{datetime.now().strftime('%H:%M:%S')}] Saved Alpha results to data/validation/SSOT_ALPHA.json"
+    )
     return results
 
 
@@ -136,6 +138,6 @@ if __name__ == "__main__":
 
     if run_alpha():
         parse_alpha_results()
-        print("\n✅ Alpha run complete! Check SSOT_ALPHA.json for results.")
+        print("\n✅ Alpha run complete! Check data/validation/SSOT_ALPHA.json for results.")
     else:
         print("\n❌ Alpha run failed!")
