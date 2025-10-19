@@ -1,0 +1,3 @@
+# This directory contains parity testing data (transformer EEG outputs)
+# The data is NOT committed to git (too large: 2.3MB+)
+# Users should download the dataset separately or use their own data
